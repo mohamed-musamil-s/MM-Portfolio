@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { HalftoneSphere } from "@/components/motion/HalftoneSphere";
 import { InkReveal } from "@/components/motion/InkReveal";
 import { StatusDot } from "@/components/motion/StatusDot";
 import type { MaintenanceContent } from "@/lib/shared/content/maintenance-schema";
@@ -7,6 +6,7 @@ import { CheckAgain } from "./CheckAgain";
 import { Countdown } from "./Countdown";
 import { LiveCheckFooter } from "./LiveCheckFooter";
 import { LiveCheckProvider } from "./LiveCheckProvider";
+import { MaintenanceIllustration } from "./MaintenanceIllustration";
 import { WindowRuler } from "./WindowRuler";
 
 type MaintenanceScreenProps = {
@@ -37,7 +37,7 @@ const withSignalStop = (lines: readonly string[]): ReactNode[] =>
  * scrolling, clean ivory canvas, signal orange as the single accent.
  *
  *   header   brand tile + label · live status (orange beacon)
- *   middle   kicker, headline, short text, check-again, countdown | halftone sphere
+ *   middle   kicker, headline, short text, check-again, countdown | maintenance storyboard
  *   ruler    window timeline (orange elapsed line + now dot)
  *   footer   last checked · next check (polls every minute) · note
  *
@@ -102,8 +102,8 @@ export const MaintenanceScreen = ({ content, windowStartText, targetText }: Main
             </InkReveal>
           </div>
 
-          <div className="relative hidden h-full max-h-[36rem] min-h-0 lg:col-span-5 lg:col-start-8 lg:block">
-            <HalftoneSphere />
+          <div className="relative hidden h-full max-h-[34rem] min-h-0 flex-col justify-center lg:col-span-5 lg:col-start-8 lg:flex">
+            <MaintenanceIllustration illustration={content.illustration} className="min-h-0" />
           </div>
         </div>
 

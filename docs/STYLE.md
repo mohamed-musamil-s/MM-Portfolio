@@ -1,6 +1,6 @@
 # MM-Portfolio Public Design System
 
-Version 1.4, 2026-11-22. Source artwork: `docs/reference/Gemini_MM.png` (the "Musamil" editorial poster).
+Version 1.5, 2026-11-22. Source artwork: `docs/reference/Gemini_MM.png` (the "Musamil" editorial poster).
 
 **Styling is done with Tailwind CSS v4.** Every rule below names the utility classes that implement it. The token layer is `src/app/globals.css`.
 
@@ -98,7 +98,7 @@ Use it sparingly: at most about six marks per screen, and never as a large fill 
 | Live or status beacons | Pulsing status dot (`StatusDot`) |
 | A single typographic accent | The headline's final full stop |
 | Progress and "now" indicators | The ruler's elapsed line and now dot |
-| One accent inside an illustration | The sweeping meridian on the halftone sphere |
+| One accent inside an illustration | The cursor in the maintenance film, plus one orange detail per sequence |
 | Live-check progress | The NEXT CHECK progress line in the footer |
 | Brand tile detail | The small square on the logo tile |
 | Ambient light | One blurred background glow at 9% opacity |
@@ -352,7 +352,7 @@ All public buttons are `<ActionButton variant="editorial-ink">`. That's the defa
 - **Text link style:** for inline text links use the link rules in 6.2, not a button.
 - **Solid tone** (`tone="solid"`): the single primary action on a screen (e.g. CHECK AGAIN):
   - an ink-filled pill (`rounded-full bg-ink text-paper min-h-12 px-7`) with no ink wipe and no corner marks;
-  - hover dims it slightly (`bg-ink/88`); it keeps the magnetic pull and the press scale;
+  - hover only dims it slightly (`bg-ink/88`). **No magnetic pull or other hover movement**; it keeps the press scale;
   - status icons show inside the pill.
 
 ### 6.2 Links
@@ -387,7 +387,7 @@ As of 2026-11-22 (v1.5) this is **one viewport (`h-svh`) with no scrolling**, on
 - **Header:** logo tile with an orange square and the brand label; on the right, the orange `StatusDot` and status label.
 - **Middle:**
   - left (6 columns): kicker, headline (orange full stop), body, the **CHECK AGAIN** solid pill with its hint beside it, then the countdown (`ETA`);
-  - right (columns 8 to 12, `lg` and up): the **halftone sphere**, a dot-screen globe with one orange meridian.
+  - right (columns 8 to 12, `lg` and up): the **maintenance film**, one continuous animated line-art shot (manage → construct → content → redesign → upgrade) with an orange cursor and film-style subtitles.
 - **Ruler:** a full-width timeline with an orange elapsed line, a now dot, and dates at both ends.
 - **Footer:** three spaced columns on hairlines: LAST CHECKED, NEXT CHECK (orange progress, every minute) and the note.
 

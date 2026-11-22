@@ -114,7 +114,8 @@ export const ActionButton = (props: ActionButtonProps) => {
   const variant: ActionButtonVariant = props.variant ?? (theme === "portfolio" ? "editorial-ink" : "studio-action");
   const editorial = variant === "editorial-ink";
   const behavior = useActionButton(props);
-  const { anchorRef, x, y } = useMagnetic<HTMLSpanElement>(editorial && !props.disabled);
+  // Solid pills stay put on hover: magnetism is only for the outline editorial button.
+  const { anchorRef, x, y } = useMagnetic<HTMLSpanElement>(editorial && props.tone !== "solid" && !props.disabled);
   const fill = useMotionValue(0);
   const hintId = useId();
   const styles = actionButton({ variant, tone: props.tone ?? "outline", method: props.method });

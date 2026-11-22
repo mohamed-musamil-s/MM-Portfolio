@@ -171,6 +171,15 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] The right side was replaced with the **halftone sphere** (canvas dot-screen globe, orange meridian, pointer-lit light); the wireframe `BuildScene` was removed.
 - [x] Zero overflow at 1440×900, 1280×720, 1024×768, 375×812, 390×667 and 360×640. Short phones drop the body and hint.
 
+## 2026-11-22: Maintenance film
+
+- [x] The right side is now a **continuous "movie" maintenance illustration**: one GSAP timeline with a camera dolly and push-in, and an orange cursor as the actor through manage → construct → content → redesign → upgrade. It dissolves and loops. Film-style subtitles from the DB, never two at once (verified by sampling).
+  - It replaced the halftone sphere and an interim step carousel.
+  - DB: `content.illustration` steps and version tags (version 8 → 9).
+- [x] The Check again pill no longer moves on hover (magnetism is off for solid pills; verified, no transform on hover).
+- [x] Fixed: square line caps painted a dot on undrawn paths, so the film now uses butt caps.
+- [x] Zero overflow at 1440×900, 1280×720 and 1024×768. The phone layout is unchanged (the film is desktop-only).
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

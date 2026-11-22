@@ -20,7 +20,8 @@ const formatCountdown = (seconds: number) => `${Math.floor(seconds / 60)}:${Stri
  */
 export const LiveCheckFooter = ({ labels, note }: LiveCheckFooterProps) => {
   const { lastCheckedAt, secondsToNext, progress } = useSharedLiveCheck();
-  const lastChecked = lastCheckedAt === null ? "--:--:--" : new Date(lastCheckedAt).toLocaleTimeString(undefined, TIME_FORMAT);
+  const lastChecked =
+    lastCheckedAt === null ? "--:--:--" : new Date(lastCheckedAt).toLocaleTimeString(undefined, TIME_FORMAT);
   const nextCheck = lastCheckedAt === null ? "-:--" : formatCountdown(secondsToNext);
 
   return (

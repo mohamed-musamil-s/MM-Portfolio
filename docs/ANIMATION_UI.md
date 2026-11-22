@@ -47,7 +47,7 @@ Each library owns one job. Two libraries must never animate the same property of
 | --- | --- | --- | --- | --- |
 | `motion` | 14.x | MIT | Element transforms (x, y, scale, rotate), springs, gestures (hover, tap), `AnimatePresence`, `MotionConfig` | Every animated client component |
 | `animejs` | 4.x | MIT | SVG **geometry**: path `d` morphing and stroke drawing (`createDrawable`). Later: staggered microtext decoding (`scrambleText`, `stagger`) | MagicIcon, kinetic type |
-| `gsap` + `@gsap/react` | 3.15 / 2.1 | **GSAP Standard License** (free, including commercial use, but **not** OSI open source) | Scroll choreography: `ScrollTrigger` (scrubbed parallax, pinning), `Observer` (scroll velocity) | Portfolio scroll sections |
+| `gsap` + `@gsap/react` | 3.15 / 2.1 | **GSAP Standard License** (free, including commercial use, but **not** OSI open source) | Scroll choreography (`ScrollTrigger`, `Observer`) **and cinematic timelines**: multi-step, film-like sequences where many elements must stay in sync (e.g. the maintenance film). Inside such a component GSAP owns every element. | Portfolio scroll sections, `MaintenanceIllustration` |
 | `lenis` | 1.3.x | MIT | Inertial smooth scroll, driven from GSAP's ticker | Portfolio `MotionProvider` only |
 | `three`, `@react-three/fiber`, `@react-three/drei` | 0.187 / 9.8 / 10.7 | MIT | WebGL: halftone and ink-grain shader plane, depth cards | Portfolio hero only, through `next/dynamic` with `ssr: false` |
 | `radix-ui` | 1.8.x | MIT | Accessible headless primitives (`VisuallyHidden` now; Dialog, DropdownMenu, Tooltip and others when needed) | Where used |
@@ -256,7 +256,7 @@ The props are a discriminated union on `method`, so each method only accepts its
 | Hover | Liquid **ink wipe**: the fill layer scales in from the left; the label inverts through `mix-blend-difference`; four registration crosshairs slide in and **lock onto the corners** | Crisp **border illumination** (`border-accent`) |
 | Cursor | **Magnetic pull** (spring) within 72px | none |
 | Press | scale 0.98 | **Detent** scale 0.97 |
-| `tone="solid"` | Ink-filled pill, no wipe or corner marks (one primary action per screen) | n/a |
+| `tone="solid"` | Ink-filled pill, no wipe or corner marks, **no magnetic pull** (one primary action per screen) | n/a |
 | Focus | `outline-2 outline-offset-3 outline-ink` | `border-accent ring-3 ring-glow` |
 | Loading | ink fill (submit: progress) + status orbit | 2px accent progress bar (submit) or inline status orbit |
 | Success | fill completes + check | check + green **pulse ring** + `border-success` |

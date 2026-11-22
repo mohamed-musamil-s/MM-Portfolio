@@ -37,6 +37,17 @@ const SCREENS = {
       checkAgainLabel: "CHECK AGAIN",
       hint: "This page checks by itself every minute, so there's no need to keep refreshing.",
     },
+    illustration: {
+      steps: [
+        { scene: "manage", label: "MANAGE THE SITE" },
+        { scene: "construct", label: "CONSTRUCT THE SCREEN" },
+        { scene: "content", label: "THINK THE CONTENT" },
+        { scene: "redesign", label: "REDESIGN THE UI" },
+        { scene: "upgrade", label: "UPGRADE THE VERSION" },
+      ],
+      versionFrom: "V1.0",
+      versionTo: "V2.0",
+    },
     footer: { note: "© 2026 ALL RIGHTS RESERVED." },
   },
 };

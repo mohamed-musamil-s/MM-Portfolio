@@ -8,6 +8,20 @@ import { z } from "zod";
 
 const text = (max: number) => z.string().trim().min(1).max(max);
 
+/** Animated scenes the right-side maintenance illustration can show, in any order. */
+export const ILLUSTRATION_SCENES = ["manage", "construct", "content", "redesign", "upgrade"] as const;
+export type IllustrationScene = (typeof ILLUSTRATION_SCENES)[number];
+
+const illustrationSchema = z.object({
+  steps: z
+    .array(z.object({ scene: z.enum(ILLUSTRATION_SCENES), label: text(32) }))
+    .min(1)
+    .max(5),
+  /** Version tags shown in the "upgrade" scene. */
+  versionFrom: text(8),
+  versionTo: text(8),
+});
+
 const timelineSchema = z
   .object({
     /** Short label over the countdown, e.g. "ETA". */
@@ -39,6 +53,7 @@ export const maintenanceContentSchema = z.object({
     checkAgainLabel: text(24),
     hint: text(120),
   }),
+  illustration: illustrationSchema,
   footer: z.object({ note: text(80) }),
 });
 

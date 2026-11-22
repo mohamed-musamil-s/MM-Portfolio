@@ -1,5 +1,6 @@
 /**
- * Seeds database-managed screen content into `site_screens`.
+ * Seeds database-managed screen content (`site_screens`) and site settings
+ * (`site_settings`, e.g. the maintenance flag).
  *
  *   npm run seed:screens            insert missing screens only
  *   npm run seed:screens -- --force replace existing screens with these defaults
@@ -18,49 +19,25 @@ const SCREENS = {
       title: "System upgrade in progress",
       description: "This portfolio is undergoing a scheduled system upgrade. The next release is on its way.",
     },
-    brand: { label: "PORTFOLIO / STUDIO", wordmark: "Portfolio", established: "EST. 2026" },
-    status: {
-      kicker: "SYSTEM UPGRADE IN PROGRESS // CORE INFRASTRUCTURE & EDITORIAL ENGINE",
-      label: "STATUS / LIVE UPGRADE",
-    },
+    brand: { label: "PORTFOLIO / STUDIO", wordmark: "Portfolio" },
+    status: { kicker: "SYSTEM UPGRADE", label: "STATUS / LIVE UPGRADE" },
     headline: { lines: ["UPGRADING", "THE SYSTEM."] },
-    body: "This portfolio is undergoing a scheduled system upgrade: hardening database and session security, refining the motion and UI systems, and preparing the next release.",
-    pillars: [
-      {
-        index: "01",
-        title: "CORE ENGINE",
-        description: "Database and session architecture calibration.",
-        icon: "sync",
-      },
-      {
-        index: "02",
-        title: "MOTION & UI",
-        description: "Editorial kinetic typography, WebGL grain and SVG choreography.",
-        icon: "calibrate",
-      },
-      {
-        index: "03",
-        title: "RELEASE PIPELINE",
-        description: "Staging verification and studio readiness.",
-        icon: "arrow-up-right",
-      },
-    ],
+    body: "We're shipping a new version of the site. It'll be back shortly, a little sharper than before.",
     timeline: {
-      label: "EXPECTED UPGRADE WINDOW",
+      label: "ETA",
       windowStart: new Date("2026-11-22T00:00:00.000Z"),
       targetAt: new Date("2026-12-31T00:00:00.000Z"),
-      countdownLabel: "T-MINUS",
       srRemaining: "{days} days, {hours} hours and {minutes} minutes until the upgrade window closes",
       units: { days: "DD", hours: "HH", minutes: "MM", seconds: "SS" },
       overdue: { title: "FINALIZING DEPLOY", detail: "WINDOW EXTENDED" },
     },
-    mottos: {
-      primary: ["MINDSET", "AMBITION", "FREEDOM"],
-      secondary: ["FOCUS", "DISCIPLINE", "CONSISTENCY", "EXECUTION"],
-    },
+    liveCheck: { lastCheckedLabel: "LAST CHECKED", nextCheckLabel: "NEXT CHECK" },
     footer: { note: "© 2026 ALL RIGHTS RESERVED." },
   },
 };
+
+/** Site-wide switches. Seeded only when missing; never overwritten by --force. */
+const SETTINGS = [{ _id: "maintenance", enabled: true }];
 
 const main = async () => {
   const uri = process.env.MONGODB_URI;
@@ -73,6 +50,16 @@ const main = async () => {
   try {
     await client.connect();
     const screens = client.db(process.env.MONGODB_DB || "mm-portfolio").collection("site_screens");
+
+    const settings = client.db(process.env.MONGODB_DB || "mm-portfolio").collection("site_settings");
+    for (const { _id, ...value } of SETTINGS) {
+      const result = await settings.updateOne(
+        { _id },
+        { $setOnInsert: { ...value, updatedAt: new Date(), updatedBy: SEED_AUTHOR } },
+        { upsert: true },
+      );
+      console.log(`${result.upsertedCount ? "insert " : "skip   "} setting ${_id}`);
+    }
 
     for (const [slug, content] of Object.entries(SCREENS)) {
       const existing = await screens.findOne({ _id: slug }, { projection: { version: 1 } });

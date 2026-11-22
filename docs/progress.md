@@ -144,6 +144,23 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] Still generic content, with no personal details. The reference's email address was deliberately not added.
 - [x] Zero overflow verified at 1440×900, 1280×720, 1024×768, 375×812, 390×667 and 360×640.
 
+## 2026-11-22: Essentials, live check and the maintenance flag
+
+- [x] Content trimmed:
+  - the kicker is now `SYSTEM UPGRADE`, the countdown label `ETA`, and the body one or two sentences;
+  - removed the pillars, mottos, `EST.` line and countdown prefix (DB migrated, version 6 → 7);
+  - the schema now enforces short lengths.
+- [x] **Maintenance flag** in `site_settings`, controlled only through the admin API (no admin UI, as requested):
+  - the proxy routes `/` ↔ `/maintenance` from it;
+  - `/api/status` exposes it publicly.
+- [x] **Live check:**
+  - the page polls every 60s, showing LAST CHECKED (local time) and NEXT CHECK (countdown with an orange progress line);
+  - it redirects to `/` once the flag is off;
+  - verified end to end, and the flag was restored to ON afterwards.
+- [x] Footer rebuilt as three spaced columns; the illustration simplified (no gears, scanline, rings or dimension lines).
+- [x] Screenshots in `docs/screens/maintenance/`.
+- Known gap: with the flag OFF, `/` shows the 404 placeholder until the portfolio home is built.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

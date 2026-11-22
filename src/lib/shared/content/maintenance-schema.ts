@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { ICON_NAMES } from "@/components/ui/magic-icon/types";
 
 /**
  * Content model for /maintenance (docs/screens/MAINTENANCE_BUSINESS.md §3).
@@ -9,14 +8,12 @@ import { ICON_NAMES } from "@/components/ui/magic-icon/types";
 
 const text = (max: number) => z.string().trim().min(1).max(max);
 
-const wordList = z.array(text(24)).min(1).max(5);
-
 const timelineSchema = z
   .object({
-    label: text(40),
+    /** Short label over the countdown, e.g. "ETA". */
+    label: text(24),
     windowStart: z.coerce.date(),
     targetAt: z.coerce.date(),
-    countdownLabel: text(24),
     /** Screen-reader announcement, updated once a minute. Placeholders: {days} {hours} {minutes}. */
     srRemaining: text(120),
     units: z.object({ days: text(4), hours: text(4), minutes: text(4), seconds: text(4) }),
@@ -29,16 +26,14 @@ const timelineSchema = z
 
 export const maintenanceContentSchema = z.object({
   meta: z.object({ title: text(70), description: text(160) }),
-  brand: z.object({ label: text(40), wordmark: text(24), established: text(24) }),
-  status: z.object({ kicker: text(120), label: text(60) }),
+  brand: z.object({ label: text(40), wordmark: text(24) }),
+  /** Kept short on purpose: one small line above the headline. */
+  status: z.object({ kicker: text(40), label: text(40) }),
   headline: z.object({ lines: z.array(text(40)).min(1).max(3) }),
-  body: text(600),
-  pillars: z
-    .array(z.object({ index: text(4), title: text(40), description: text(160), icon: z.enum(ICON_NAMES) }))
-    .min(1)
-    .max(4),
+  body: text(200),
   timeline: timelineSchema,
-  mottos: z.object({ primary: wordList, secondary: wordList }),
+  /** Footer labels for the once-a-minute live check. */
+  liveCheck: z.object({ lastCheckedLabel: text(24), nextCheckLabel: text(24) }),
   footer: z.object({ note: text(80) }),
 });
 

@@ -1,6 +1,6 @@
 # Screen: `/maintenance`, Business Spec
 
-Version 1.3, 2026-11-22. **One viewport (100svh), no scrolling, on a clean ivory canvas, with signal orange as the single accent.** Left: content and countdown. Right: an animated line illustration. Default content is generic, with no personal details. Public route. Look: [STYLE.md](../STYLE.md). Motion: [ANIMATION_UI.md](../ANIMATION_UI.md).
+Version 1.4, 2026-11-22. **One viewport (100svh), no scrolling, on a clean ivory canvas, with signal orange as the single accent.** Content is trimmed to the essentials. The page re-checks the **maintenance flag** (set from the admin panel) every minute and sends visitors to the site once it's off. Screenshots: [desktop](maintenance/desktop-1280x720.jpg), [mobile](maintenance/mobile-375x812.jpg). Public route. Look: [STYLE.md](../STYLE.md). Motion: [ANIMATION_UI.md](../ANIMATION_UI.md).
 
 ---
 
@@ -21,24 +21,22 @@ While the public portfolio is being built, `/` redirects here (302). This page i
 
 ---
 
-## 2. System upgrade narrative
+## 2. Content (essentials only)
 
-The default content below is what the seed writes. All of it can be changed in the database.
+The defaults the seed writes are generic, with no personal details. All of them can be changed in the database.
 
 | Element | Default |
 | --- | --- |
-| Status kicker (scrolls in the ink ticker band) | `SYSTEM UPGRADE IN PROGRESS // CORE INFRASTRUCTURE & EDITORIAL ENGINE` |
-| Headline | `UPGRADING THE SYSTEM.` |
-| Body | This portfolio is undergoing a scheduled system upgrade: hardening database and session security, refining the motion and UI systems, and preparing the next release. |
-| Brand label · `EST.` line · wordmark · footer | `PORTFOLIO / STUDIO` · `EST. 2026` · `Portfolio` · `© 2026 ALL RIGHTS RESERVED.` (generic on purpose: no personal names or dates) |
-| Pillar 01 | `CORE ENGINE`: database and session architecture calibration |
-| Pillar 02 | `MOTION & UI`: editorial kinetic typography, WebGL grain and SVG choreography |
-| Pillar 03 | `RELEASE PIPELINE`: staging verification and studio readiness |
-| Mottos | `MINDSET / AMBITION / FREEDOM` · `FOCUS / DISCIPLINE / CONSISTENCY / EXECUTION` |
+| Kicker | `SYSTEM UPGRADE` (≤ 40 characters) |
+| Headline | `UPGRADING` / `THE SYSTEM.` (the final `.` renders in signal orange) |
+| Body | We're shipping a new version of the site. It'll be back shortly, a little sharper than before. (≤ 200 characters) |
+| Countdown label | `ETA` (≤ 24 characters) |
+| Live-check labels | `LAST CHECKED` · `NEXT CHECK` |
+| Status | `STATUS / LIVE UPGRADE` |
+| Brand | `PORTFOLIO / STUDIO`; the logo tile shows the first letter of the wordmark `Portfolio` |
+| Footer note | `© 2026 ALL RIGHTS RESERVED.` |
 
-> **Disclosure note.** Copy that names internal systems ("database and session security") tells anyone, attackers included, what's being worked on. It's kept because it was requested, and it's one database edit away from a more general wording.
-
----
+Removed on 2026-11-22 to keep the screen focused: the upgrade pillars, both motto lists, the `EST.` line and the long kicker. The database was migrated with `$unset` (version 6 → 7).
 
 ## 3. Content source: database only
 
@@ -59,14 +57,13 @@ No user-facing text, date or asset path is hardcoded in the page or its componen
 | Field | Type | Rules |
 | --- | --- | --- |
 | `meta.title`, `meta.description` | text | ≤ 70 and ≤ 160 characters. Used for `<title>` and the meta description. |
-| `brand.label`, `brand.wordmark`, `brand.established` | text | Header label; the wordmark's first letter is the logo tile; the `EST.` line is in the footer. |
-| `status.kicker`, `status.label` | text | The kicker above the headline; the live-status label next to the orange beacon. |
-| `headline.lines` | 1 to 3 lines | Each line reveals separately. A trailing `.` on the last line renders in signal orange. |
-| `body` | text | ≤ 600 characters. |
-| `pillars[]` | 1 to 4 items | `{ index, title, description, icon }`. `icon` must be a MagicIcon name. |
-| `timeline` | object | `label`, `windowStart`, `targetAt` (dates; `targetAt` must be after `windowStart`), `countdownLabel`, `srRemaining` (screen-reader template with `{days}`, `{hours}` and `{minutes}`), `units { days, hours, minutes, seconds }`, `overdue { title, detail }`. |
-| `mottos.primary[]`, `mottos.secondary[]` | 1 to 5 words each | Primary: footer. Secondary: caption under the illustration (`lg` and up). |
-| `footer.note` | text | Small print. |
+| `brand.label`, `brand.wordmark` | text | The header label; the wordmark's first letter is the logo tile. |
+| `status.kicker`, `status.label` | text, ≤ 40 each | The small kicker above the headline; the label next to the orange beacon. |
+| `headline.lines` | 1 to 3 lines, ≤ 40 each | Each line reveals separately. A trailing `.` on the last line renders in signal orange. |
+| `body` | text, ≤ 200 | One or two sentences. |
+| `timeline` | object | `label` (≤ 24, e.g. `ETA`), `windowStart`, `targetAt` (dates; `targetAt` must be after `windowStart`), `srRemaining` (screen-reader template with `{days}`, `{hours}` and `{minutes}`), `units`, `overdue { title, detail }`. |
+| `liveCheck` | object | `lastCheckedLabel`, `nextCheckLabel` (≤ 24 each). |
+| `footer.note` | text | Small print, footer right. |
 
 ### Saving changes (for the admin panel)
 
@@ -95,26 +92,50 @@ No user-facing text, date or asset path is hardcoded in the page or its componen
 
 ---
 
+## 4b. Maintenance flag and live check
+
+**Whether the site is in maintenance at all is a site setting, not screen content.** Only the admin panel controls it. There's no admin UI yet; the admin API is the control.
+
+| Item | Value |
+| --- | --- |
+| Storage | `site_settings` collection, `_id: "maintenance"`, `{ enabled, updatedAt, updatedBy }`. Seeded as `enabled: true`. |
+| Default if missing | ON (the portfolio isn't built yet) |
+| Admin API | `GET /api/studio/settings/maintenance` returns `{ enabled, updatedAt, updatedBy }`.<br>`PUT /api/studio/settings/maintenance` with `{ "enabled": false }` switches it. Requires a session and a same-origin request. |
+| Routing (proxy) | **ON:** `/` → 302 `/maintenance`.<br>**OFF:** `/maintenance` → 302 `/`.<br>The proxy caches the flag for about 10s. |
+| Public status | `GET /api/status` returns `{ maintenance, checkedAt }`, uncached. If MongoDB is unreachable it falls back to the last known value, else ON. |
+
+**Live check on the page:**
+
+| Rule | Behaviour |
+| --- | --- |
+| When | Once on load, then **every 60 seconds** (`useLiveCheck`) |
+| Flag still ON | The footer updates **LAST CHECKED** (the visitor's local time, `HH:MM:SS`) and restarts **NEXT CHECK** (`m:ss`, with an orange progress line). |
+| Flag OFF | The visitor is sent to `/` with `location.replace` (no back-button loop). |
+| Network error | The page stays up; the next tick retries. |
+| Until the first check finishes | Shows `--:--:--` and `-:--`. |
+
+> **Known gap:** the portfolio home page doesn't exist yet. When the flag is OFF, `/` shows the not-found placeholder (404). This resolves itself once the home page is built.
+
+Verified on 2026-11-22: 401 without a session, 400 for a bad body, 403 cross-origin. Switching it OFF made `/api/status` return `false` and `/maintenance` return 302 → `/`, and an **open page redirected itself within the minute**. Switching it back ON restored `/` → `/maintenance`.
+
 ## 5. Layout, motion and asset requirements
 
 ### Layout: one screen, no scrolling
 
 | Row | Content |
 | --- | --- |
-| Header | Logo tile (first letter of `brand.wordmark`, with an orange square) and `brand.label` (from `sm`). On the right, the orange `StatusDot` and `status.label`. |
-| Middle, left (7 columns) | `status.kicker`, `headline.lines` (final full stop in orange), `body`, then the countdown (`countdownLabel · label`, `DD : HH : MM : SS`). |
-| Middle, right (5 columns, `lg` and up) | `BuildScene` line illustration, with `mottos.secondary` as its caption. |
-| Ruler | Full-width window timeline: day ticks, orange elapsed line and now dot, start and end dates. |
-| Pillars | Three columns (stacked on phones). The description is hidden on phones and on screens ≤ 820px tall. |
-| Footer | `mottos.primary`, `brand.established` and `footer.note`. |
+| Header | Logo tile with an orange square, and `brand.label` (from `sm`). On the right, the orange `StatusDot` and `status.label`. |
+| Middle, left (6 columns) | Kicker, headline, body, then the countdown (`ETA`, `DD : HH : MM : SS`). |
+| Middle, right (columns 8 to 12, `lg` and up) | `BuildScene` line illustration |
+| Ruler | Window timeline: day ticks, orange elapsed line and now dot, dates at both ends |
+| Footer | Three spaced columns divided by hairlines: **LAST CHECKED**, **NEXT CHECK** (orange progress), and the note on the right (from `sm`) |
 
 | Constraint | Rule |
 | --- | --- |
-| Height ≤ 820px (laptops) | The headline steps down to `text-h2`, the vertical padding tightens, and the pillar descriptions are hidden. |
-| Phones ≤ 720px tall | The body paragraph is hidden. |
+| Height ≤ 820px (laptops) | The headline steps down to `text-h2`, and the header, middle, ruler and footer spacing tighten. |
 | Below `lg` | The illustration is hidden, so the content column has the full width. |
 
-Verified with zero overflow (page and every row) at 1440×900, 1280×720, 1024×768, 375×812, 390×667 and 360×640.
+Verified with zero overflow at 1440×900, 1280×720, 1024×768, 375×812 and 360×640.
 
 ### Colour
 
@@ -124,7 +145,7 @@ The canvas is ivory and the type is ink, plus **one accent, signal orange `#E848
 - the headline's full stop;
 - the ruler's elapsed line and now dot;
 - the illustration's cursor and landing rings;
-- the pillar hover rule;
+- the NEXT CHECK progress line;
 - one blurred background glow.
 
 It's never used for small text (it's 3.5:1 on ivory, which passes for graphics and large type only). See STYLE.md §2.5.
@@ -139,8 +160,8 @@ The motion direction is "200%", within the STYLE.md §7 guardrails, and everythi
 | Kicker, headline, body | Ink-mask line reveals, staggered | `InkReveal` |
 | Countdown | Per-digit slide inside a fixed 1em mask | `Countdown` |
 | Ruler | Ticks draw in left to right; the orange line and dot ease to "now" | `WindowRuler` |
-| Pillars | Rise in, staggered. Hover draws the orange rule and wakes the MagicIcon. | `PillarColumn` |
-| Illustration | "Portfolio under reconstruction", looping every 6s: the wireframe and dimension lines draw in; copy lines type; an orange cursor travels card to card, filling each with hatching; a scanline sweeps the page; meshed gears turn; the scene leans toward the pointer. | `BuildScene` |
+| Footer | NEXT CHECK progress line fills over the minute, then resets | `LiveCheckFooter` |
+| Illustration | A calm loop, every 6s: the page wireframe draws in, copy lines type, and an orange cursor visits each card, which fills with hatching. The scene leans gently toward the pointer. (Gears, scanline, rings and dimension lines were removed for calm.) | `BuildScene` |
 
 **Image assets:** none. Everything is inline SVG or CSS.
 
@@ -154,7 +175,8 @@ These are reusable by any future page.
 | --- | --- |
 | `PublicShell`, `PosterFrame`, `SlashLabel` | Every public page: surface tokens, fonts, MotionProvider, grain, frame, labels |
 | `InkReveal`, `StatusDot` (`src/components/motion/`) | Any editorial section or status display |
-| `BuildScene`, `WindowRuler`, `PillarColumn` (`src/components/maintenance/`) | Promote to shared modules if another screen needs them |
+| `BuildScene`, `WindowRuler`, `LiveCheckFooter` (`src/components/maintenance/`) | Promote to shared modules if another screen needs them |
+| `useSecondClock`, `useLiveCheck` (`src/hooks/`) | Any timed UI or live status poll |
 | `useCountdown`, `useScrollVelocity`, `useParallax` (`src/hooks/`) | Any timed or scroll-reactive UI |
 | `MagicIcon` (new `calibrate` icon), `ActionButton` | App-wide |
 | `getScreenContent` and the `site_screens` collection | Every future configurable screen (add a schema to the registry) |

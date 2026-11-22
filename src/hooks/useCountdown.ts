@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useSecondClock } from "./useSecondClock";
 
 export type CountdownParts = { days: number; hours: number; minutes: number; seconds: number };
 
@@ -15,36 +15,6 @@ const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
-
-/**
- * A wall clock that notifies on every second boundary (so ticks never drift)
- * and goes quiet while the tab is hidden, resyncing when it becomes visible.
- */
-const subscribeToSeconds = (notify: () => void) => {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const schedule = () => {
-    timer = setTimeout(() => {
-      notify();
-      schedule();
-    }, SECOND - (Date.now() % SECOND));
-  };
-  const handleVisibility = () => {
-    clearTimeout(timer);
-    if (!document.hidden) {
-      notify();
-      schedule();
-    }
-  };
-  schedule();
-  document.addEventListener("visibilitychange", handleVisibility);
-  return () => {
-    clearTimeout(timer);
-    document.removeEventListener("visibilitychange", handleVisibility);
-  };
-};
-
-const currentSecond = () => Math.floor(Date.now() / SECOND) * SECOND;
-const noClockOnServer = () => null;
 
 export const countdownAt = (now: number, targetAt: number, windowStart: number): Countdown => {
   const remaining = Math.max(0, targetAt - now);
@@ -67,6 +37,6 @@ export const countdownAt = (now: number, targetAt: number, windowStart: number):
  * server and client markup never disagree.
  */
 export const useCountdown = (targetAt: Date, windowStart: Date): Countdown | null => {
-  const now = useSyncExternalStore(subscribeToSeconds, currentSecond, noClockOnServer);
+  const now = useSecondClock();
   return now === null ? null : countdownAt(now, targetAt.getTime(), windowStart.getTime());
 };

@@ -18,6 +18,7 @@ export const ROUTES = {
     login: "/api/auth/login",
     logout: "/api/auth/logout",
     health: "/api/health",
+    status: "/api/status",
   },
 } as const;
 

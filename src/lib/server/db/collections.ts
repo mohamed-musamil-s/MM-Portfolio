@@ -4,6 +4,7 @@ export const COLLECTIONS = {
   sessions: "sessions",
   authAttempts: "auth_attempts",
   siteScreens: "site_screens",
+  siteSettings: "site_settings",
 } as const;
 
 export type SessionDocument = {
@@ -45,3 +46,14 @@ export type ScreenDocument = {
 
 export const siteScreensCollection = (db: Db): Collection<ScreenDocument> =>
   db.collection<ScreenDocument>(COLLECTIONS.siteScreens);
+
+/** Site-wide switches controlled from the admin panel (one document per setting, `_id` = setting key). */
+export type MaintenanceSettingDocument = {
+  _id: "maintenance";
+  enabled: boolean;
+  updatedAt: Date;
+  updatedBy: string;
+};
+
+export const siteSettingsCollection = (db: Db): Collection<MaintenanceSettingDocument> =>
+  db.collection<MaintenanceSettingDocument>(COLLECTIONS.siteSettings);

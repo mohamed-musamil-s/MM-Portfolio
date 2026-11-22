@@ -47,7 +47,7 @@ src/
   components/ui/            # shared across surfaces: MotionProvider, MagicIcon, ActionButton
   components/motion/        # reusable editorial motion pieces (InkReveal, Marquee, VelocitySkew, ParallaxLayer, CalibrationRig ...)
   components/public/        # PublicShell, PosterFrame, SlashLabel
-  components/maintenance/   # /maintenance: screen composition, Countdown, WindowRuler, PillarColumn, BuildScene (animated illustration)
+  components/maintenance/   # /maintenance: screen composition, Countdown, WindowRuler, LiveCheckFooter, BuildScene
   hooks/                    # shared hooks: useMotionTheme, useActionRunner, useMagnetic, useParallax
   lib/
     shared/routes.ts        # route constants, safe redirect helper (client-safe)
@@ -101,7 +101,7 @@ Browser
 
 | Path | Access | Behaviour |
 | --- | --- | --- |
-| `/` | public | 302 to `/maintenance` |
+| `/` | public | 302 to `/maintenance` while the maintenance flag is ON. When it's OFF: the home page (not built yet, so it shows the 404 placeholder). |
 | `/maintenance` | public | System-upgrade screen from database content, 200 (see [screens/MAINTENANCE_BUSINESS.md](screens/MAINTENANCE_BUSINESS.md)) |
 | `/404` | public | placeholder, 404 |
 | any unknown path | public | 302 to `/404` |
@@ -113,6 +113,9 @@ Browser
 | `GET /api/health` | public | 200 when MongoDB answers a ping, else 500 |
 | `GET /api/studio/screens/:slug` | session | Screen content + version (backend for the admin panel) |
 | `PUT /api/studio/screens/:slug` | session, same-origin | Save validated content; 409 on a version conflict |
+| `GET /api/status` | public | `{ maintenance, checkedAt }`, uncached. The maintenance page polls it every minute. |
+| `GET /api/studio/settings/maintenance` | session | `{ enabled, updatedAt, updatedBy }` |
+| `PUT /api/studio/settings/maintenance` | session, same-origin | `{ enabled: boolean }`: the admin maintenance switch |
 
 ## MongoDB
 
@@ -126,6 +129,10 @@ Browser
   - Every public screen reads its copy from here; no user-facing text is hardcoded.
   - Content is validated with the zod schema registered in `src/lib/shared/content/screens.ts`, both on read (`getScreenContent`) and on write (`PUT /api/studio/screens/:slug`, admin session, optimistic version check).
   - Seed with `npm run seed:screens`.
+- **`site_settings`** holds site-wide switches set from the admin panel. Today that's only `_id: "maintenance"`, `{ enabled, updatedAt, updatedBy }`.
+  - The proxy reads it (cached about 10s) to route `/` ↔ `/maintenance`.
+  - `GET /api/status` exposes it publicly.
+  - `GET`/`PUT /api/studio/settings/maintenance` changes it (session required).
 
 ## Environment
 

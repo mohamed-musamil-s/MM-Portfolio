@@ -99,7 +99,7 @@ Use it sparingly: at most about six marks per screen, and never as a large fill 
 | A single typographic accent | The headline's final full stop |
 | Progress and "now" indicators | The ruler's elapsed line and now dot |
 | One accent inside an illustration | The cursor and landing rings in `BuildScene` |
-| Hover affordances | The 2px rule drawn across a pillar on hover |
+| Live-check progress | The NEXT CHECK progress line in the footer |
 | Brand tile detail | The small square on the logo tile |
 | Ambient light | One blurred background glow at 9% opacity |
 
@@ -377,18 +377,15 @@ The navigation mirrors the poster's top-right label, `MINDSET / AMBITION / FREED
 
 The business rules, content model and motion layers are in [screens/MAINTENANCE_BUSINESS.md](screens/MAINTENANCE_BUSINESS.md). **Every string, date and image path comes from the database** (`site_screens`, `_id: "maintenance"`), never from code.
 
-As of 2026-11-22 (v1.3) this is **one viewport (`h-svh`) with no scrolling**, on a **clean ivory canvas**:
+As of 2026-11-22 (v1.4) this is **one viewport (`h-svh`) with no scrolling**, on a **clean ivory canvas**, with only the essential content:
 
-- **Background:** faint 12-column rules at about 4.5% opacity, plus one soft signal glow bottom-right. There's no ink panel, ticker or crosshairs on this screen.
-- **Header:**
-  - left: an ink logo tile (the first letter of the wordmark) with a small orange square, then the brand label from `sm` up;
-  - right: the orange `StatusDot` beacon and the status label.
-- **Middle** (12-column grid):
-  - left (7 columns): kicker, headline (`text-h1`, its final full stop in signal orange), body (`text-lead`), and the clean countdown (`DD : HH : MM : SS`, faint colons);
-  - right (5 columns, `lg` up only): the `BuildScene` line illustration in ink with an orange cursor, and the secondary mottos as its caption.
-- **Ruler:** a full-width timeline with faint day ticks, the orange elapsed line, the orange "now" dot, and the dates at both ends.
-- **Pillars:** three columns on hairlines. On hover an orange 2px rule draws across the top.
-- **Footer:** primary mottos, the `EST.` line and the note, all in mono micro.
+- **Background:** faint 12-column rules and one soft signal glow bottom-right.
+- **Header:** logo tile with an orange square and the brand label; on the right, the orange `StatusDot` and status label.
+- **Middle:**
+  - left (6 columns): a short kicker, the headline (final full stop in signal orange), one or two lines of body text, and the countdown under a short label (`ETA`);
+  - right (columns 8 to 12, `lg` and up): the calm `BuildScene` line illustration with an orange cursor.
+- **Ruler:** a full-width timeline with an orange elapsed line, a now dot, and dates at both ends.
+- **Footer:** three spaced columns on hairlines: LAST CHECKED, NEXT CHECK (orange progress, refreshed every minute) and the note.
 
 ### 6.5 404 screen
 

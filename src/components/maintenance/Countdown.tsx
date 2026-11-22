@@ -48,7 +48,7 @@ const Digit = ({ char }: { char: string }) => {
   );
 };
 
-/** Clean tabular readout: label row, then DD : HH : MM : SS with unit labels underneath. */
+/** Clean tabular readout: a short label (e.g. "ETA"), then DD : HH : MM : SS with unit labels underneath. */
 export const Countdown = ({ timeline }: CountdownProps) => {
   const countdown = useCountdown(timeline.targetAt, timeline.windowStart);
 
@@ -71,9 +71,7 @@ export const Countdown = ({ timeline }: CountdownProps) => {
       aria-label={countdown ? fillTemplate(timeline.srRemaining, countdown.parts) : undefined}
       className="flex flex-col gap-3"
     >
-      <span className="font-technical text-micro text-graphite uppercase">
-        {timeline.countdownLabel} · {timeline.label}
-      </span>
+      <span className="font-technical text-micro text-graphite uppercase">{timeline.label}</span>
       <div aria-hidden className="flex items-start gap-3 sm:gap-5">
         {UNIT_KEYS.map((unit, index) => {
           const value = countdown ? pad(countdown.parts[unit]) : PLACEHOLDER;

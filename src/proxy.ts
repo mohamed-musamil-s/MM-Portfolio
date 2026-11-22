@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/server/auth/session-token";
 import { getLogger } from "@/lib/server/logger";
+import { isMaintenanceEnabled } from "@/lib/server/settings/maintenance-flag";
 import { REQUEST_ID_HEADER } from "@/lib/server/http/request";
 import { ROUTES, isStudioPath } from "@/lib/shared/routes";
 
@@ -8,7 +9,9 @@ import { ROUTES, isStudioPath } from "@/lib/shared/routes";
  * Runs before every non-static request (Node.js runtime).
  *
  * 1. Tags the request with an `x-request-id` used by all server logs.
- * 2. `/` -> 302 `/maintenance` while the public portfolio is in development.
+ * 2. Maintenance flag (set from the admin panel, cached ~10s):
+ *      ON:  `/` -> 302 `/maintenance`
+ *      OFF: `/maintenance` -> 302 `/`
  * 3. `/studio/**` (except login) requires a validly signed session cookie,
  *    otherwise 302 -> `/studio/login`. This is the optimistic check; pages
  *    re-verify the session against MongoDB via `requireSession()`.
@@ -66,8 +69,14 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
 
   try {
-    if (pathname === ROUTES.home) {
-      return redirect302(request, ROUTES.maintenance, requestId);
+    if (pathname === ROUTES.home || pathname === ROUTES.maintenance) {
+      const maintenance = await isMaintenanceEnabled();
+      if (maintenance && pathname === ROUTES.home) {
+        return redirect302(request, ROUTES.maintenance, requestId);
+      }
+      if (!maintenance && pathname === ROUTES.maintenance) {
+        return redirect302(request, ROUTES.home, requestId);
+      }
     }
     if (isStudioPath(pathname)) {
       return await guardStudio(request, requestId);

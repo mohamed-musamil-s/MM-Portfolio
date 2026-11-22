@@ -32,8 +32,13 @@ export const maintenanceContentSchema = z.object({
   headline: z.object({ lines: z.array(text(40)).min(1).max(3) }),
   body: text(200),
   timeline: timelineSchema,
-  /** Footer labels for the once-a-minute live check. */
-  liveCheck: z.object({ lastCheckedLabel: text(24), nextCheckLabel: text(24) }),
+  /** Live check: footer labels, the "Check again" button label and the hint beside it. */
+  liveCheck: z.object({
+    lastCheckedLabel: text(24),
+    nextCheckLabel: text(24),
+    checkAgainLabel: text(24),
+    hint: text(120),
+  }),
   footer: z.object({ note: text(80) }),
 });
 

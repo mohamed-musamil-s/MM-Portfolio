@@ -1,6 +1,6 @@
 # Screen: `/maintenance`, Business Spec
 
-Version 1.4, 2026-11-22. **One viewport (100svh), no scrolling, on a clean ivory canvas, with signal orange as the single accent.** Content is trimmed to the essentials. The page re-checks the **maintenance flag** (set from the admin panel) every minute and sends visitors to the site once it's off. Screenshots: [desktop](maintenance/desktop-1280x720.jpg), [mobile](maintenance/mobile-375x812.jpg). Public route. Look: [STYLE.md](../STYLE.md). Motion: [ANIMATION_UI.md](../ANIMATION_UI.md).
+Version 1.5, 2026-11-22. **One viewport (100svh), no scrolling, on a clean ivory canvas, with signal orange as the single accent.** Content is trimmed to the essentials. The page re-checks the **maintenance flag** (set from the admin panel) every minute and sends visitors to the site once it's off. Screenshots: [desktop](maintenance/desktop-1440x900.jpg), [mobile](maintenance/mobile-375x812.jpg). Public route. Look: [STYLE.md](../STYLE.md). Motion: [ANIMATION_UI.md](../ANIMATION_UI.md).
 
 ---
 
@@ -32,6 +32,7 @@ The defaults the seed writes are generic, with no personal details. All of them 
 | Body | We're shipping a new version of the site. It'll be back shortly, a little sharper than before. (≤ 200 characters) |
 | Countdown label | `ETA` (≤ 24 characters) |
 | Live-check labels | `LAST CHECKED` · `NEXT CHECK` |
+| Check-again button and hint | `CHECK AGAIN` · "This page checks by itself every minute, so there's no need to keep refreshing." |
 | Status | `STATUS / LIVE UPGRADE` |
 | Brand | `PORTFOLIO / STUDIO`; the logo tile shows the first letter of the wordmark `Portfolio` |
 | Footer note | `© 2026 ALL RIGHTS RESERVED.` |
@@ -62,7 +63,7 @@ No user-facing text, date or asset path is hardcoded in the page or its componen
 | `headline.lines` | 1 to 3 lines, ≤ 40 each | Each line reveals separately. A trailing `.` on the last line renders in signal orange. |
 | `body` | text, ≤ 200 | One or two sentences. |
 | `timeline` | object | `label` (≤ 24, e.g. `ETA`), `windowStart`, `targetAt` (dates; `targetAt` must be after `windowStart`), `srRemaining` (screen-reader template with `{days}`, `{hours}` and `{minutes}`), `units`, `overdue { title, detail }`. |
-| `liveCheck` | object | `lastCheckedLabel`, `nextCheckLabel` (≤ 24 each). |
+| `liveCheck` | object | `lastCheckedLabel`, `nextCheckLabel`, `checkAgainLabel` (≤ 24 each), `hint` (≤ 120). |
 | `footer.note` | text | Small print, footer right. |
 
 ### Saving changes (for the admin panel)
@@ -112,6 +113,7 @@ No user-facing text, date or asset path is hardcoded in the page or its componen
 | Flag still ON | The footer updates **LAST CHECKED** (the visitor's local time, `HH:MM:SS`) and restarts **NEXT CHECK** (`m:ss`, with an orange progress line). |
 | Flag OFF | The visitor is sent to `/` with `location.replace` (no back-button loop). |
 | Network error | The page stays up; the next tick retries. |
+| **Check again** button | Runs the same check immediately and restarts the 60s timer. The sync icon orbits while checking and locks on success; on failure the button shakes and shows the error badge. If maintenance is off, the visitor is sent to `/`. |
 | Until the first check finishes | Shows `--:--:--` and `-:--`. |
 
 > **Known gap:** the portfolio home page doesn't exist yet. When the flag is OFF, `/` shows the not-found placeholder (404). This resolves itself once the home page is built.
@@ -125,17 +127,18 @@ Verified on 2026-11-22: 401 without a session, 400 for a bad body, 403 cross-ori
 | Row | Content |
 | --- | --- |
 | Header | Logo tile with an orange square, and `brand.label` (from `sm`). On the right, the orange `StatusDot` and `status.label`. |
-| Middle, left (6 columns) | Kicker, headline, body, then the countdown (`ETA`, `DD : HH : MM : SS`). |
-| Middle, right (columns 8 to 12, `lg` and up) | `BuildScene` line illustration |
+| Middle, left (6 columns) | Kicker, headline, body, the **CHECK AGAIN** solid pill with its hint beside it, then the countdown (`ETA`, `DD : HH : MM : SS`). |
+| Middle, right (columns 8 to 12, `lg` and up) | **Halftone sphere** (canvas) |
 | Ruler | Window timeline: day ticks, orange elapsed line and now dot, dates at both ends |
 | Footer | Three spaced columns divided by hairlines: **LAST CHECKED**, **NEXT CHECK** (orange progress), and the note on the right (from `sm`) |
 
 | Constraint | Rule |
 | --- | --- |
 | Height ≤ 820px (laptops) | The headline steps down to `text-h2`, and the header, middle, ruler and footer spacing tighten. |
-| Below `lg` | The illustration is hidden, so the content column has the full width. |
+| Below `lg` | The sphere is hidden, so the content column has the full width. |
+| Phones ≤ 720px tall | The body and the hint are hidden. Headline, button, countdown, ruler and footer remain. |
 
-Verified with zero overflow at 1440×900, 1280×720, 1024×768, 375×812 and 360×640.
+Verified with zero overflow at 1440×900, 1280×720, 1024×768, 375×812, 390×667 and 360×640.
 
 ### Colour
 
@@ -144,7 +147,7 @@ The canvas is ivory and the type is ink, plus **one accent, signal orange `#E848
 - the logo-tile square;
 - the headline's full stop;
 - the ruler's elapsed line and now dot;
-- the illustration's cursor and landing rings;
+- the sphere's sweeping meridian;
 - the NEXT CHECK progress line;
 - one blurred background glow.
 
@@ -161,7 +164,8 @@ The motion direction is "200%", within the STYLE.md §7 guardrails, and everythi
 | Countdown | Per-digit slide inside a fixed 1em mask | `Countdown` |
 | Ruler | Ticks draw in left to right; the orange line and dot ease to "now" | `WindowRuler` |
 | Footer | NEXT CHECK progress line fills over the minute, then resets | `LiveCheckFooter` |
-| Illustration | A calm loop, every 6s: the page wireframe draws in, copy lines type, and an orange cursor visits each card, which fills with hatching. The scene leans gently toward the pointer. (Gears, scanline, rings and dimension lines were removed for calm.) | `BuildScene` |
+| Check again | The pill's sync icon orbits while checking, then locks with a check mark | `ActionButton tone="solid"`, `MagicIcon` |
+| **Halftone sphere** | A fixed dot screen shaded as a lit globe (dot size = Lambert light): it turns slowly, one signal-orange meridian sweeps around it, and the light leans toward the pointer. A faint dot screen continues around it as paper texture. Canvas 2D at up to 2× DPR; the first frame draws immediately; one static frame under reduced motion. It replaced the wireframe illustration on 2026-11-22. | `HalftoneSphere` |
 
 **Image assets:** none. Everything is inline SVG or CSS.
 
@@ -175,7 +179,9 @@ These are reusable by any future page.
 | --- | --- |
 | `PublicShell`, `PosterFrame`, `SlashLabel` | Every public page: surface tokens, fonts, MotionProvider, grain, frame, labels |
 | `InkReveal`, `StatusDot` (`src/components/motion/`) | Any editorial section or status display |
-| `BuildScene`, `WindowRuler`, `LiveCheckFooter` (`src/components/maintenance/`) | Promote to shared modules if another screen needs them |
+| `HalftoneSphere` (`src/components/motion/`) | Any hero or empty state |
+| `ActionButton tone="solid"` | Any primary call to action |
+| `WindowRuler`, `LiveCheckFooter`, `LiveCheckProvider`, `CheckAgain` (`src/components/maintenance/`) | Promote to shared modules if another screen needs them |
 | `useSecondClock`, `useLiveCheck` (`src/hooks/`) | Any timed UI or live status poll |
 | `useCountdown`, `useScrollVelocity`, `useParallax` (`src/hooks/`) | Any timed or scroll-reactive UI |
 | `MagicIcon` (new `calibrate` icon), `ActionButton` | App-wide |

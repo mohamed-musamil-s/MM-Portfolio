@@ -1,6 +1,6 @@
 # MM-Portfolio Public Design System
 
-Version 1.3, 2026-11-22. Source artwork: `docs/reference/Gemini_MM.png` (the "Musamil" editorial poster).
+Version 1.4, 2026-11-22. Source artwork: `docs/reference/Gemini_MM.png` (the "Musamil" editorial poster).
 
 **Styling is done with Tailwind CSS v4.** Every rule below names the utility classes that implement it. The token layer is `src/app/globals.css`.
 
@@ -98,7 +98,7 @@ Use it sparingly: at most about six marks per screen, and never as a large fill 
 | Live or status beacons | Pulsing status dot (`StatusDot`) |
 | A single typographic accent | The headline's final full stop |
 | Progress and "now" indicators | The ruler's elapsed line and now dot |
-| One accent inside an illustration | The cursor and landing rings in `BuildScene` |
+| One accent inside an illustration | The sweeping meridian on the halftone sphere |
 | Live-check progress | The NEXT CHECK progress line in the footer |
 | Brand tile detail | The small square on the logo tile |
 | Ambient light | One blurred background glow at 9% opacity |
@@ -246,7 +246,7 @@ These are measured from the poster and expressed as fractions of the viewport.
 ### 4.4 Shape rules
 
 - **No radius.** Never use `rounded-*` in public components. The default is square; write `rounded-none` only when overriding a primitive.
-  - The **only** curves in the system are the crosshair circles (`rounded-full` inside the mark component), the bullseye mark, the brush lettering, **status dots** and the **blurred background glow**.
+  - The **only** curves in the system are the crosshair circles (`rounded-full` inside the mark component), the bullseye mark, the brush lettering, **status dots**, the **halftone dots**, the **blurred background glow**, and the **solid primary pill** (`ActionButton tone="solid"`, one per screen at most).
 - **No shadows.** Never use `shadow-*` or `drop-shadow-*`. Depth comes from overlap and rules, as in print.
 - **Borders:** always `border border-rule` (1px). The heavy rule is 2px (`border-b-2 border-ink` or `h-0.5 bg-ink`), used only for headline underlines and the active nav item.
 
@@ -350,6 +350,10 @@ All public buttons are `<ActionButton variant="editorial-ink">`. That's the defa
   - on error the button shakes and shows a mono badge (for example `401`) in ink. **No red.**
 - **Disabled:** `opacity-40`, plus `aria-disabled` on links.
 - **Text link style:** for inline text links use the link rules in 6.2, not a button.
+- **Solid tone** (`tone="solid"`): the single primary action on a screen (e.g. CHECK AGAIN):
+  - an ink-filled pill (`rounded-full bg-ink text-paper min-h-12 px-7`) with no ink wipe and no corner marks;
+  - hover dims it slightly (`bg-ink/88`); it keeps the magnetic pull and the press scale;
+  - status icons show inside the pill.
 
 ### 6.2 Links
 
@@ -377,15 +381,15 @@ The navigation mirrors the poster's top-right label, `MINDSET / AMBITION / FREED
 
 The business rules, content model and motion layers are in [screens/MAINTENANCE_BUSINESS.md](screens/MAINTENANCE_BUSINESS.md). **Every string, date and image path comes from the database** (`site_screens`, `_id: "maintenance"`), never from code.
 
-As of 2026-11-22 (v1.4) this is **one viewport (`h-svh`) with no scrolling**, on a **clean ivory canvas**, with only the essential content:
+As of 2026-11-22 (v1.5) this is **one viewport (`h-svh`) with no scrolling**, on a **clean ivory canvas**, with only the essential content:
 
 - **Background:** faint 12-column rules and one soft signal glow bottom-right.
 - **Header:** logo tile with an orange square and the brand label; on the right, the orange `StatusDot` and status label.
 - **Middle:**
-  - left (6 columns): a short kicker, the headline (final full stop in signal orange), one or two lines of body text, and the countdown under a short label (`ETA`);
-  - right (columns 8 to 12, `lg` and up): the calm `BuildScene` line illustration with an orange cursor.
+  - left (6 columns): kicker, headline (orange full stop), body, the **CHECK AGAIN** solid pill with its hint beside it, then the countdown (`ETA`);
+  - right (columns 8 to 12, `lg` and up): the **halftone sphere**, a dot-screen globe with one orange meridian.
 - **Ruler:** a full-width timeline with an orange elapsed line, a now dot, and dates at both ends.
-- **Footer:** three spaced columns on hairlines: LAST CHECKED, NEXT CHECK (orange progress, refreshed every minute) and the note.
+- **Footer:** three spaced columns on hairlines: LAST CHECKED, NEXT CHECK (orange progress, every minute) and the note.
 
 ### 6.5 404 screen
 

@@ -41,6 +41,11 @@ export const actionButton = tv({
         pulse: "rounded-md border-2 border-success",
       },
     },
+    /** `solid`: filled ink pill (primary call to action). `outline`: the default bordered button. */
+    tone: {
+      outline: {},
+      solid: {},
+    },
     method: {
       submit: {},
       "async-fetch": {},
@@ -52,6 +57,16 @@ export const actionButton = tv({
   },
   compoundVariants: [
     {
+      variant: "editorial-ink",
+      tone: "solid",
+      class: {
+        root: "min-h-12 rounded-full border-ink bg-ink px-7 text-paper hover:bg-ink/88",
+        fill: "hidden",
+        content: "text-paper mix-blend-normal",
+        corner: "hidden",
+      },
+    },
+    {
       variant: "studio-action",
       method: "destructive",
       class: {
@@ -60,7 +75,7 @@ export const actionButton = tv({
       },
     },
   ],
-  defaultVariants: { variant: "studio-action", method: "submit" },
+  defaultVariants: { variant: "studio-action", tone: "outline", method: "submit" },
 });
 
 export type ActionButtonStyleProps = VariantProps<typeof actionButton>;

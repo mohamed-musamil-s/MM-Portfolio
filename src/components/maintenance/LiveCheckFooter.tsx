@@ -1,16 +1,14 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useLiveCheck } from "@/hooks/useLiveCheck";
 import type { MaintenanceContent } from "@/lib/shared/content/maintenance-schema";
+import { useSharedLiveCheck } from "./LiveCheckProvider";
 
 type LiveCheckFooterProps = {
   labels: MaintenanceContent["liveCheck"];
   note: string;
 };
 
-/** The page asks /api/status once a minute whether maintenance is still on. */
-const CHECK_INTERVAL_SECONDS = 60;
 const TIME_FORMAT: Intl.DateTimeFormatOptions = { hour: "2-digit", minute: "2-digit", second: "2-digit" };
 
 const formatCountdown = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
@@ -21,7 +19,7 @@ const formatCountdown = (seconds: number) => `${Math.floor(seconds / 60)}:${Stri
  * maintenance off, the next check sends the visitor to the site.
  */
 export const LiveCheckFooter = ({ labels, note }: LiveCheckFooterProps) => {
-  const { lastCheckedAt, secondsToNext, progress } = useLiveCheck(CHECK_INTERVAL_SECONDS);
+  const { lastCheckedAt, secondsToNext, progress } = useSharedLiveCheck();
   const lastChecked = lastCheckedAt === null ? "--:--:--" : new Date(lastCheckedAt).toLocaleTimeString(undefined, TIME_FORMAT);
   const nextCheck = lastCheckedAt === null ? "-:--" : formatCountdown(secondsToNext);
 

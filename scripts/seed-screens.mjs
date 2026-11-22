@@ -31,7 +31,12 @@ const SCREENS = {
       units: { days: "DD", hours: "HH", minutes: "MM", seconds: "SS" },
       overdue: { title: "FINALIZING DEPLOY", detail: "WINDOW EXTENDED" },
     },
-    liveCheck: { lastCheckedLabel: "LAST CHECKED", nextCheckLabel: "NEXT CHECK" },
+    liveCheck: {
+      lastCheckedLabel: "LAST CHECKED",
+      nextCheckLabel: "NEXT CHECK",
+      checkAgainLabel: "CHECK AGAIN",
+      hint: "This page checks by itself every minute, so there's no need to keep refreshing.",
+    },
     footer: { note: "© 2026 ALL RIGHTS RESERVED." },
   },
 };

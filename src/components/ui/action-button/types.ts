@@ -16,9 +16,13 @@ export type ActionMethod = "submit" | "async-fetch" | "navigate" | "destructive"
 /** Visual language. Defaults from the MotionProvider theme. */
 export type ActionButtonVariant = "editorial-ink" | "studio-action";
 
+/** Emphasis. `solid` is a filled pill for the single primary action on a screen. */
+export type ActionButtonTone = "outline" | "solid";
+
 type CommonProps = {
   children: ReactNode;
   variant?: ActionButtonVariant;
+  tone?: ActionButtonTone;
   /** Leading icon. When set, it also reflects loading / success / error. */
   icon?: IconName;
   disabled?: boolean;

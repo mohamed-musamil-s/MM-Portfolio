@@ -1,10 +1,12 @@
 import type { ReactNode } from "react";
+import { HalftoneSphere } from "@/components/motion/HalftoneSphere";
 import { InkReveal } from "@/components/motion/InkReveal";
 import { StatusDot } from "@/components/motion/StatusDot";
 import type { MaintenanceContent } from "@/lib/shared/content/maintenance-schema";
-import { BuildScene } from "./BuildScene";
+import { CheckAgain } from "./CheckAgain";
 import { Countdown } from "./Countdown";
 import { LiveCheckFooter } from "./LiveCheckFooter";
+import { LiveCheckProvider } from "./LiveCheckProvider";
 import { WindowRuler } from "./WindowRuler";
 
 type MaintenanceScreenProps = {
@@ -35,7 +37,7 @@ const withSignalStop = (lines: readonly string[]): ReactNode[] =>
  * scrolling, clean ivory canvas, signal orange as the single accent.
  *
  *   header   brand tile + label · live status (orange beacon)
- *   middle   kicker, headline, short text, countdown | line illustration
+ *   middle   kicker, headline, short text, check-again, countdown | halftone sphere
  *   ruler    window timeline (orange elapsed line + now dot)
  *   footer   last checked · next check (polls every minute) · note
  *
@@ -46,63 +48,76 @@ export const MaintenanceScreen = ({ content, windowStartText, targetText }: Main
   const afterHeadline = HEADLINE_DELAY + headline.lines.length * LINE_STAGGER;
 
   return (
-    <main className="relative isolate grid h-svh grid-rows-[auto_minmax(0,1fr)_auto_auto] overflow-hidden px-6 sm:px-10 lg:px-16">
-      {/* Background: faint 12-column rules + one soft signal glow */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--border-ink)_1px,transparent_1px)] bg-size-[calc(100%/12)_100%] opacity-[0.045]" />
-        <div className="absolute -right-[20vmax] -bottom-[25vmax] size-[60vmax] rounded-full bg-signal opacity-[0.09] blur-3xl" />
-      </div>
+    <LiveCheckProvider>
+      <main className="relative isolate grid h-svh grid-rows-[auto_minmax(0,1fr)_auto_auto] overflow-hidden px-6 sm:px-10 lg:px-16">
+        {/* Background: faint 12-column rules + one soft signal glow */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--border-ink)_1px,transparent_1px)] bg-size-[calc(100%/12)_100%] opacity-[0.045]" />
+          <div className="absolute -right-[20vmax] -bottom-[25vmax] size-[60vmax] rounded-full bg-signal opacity-[0.09] blur-3xl" />
+        </div>
 
-      <header className="flex items-center justify-between py-6 lg:py-10 [@media(max-height:820px)]:lg:py-6">
-        <div className="flex items-center gap-3">
-          <span aria-hidden className="relative grid size-9 place-items-center bg-ink text-label font-extrabold text-paper uppercase">
-            {brand.wordmark.charAt(0)}
-            <span className="absolute right-1.5 bottom-1.5 size-1.5 bg-signal" />
+        <header className="flex items-center justify-between py-6 lg:py-10 [@media(max-height:820px)]:lg:py-6">
+          <div className="flex items-center gap-3">
+            <span
+              aria-hidden
+              className="relative grid size-9 place-items-center bg-ink text-label font-extrabold text-paper uppercase"
+            >
+              {brand.wordmark.charAt(0)}
+              <span className="absolute right-1.5 bottom-1.5 size-1.5 bg-signal" />
+            </span>
+            <span className="hidden text-label font-bold whitespace-nowrap uppercase sm:inline">{brand.label}</span>
+          </div>
+          <span className="flex items-center gap-3 font-technical text-micro whitespace-nowrap uppercase">
+            <StatusDot />
+            {status.label}
           </span>
-          <span className="hidden text-label font-bold whitespace-nowrap uppercase sm:inline">{brand.label}</span>
-        </div>
-        <span className="flex items-center gap-3 font-technical text-micro whitespace-nowrap uppercase">
-          <StatusDot />
-          {status.label}
-        </span>
-      </header>
+        </header>
 
-      <div className="grid min-h-0 items-center gap-12 lg:grid-cols-12">
-        <div className="flex flex-col gap-6 lg:col-span-6 lg:gap-8 [@media(max-height:820px)]:lg:gap-5">
-          <InkReveal className="font-technical text-micro text-graphite uppercase" delay={0.1}>
-            {status.kicker}
-          </InkReveal>
-          <InkReveal
-            as="h1"
-            lines={withSignalStop(headline.lines)}
-            delay={HEADLINE_DELAY}
-            stagger={LINE_STAGGER}
-            className="text-h2 font-extrabold uppercase sm:text-h1 [@media(max-height:820px)]:lg:text-h2"
-            lineClassName="pb-[0.04em]"
+        <div className="grid min-h-0 items-center gap-12 lg:grid-cols-12">
+          <div className="flex flex-col gap-6 lg:col-span-6 lg:gap-8 [@media(max-height:820px)]:lg:gap-4">
+            <InkReveal className="font-technical text-micro text-graphite uppercase" delay={0.1}>
+              {status.kicker}
+            </InkReveal>
+            <InkReveal
+              as="h1"
+              lines={withSignalStop(headline.lines)}
+              delay={HEADLINE_DELAY}
+              stagger={LINE_STAGGER}
+              className="text-h2 font-extrabold uppercase sm:text-h1 [@media(max-height:820px)]:lg:text-h2"
+              lineClassName="pb-[0.04em]"
+            />
+            {/* Short phones keep the essentials: headline, button and countdown. */}
+            <InkReveal
+              as="p"
+              className="max-w-[44ch] text-lead text-graphite max-lg:[@media(max-height:720px)]:hidden"
+              delay={afterHeadline}
+            >
+              {content.body}
+            </InkReveal>
+            <InkReveal delay={afterHeadline + 0.1}>
+              <CheckAgain label={content.liveCheck.checkAgainLabel} hint={content.liveCheck.hint} />
+            </InkReveal>
+            <InkReveal className="pt-2 [@media(max-height:820px)]:pt-0" delay={afterHeadline + 0.2}>
+              <Countdown timeline={timeline} />
+            </InkReveal>
+          </div>
+
+          <div className="relative hidden h-full max-h-[36rem] min-h-0 lg:col-span-5 lg:col-start-8 lg:block">
+            <HalftoneSphere />
+          </div>
+        </div>
+
+        <div className="pt-8 pb-6 lg:pt-10 lg:pb-8 [@media(max-height:820px)]:lg:pt-6 [@media(max-height:820px)]:lg:pb-5">
+          <WindowRuler
+            windowStart={timeline.windowStart}
+            targetAt={timeline.targetAt}
+            startLabel={windowStartText}
+            endLabel={targetText}
           />
-          <InkReveal as="p" className="max-w-[44ch] text-lead text-graphite" delay={afterHeadline}>
-            {content.body}
-          </InkReveal>
-          <InkReveal className="pt-2" delay={afterHeadline + 0.15}>
-            <Countdown timeline={timeline} />
-          </InkReveal>
         </div>
 
-        <div className="relative hidden h-full max-h-[34rem] min-h-0 py-6 lg:col-span-5 lg:col-start-8 lg:flex">
-          <BuildScene className="size-full text-ink" />
-        </div>
-      </div>
-
-      <div className="pt-8 pb-6 lg:pt-10 lg:pb-8 [@media(max-height:820px)]:lg:pt-6 [@media(max-height:820px)]:lg:pb-5">
-        <WindowRuler
-          windowStart={timeline.windowStart}
-          targetAt={timeline.targetAt}
-          startLabel={windowStartText}
-          endLabel={targetText}
-        />
-      </div>
-
-      <LiveCheckFooter labels={content.liveCheck} note={content.footer.note} />
-    </main>
+        <LiveCheckFooter labels={content.liveCheck} note={content.footer.note} />
+      </main>
+    </LiveCheckProvider>
   );
 };

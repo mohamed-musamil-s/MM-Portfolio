@@ -14,7 +14,7 @@ import { actionButton } from "./action-button/action-button.styles";
 import type { ActionButtonProps, ActionButtonVariant, ActionMethod } from "./action-button/types";
 import { useActionButton } from "./action-button/use-action-button";
 
-export type { ActionButtonProps, ActionButtonVariant, ActionMethod } from "./action-button/types";
+export type { ActionButtonProps, ActionButtonTone, ActionButtonVariant, ActionMethod } from "./action-button/types";
 export { ActionError } from "@/lib/motion/action-machine";
 
 const MotionLink = motion.create(Link);
@@ -117,11 +117,11 @@ export const ActionButton = (props: ActionButtonProps) => {
   const { anchorRef, x, y } = useMagnetic<HTMLSpanElement>(editorial && !props.disabled);
   const fill = useMotionValue(0);
   const hintId = useId();
-  const styles = actionButton({ variant, method: props.method });
+  const styles = actionButton({ variant, tone: props.tone ?? "outline", method: props.method });
 
   const { status, errorCode, pressed, hovering } = behavior;
   const icon = props.icon ?? DEFAULT_ICON[props.method];
-  const lit = hovering || pressed;
+  const lit = (hovering || pressed) && props.tone !== "solid";
   const showStatusIcon = !icon && (status === "loading" || status === "success" || status === "error");
 
   useFill(fill, { status, method: props.method, editorial, lit, holdMs: behavior.holdMs, tokens }, reducedMotion);

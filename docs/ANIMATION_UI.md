@@ -80,6 +80,7 @@ src/components/motion/   # reusable editorial motion pieces
   CalibrationRig.tsx  # counter-rotating rings, vernier draw-in, lock-on reticle, scroll turn
   RegistrationMark.tsx# breathing print crosshair (open / bullseye)
   StatusDot.tsx       # signal-orange live beacon with pulse ring
+  HalftoneSphere.tsx  # canvas dot-screen globe, orange meridian, pointer-lit
   XMark.tsx           # hand-drawn X drawn in on view
   CropMarks.tsx       # static L crop marks
 src/hooks/
@@ -255,6 +256,7 @@ The props are a discriminated union on `method`, so each method only accepts its
 | Hover | Liquid **ink wipe**: the fill layer scales in from the left; the label inverts through `mix-blend-difference`; four registration crosshairs slide in and **lock onto the corners** | Crisp **border illumination** (`border-accent`) |
 | Cursor | **Magnetic pull** (spring) within 72px | none |
 | Press | scale 0.98 | **Detent** scale 0.97 |
+| `tone="solid"` | Ink-filled pill, no wipe or corner marks (one primary action per screen) | n/a |
 | Focus | `outline-2 outline-offset-3 outline-ink` | `border-accent ring-3 ring-glow` |
 | Loading | ink fill (submit: progress) + status orbit | 2px accent progress bar (submit) or inline status orbit |
 | Success | fill completes + check | check + green **pulse ring** + `border-success` |

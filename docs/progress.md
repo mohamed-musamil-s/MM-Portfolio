@@ -161,6 +161,16 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] Screenshots in `docs/screens/maintenance/`.
 - Known gap: with the flag OFF, `/` shows the 404 placeholder until the portfolio home is built.
 
+## 2026-11-22: Check again + halftone sphere
+
+- [x] **CHECK AGAIN** button (solid ink pill, like the reference) with a hint beside it. It runs the live check immediately and restarts the 60s timer.
+  - Verified: loading → success, the sync icon animates, LAST CHECKED updated, NEXT CHECK reset to 1:00.
+  - Its label and hint come from the DB (version 7 → 8).
+- [x] New `ActionButton tone="solid"` variant, available app-wide.
+- [x] Live-check state is shared through `LiveCheckProvider`; `useLiveCheck` gained `checkNow()`.
+- [x] The right side was replaced with the **halftone sphere** (canvas dot-screen globe, orange meridian, pointer-lit light); the wireframe `BuildScene` was removed.
+- [x] Zero overflow at 1440×900, 1280×720, 1024×768, 375×812, 390×667 and 360×640. Short phones drop the body and hint.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

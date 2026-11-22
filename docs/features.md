@@ -37,5 +37,9 @@ Status key: **Done**, **Placeholder** (route exists, shows "Coming soon", functi
 | Security headers | Done |
 | Login brute-force lockout | Done |
 | Public design system spec ([STYLE.md](STYLE.md)) | Done (documented, not yet implemented in code) |
-| Admin design system spec ([ADMIN_STYLE.md](ADMIN_STYLE.md)) | Placeholder (file created, contents to be defined) |
-| UI styling in code | Not started (intentionally) |
+| Admin design system spec ([ADMIN_STYLE.md](ADMIN_STYLE.md)) | Placeholder, with provisional tokens used by shared components |
+| Motion system ([ANIMATION_UI.md](ANIMATION_UI.md)) | Done: tokens, MotionProvider, shared hooks |
+| `MagicIcon` (6 action-reactive icons) | Done (not yet used on any page) |
+| `ActionButton` (6 methods, 2 variants) | Done (not yet used on any page) |
+| WebGL halftone canvas, kinetic type | Specified, not built (waiting for public pages) |
+| UI styling of pages | Not started (intentionally) |

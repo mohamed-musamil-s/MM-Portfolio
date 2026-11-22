@@ -71,8 +71,48 @@
   --ease-print: cubic-bezier(0.2, 0, 0, 1);
 }
 
+/* ----------------------------------------------------------------------------
+ * Studio tokens: docs/ADMIN_STYLE.md. PROVISIONAL, used by the shared UI
+ * components until the admin design system is defined.
+ * ------------------------------------------------------------------------- */
+@theme inline {
+  --color-canvas: var(--studio-canvas);
+  --color-panel: var(--studio-panel);
+  --color-fg: var(--studio-fg);
+  --color-fg-muted: var(--studio-fg-muted);
+  --color-line: var(--studio-line);
+  --color-accent: var(--studio-accent);
+  --color-on-accent: var(--studio-on-accent);
+  --color-glow: var(--studio-glow);
+  --color-danger: var(--studio-danger);
+  --color-success: var(--studio-success);
+}
+
 @layer base {
+  [data-surface="studio"] {
+    --studio-canvas: #f7f7f8;
+    --studio-panel: #ffffff;
+    --studio-fg: #111113;
+    --studio-fg-muted: #5d5d66;
+    --studio-line: #dcdce1;
+    --studio-accent: #1f4fff;
+    --studio-on-accent: #ffffff;
+    --studio-glow: rgb(31 79 255 / 0.22);
+    --studio-danger: #d92d20;
+    --studio-success: #0e8a5f;
+
+    /* MagicIcon error colour */
+    --icon-error: var(--studio-danger);
+
+    background-color: var(--studio-canvas);
+    color: var(--studio-fg);
+  }
+
   [data-surface="public"] {
+    /* No colour on the public site: errors keep the current ink colour. */
+    --icon-error: currentColor;
+
+
     color-scheme: light;
 
     /* Color (exact values from docs/STYLE.md section 2) */

@@ -1,6 +1,6 @@
 # MM-Portfolio Public Design System
 
-Version 1.1, 2026-11-22. Source artwork: `docs/reference/Gemini_MM.png` (the "Musamil" editorial poster).
+Version 1.2, 2026-11-22. Source artwork: `docs/reference/Gemini_MM.png` (the "Musamil" editorial poster).
 
 **Styling is done with Tailwind CSS v4.** Every rule below names the utility classes that implement it. The token layer is `src/app/globals.css`.
 
@@ -317,42 +317,21 @@ Components with variants define a `tv()` recipe in a `*.styles.ts` file next to 
 
 ### 6.1 Buttons
 
-```ts
-// src/components/public/button.styles.ts
-import { tv, type VariantProps } from "tailwind-variants";
+All public buttons are `<ActionButton variant="editorial-ink">`. That's the default under `<MotionProvider theme="portfolio">`. The behaviour, the method matrix and the state machine are specified in [ANIMATION_UI.md](ANIMATION_UI.md) §8; this section only fixes the look.
 
-export const button = tv({
-  base: [
-    "inline-flex min-h-11 items-center justify-center px-6 py-3.5",
-    "font-grotesk text-label font-bold uppercase",
-    "border border-ink",
-    "transition-colors duration-120 ease-print",
-    "focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ink",
-    "active:translate-y-px",
-    "aria-disabled:cursor-not-allowed aria-disabled:border-ink/40 aria-disabled:text-ink/40",
-  ],
-  variants: {
-    intent: {
-      primary: "bg-ink text-paper hover:bg-paper hover:text-ink",
-      secondary: "bg-transparent text-ink hover:bg-ink hover:text-paper",
-      text: "min-h-0 border-0 px-0 py-0 text-ink underline decoration-1 underline-offset-4 hover:decoration-2",
-    },
-    inverted: {
-      true: "focus-visible:outline-paper",
-    },
-  },
-  defaultVariants: { intent: "primary" },
-});
-
-export type ButtonVariants = VariantProps<typeof button>;
-```
-
-- **Touch target:** at least 44px tall (`min-h-11`).
-- **Hover:** primary inverts, secondary fills with ink, text buttons thicken their underline.
-- **Focus:** always visible, using `focus-visible:` only. On an inverted ink plate, pass `inverted` to get a `outline-paper` ring.
-- **Disabled:** set `aria-disabled="true"`. The `aria-disabled:` styles apply and hover does nothing.
-- **Loading:** keep the button's width and swap the label for mono `LOADING` text. No spinner colors.
-- **Transitions:** use `transition-colors` only. Never `transition-all`.
+- **Base:** `min-h-11 border border-ink bg-paper px-6 py-3.5 font-grotesk text-label font-bold uppercase text-ink`. Radius 0, no shadow.
+- **Hover and focus (ink wipe):**
+  - an ink layer scales in from the left over 0.48s with `ease-print`;
+  - the label inverts with `mix-blend-difference` (paper text over the paper or ink layer);
+  - four registration crosshairs slide in and lock onto the corners.
+- **Magnetic pull:** the button drifts toward a cursor within 72px. Fine pointers only, and off under reduced motion.
+- **Press:** scale 0.98.
+- **Focus ring:** `outline-2 outline-offset-3 outline-ink`. Always visible on `:focus-visible`.
+- **Loading, success, error:**
+  - the ink layer shows progress, completes on success, and drains on error;
+  - on error the button shakes and shows a mono badge (for example `401`) in ink. **No red.**
+- **Disabled:** `opacity-40`, plus `aria-disabled` on links.
+- **Text link style:** for inline text links use the link rules in 6.2, not a button.
 
 ### 6.2 Links
 
@@ -449,19 +428,26 @@ This is a full-viewport "poster" composition, the reference layout for the whole
 
 ## 7. Motion
 
-The site should feel like print: restrained, never bouncy.
+The full motion system lives in [ANIMATION_UI.md](ANIMATION_UI.md): the stack, tokens, MagicIcon, ActionButton and the flagship pipelines. The public theme is `portfolio`: **editorial, kinetic, tactile, gallery-grade.**
 
-| Purpose | Classes |
+This section used to ban parallax and springs. As of 2026-11-22 the motion direction includes:
+
+- multi-layer scroll parallax (GSAP ScrollTrigger);
+- Lenis inertial scroll;
+- magnetic springs;
+- a WebGL halftone canvas.
+
+These rules still apply on top:
+
+| Rule | Detail |
 | --- | --- |
-| Hover and press | `duration-120 ease-print` |
-| Overlays and reveals | `duration-240 ease-print` |
-
-- **Allowed:** an ink-wipe reveal using `clip-path` (left to right, once per element, on first view); opacity fades; the nav overlay sliding in.
-- **Not allowed:** parallax, scroll-jacking, spring or bounce easing, animated grain, or animating the color of anything.
-- Transition only `transform`, `opacity` and `clip-path`: use `transition-transform`, `transition-opacity`, or a named property. Never `transition-all`.
-- Every animated element also carries `motion-reduce:transition-none motion-reduce:animate-none`.
-
----
+| Easing | `ease-print` (`cubic-bezier(0.2, 0, 0, 1)`) for tweens. Springs are damped with no visible overshoot. Never bounce or elastic easing. |
+| Durations | 0.24s fast, 0.48s base, 0.9s slow (`MOTION_THEMES.portfolio`). |
+| Properties | Only `transform`, `opacity` and `clip-path`. SVG `d` and stroke dash are allowed inside icons. Never `transition-all`. |
+| Colour | Colour is never animated. Inversion uses `mix-blend-difference` or a layer wipe, not a colour tween. |
+| Grain | The CSS paper grain (5.6) stays static. Moving halftone or grain belongs only to the hero WebGL canvas (ANIMATION_UI §10.1). |
+| Parallax | Small drift only (speeds of 0.05 to 0.25). Below `md`, at most two layers move. No scroll-jacking beyond Lenis smoothing and a single hero pin. |
+| Reduced motion | Under `prefers-reduced-motion: reduce`, everything above is off: no Lenis, parallax, magnetism, canvas animation, decoding or skew. Content appears in its final state. |
 
 ## 8. Token reference
 

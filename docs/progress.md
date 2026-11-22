@@ -70,6 +70,17 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] ADMIN_STYLE.md records the Tailwind decision.
 - Side effect: Tailwind's reset (Preflight) now removes the browser's default heading sizes and margins, so the current unstyled placeholder pages look plainer. No page uses the design tokens yet.
 
+## 2026-11-22: Animation engine and core UI primitives
+
+- [x] Installed the motion stack: `motion`, `gsap` + `@gsap/react`, `lenis`, `animejs`, `three` + `@react-three/fiber` + `@react-three/drei`, and `radix-ui`. GSAP is free but uses its own license, not an open-source one.
+- [x] `src/lib/motion` holds the motion tokens (portfolio and studio), the pure action state machine, and the GSAP and anime.js setup.
+- [x] `src/hooks` holds the shared hooks: `useMotionTheme`, `useActionRunner`, `useMagnetic` and `useParallax`.
+- [x] `src/components/ui` holds `MotionProvider`, `MagicIcon` (6 icons, 6 states) and `ActionButton` (6 methods, 2 variants).
+- [x] Provisional studio tokens added to `globals.css` and ADMIN_STYLE.md, so the studio variant works.
+- [x] STYLE.md §6.1 and §7 updated: buttons are `ActionButton`, and the motion rules now allow parallax, Lenis, springs and the WebGL canvas, with guardrails.
+- [x] Checked both themes in the in-app browser on a temporary page, since removed. See ANIMATION_UI.md §13 for what was and wasn't verified.
+- Not built yet: the WebGL halftone canvas and kinetic typography, which wait for the public pages. None of the new components is mounted on a real page yet.
+
 ## Open items
 
 - [ ] Choose a longer `ADMIN_ACCESS_CODE` before deploying.

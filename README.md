@@ -29,4 +29,5 @@ Generate `SESSION_SECRET` with `openssl rand -base64 48`.
 - [Features](docs/features.md)
 - [Progress](docs/progress.md)
 - [Public design system](docs/STYLE.md) (public portfolio only)
-- [Studio design system](docs/ADMIN_STYLE.md) (placeholder, to be defined)
+- [Studio design system](docs/ADMIN_STYLE.md) (placeholder, with provisional tokens)
+- [Animation and interactive UI](docs/ANIMATION_UI.md) (motion stack, MagicIcon, ActionButton)

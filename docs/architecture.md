@@ -9,6 +9,8 @@
 | Database | MongoDB Atlas via the official `mongodb` driver, database `mm-portfolio` |
 | Session signing | `jose` (HS256 JWT) |
 | Logging | `pino` (JSON), `pino-pretty` in development |
+| Motion | `motion` (transforms, springs, gestures), `animejs` (SVG draw and morph), `gsap` + ScrollTrigger (scroll), `lenis` (smooth scroll), `three` + R3F + drei (WebGL hero, not built yet). See [ANIMATION_UI.md](ANIMATION_UI.md) |
+| UI primitives | `radix-ui` (headless, accessible) |
 | Styling | Tailwind CSS v4 (`@tailwindcss/postcss`), `tailwind-variants` (`tv()`), `clsx` + `tailwind-merge` (`cn()`), Prettier with `prettier-plugin-tailwindcss` |
 
 Next.js 16 renamed Middleware to **Proxy**: the file is `src/proxy.ts` and it runs on the Node.js runtime.
@@ -40,9 +42,12 @@ src/
         layout.tsx          # studio nav + sign out
         dashboard|release|content|resume|chat|analytics/page.tsx
   components/studio/        # client components (login form, logout button, placeholders)
+  components/ui/            # shared across surfaces: MotionProvider, MagicIcon, ActionButton
+  hooks/                    # shared hooks: useMotionTheme, useActionRunner, useMagnetic, useParallax
   lib/
     shared/routes.ts        # route constants, safe redirect helper (client-safe)
     shared/cn.ts            # cn(): clsx + tailwind-merge
+    motion/                 # motion tokens, action state machine, GSAP and anime.js setup
     server/
       env.ts                # lazy, validated env access
       logger.ts             # pino logger + scoped children

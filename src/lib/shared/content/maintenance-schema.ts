@@ -9,14 +9,6 @@ import { ICON_NAMES } from "@/components/ui/magic-icon/types";
 
 const text = (max: number) => z.string().trim().min(1).max(max);
 
-const IMAGE_PATH = /^\/images\/[\w\-/]+\.(png|jpe?g|webp|avif|svg)$/;
-
-const imageSchema = z.object({
-  src: z.string().regex(IMAGE_PATH, "Must be a /images/... path to a png, jpg, webp, avif or svg file"),
-  /** Empty string marks the image as decorative. */
-  alt: z.string().trim().max(200),
-});
-
 const wordList = z.array(text(24)).min(1).max(5);
 
 const timelineSchema = z
@@ -47,8 +39,6 @@ export const maintenanceContentSchema = z.object({
     .max(4),
   timeline: timelineSchema,
   mottos: z.object({ primary: wordList, secondary: wordList }),
-  stamp: z.object({ lines: z.array(text(24)).min(1).max(3) }),
-  images: z.object({ portrait: imageSchema, gridPlate: imageSchema, stamp: imageSchema }),
   footer: z.object({ note: text(80) }),
 });
 

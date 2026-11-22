@@ -1,40 +1,45 @@
-import { CalibrationRig } from "@/components/motion/CalibrationRig";
 import { InkReveal } from "@/components/motion/InkReveal";
 import { InkRule } from "@/components/motion/InkRule";
+import { Marquee } from "@/components/motion/Marquee";
 import { ParallaxLayer } from "@/components/motion/ParallaxLayer";
+import { RegistrationMark } from "@/components/motion/RegistrationMark";
+import { VelocitySkew } from "@/components/motion/VelocitySkew";
 import { XMark } from "@/components/motion/XMark";
 import { PosterFrame } from "@/components/public/PosterFrame";
 import { SlashLabel } from "@/components/public/SlashLabel";
 import { MagicIcon } from "@/components/ui/MagicIcon";
 import type { MaintenanceContent } from "@/lib/shared/content/maintenance-schema";
 import { Countdown } from "./Countdown";
-import { GridPlate } from "./GridPlate";
-import { PillarCard } from "./PillarCard";
-import { PortraitPlate } from "./PortraitPlate";
-import { StampMark } from "./StampMark";
-
-export type MaintenanceAssets = { portrait: boolean; gridPlate: boolean; stamp: boolean };
+import { PillarRow } from "./PillarRow";
 
 type MaintenanceScreenProps = {
   content: MaintenanceContent;
-  assets: MaintenanceAssets;
-  windowText: string;
+  /** Window dates, pre-formatted on the server in UTC. */
+  windowStartText: string;
+  targetText: string;
 };
 
+const HEADLINE_DELAY = 0.2;
+const LINE_STAGGER = 0.14;
+
 /**
- * /maintenance composition (docs/screens/MAINTENANCE_BUSINESS.md). Every
- * string comes from `content` (MongoDB); this file only decides layout and
- * choreography order.
+ * /maintenance (docs/screens/MAINTENANCE_BUSINESS.md): a single full-width
+ * typographic column. Every string comes from `content` (MongoDB); this file
+ * only decides layout and choreography order.
+ *
+ *   1. Hero: oversized indented headline, rule, body, ink ticker band
+ *   2. Instrument: giant countdown + calibration ruler for the window
+ *   3. Index: upgrade pillars as full-width rows
+ *   4. Footer: mottos, small print, bleeding brush wordmark
  */
-export const MaintenanceScreen = ({ content, assets, windowText }: MaintenanceScreenProps) => {
-  const { brand, status, headline, timeline, images } = content;
-  const headlineDelay = 0.25;
-  const afterHeadline = headlineDelay + headline.lines.length * 0.12;
+export const MaintenanceScreen = ({ content, windowStartText, targetText }: MaintenanceScreenProps) => {
+  const { brand, status, headline, timeline } = content;
+  const afterHeadline = HEADLINE_DELAY + headline.lines.length * LINE_STAGGER;
 
   return (
     <main className="relative overflow-x-clip">
-      {/* ── Hero: one viewport, the poster ─────────────────────────── */}
-      <section className="relative grid min-h-svh grid-cols-4 content-end gap-x-6 gap-y-12 px-page pt-28 pb-20 md:grid-cols-8 lg:grid-cols-12 lg:pt-32">
+      {/* 1 ── Hero */}
+      <section className="relative flex min-h-svh flex-col">
         <PosterFrame />
 
         <header className="absolute inset-x-page top-frame z-20 flex items-center justify-between pt-8">
@@ -45,77 +50,72 @@ export const MaintenanceScreen = ({ content, assets, windowText }: MaintenanceSc
           </span>
         </header>
 
-        {/* Depth stack: grid plate, portrait, stamp, calibration rig */}
-        <div className="relative col-span-4 mb-10 md:col-span-6 md:col-start-2 lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:mb-0">
-          <ParallaxLayer speed={0.3} depth={-16} className="absolute -top-10 -right-6 -z-10 h-[110%] w-[95%]">
-            <GridPlate image={images.gridPlate} available={assets.gridPlate} />
-          </ParallaxLayer>
-          <ParallaxLayer speed={0.12} depth={8} className="ml-auto lg:w-[88%]">
-            <PortraitPlate image={images.portrait} available={assets.portrait} />
-          </ParallaxLayer>
-          <ParallaxLayer speed={0.22} depth={14} className="absolute -top-8 -left-6 w-24 lg:-left-12 lg:w-32">
-            <StampMark image={images.stamp} available={assets.stamp} lines={content.stamp.lines} />
-          </ParallaxLayer>
-          <ParallaxLayer speed={-0.1} depth={-12} className="absolute -top-14 -right-8 w-32 sm:w-40 lg:-top-16 lg:-right-16 lg:w-52">
-            <CalibrationRig />
-          </ParallaxLayer>
-          {/* Brush wordmark crosses the bottom of the art, as on the poster; never over other text. */}
-          <ParallaxLayer speed={-0.12} className="pointer-events-none absolute -bottom-10 -left-4 z-10 lg:-bottom-14 lg:-left-16">
-            <InkReveal delay={0.9}>
-              <p className="-rotate-6 font-brush text-display leading-none select-none">{brand.wordmark}</p>
-            </InkReveal>
-          </ParallaxLayer>
-          <div className="absolute top-1/3 -right-2 hidden flex-col gap-3 lg:-right-14 lg:flex">
-            <XMark delay={1.2} />
-            <XMark delay={1.45} className="size-5 self-end" />
-          </div>
-        </div>
-
-        {/* Type column */}
-        <div className="relative z-10 col-span-4 flex flex-col gap-8 md:col-span-8 lg:col-span-7 lg:row-start-1 lg:self-end">
-          <InkReveal className="max-w-[48ch] font-technical text-micro text-graphite uppercase" delay={0.1}>
-            {status.kicker}
+        <div className="relative flex flex-1 flex-col justify-end gap-10 px-page pt-36 pb-16 lg:gap-12 lg:pb-20">
+          <InkReveal className="font-technical text-micro text-graphite uppercase" delay={0.1}>
+            {brand.established}
           </InkReveal>
-          <div className="flex flex-col gap-4">
+
+          <VelocitySkew>
             <InkReveal
               as="h1"
               lines={headline.lines}
-              delay={headlineDelay}
-              stagger={0.12}
-              className="text-h1 font-extrabold uppercase"
+              delay={HEADLINE_DELAY}
+              stagger={LINE_STAGGER}
+              className="text-display font-extrabold uppercase"
               lineClassName="pb-[0.04em]"
+              lineClassNames={["", "md:pl-24 lg:pl-48"]}
             />
-            <InkRule delay={afterHeadline} />
-            <InkReveal className="text-label font-bold uppercase" delay={afterHeadline + 0.1}>
-              {brand.established}
+          </VelocitySkew>
+
+          <div className="flex flex-col gap-8 md:pl-24 lg:pl-48">
+            <InkRule delay={afterHeadline} className="w-1/2" />
+            <InkReveal as="p" className="max-w-[52ch] text-lead" delay={afterHeadline + 0.15}>
+              {content.body}
             </InkReveal>
           </div>
-          <InkReveal delay={afterHeadline + 0.25}>
-            <Countdown timeline={timeline} windowText={windowText} />
-          </InkReveal>
+
+          <div className="absolute right-page bottom-24 hidden flex-col items-end gap-3 lg:flex">
+            <XMark delay={afterHeadline + 0.5} />
+            <XMark delay={afterHeadline + 0.7} className="size-5" />
+          </div>
         </div>
 
+        <Marquee label={status.kicker} className="bg-ink py-4 text-paper">
+          <span className="flex items-center gap-8 pr-8 text-label font-bold uppercase">
+            {status.kicker}
+            <RegistrationMark breathe={false} className="text-paper" />
+          </span>
+        </Marquee>
       </section>
 
-      {/* ── Narrative + upgrade pillars ────────────────────────────── */}
-      <section className="relative px-page py-24 lg:py-48">
-        <div className="grid grid-cols-4 gap-6 md:grid-cols-8 lg:grid-cols-12">
-          <InkReveal as="p" trigger="inView" className="col-span-4 max-w-[68ch] text-lead md:col-span-6 lg:col-span-7 lg:col-start-2">
-            {content.body}
-          </InkReveal>
-        </div>
-        <ul className="mt-16 grid border-t border-rule md:grid-cols-3 lg:mt-24">
+      {/* 2 ── Countdown instrument */}
+      <section className="px-page py-24 lg:py-40">
+        <Countdown timeline={timeline} startLabel={windowStartText} endLabel={targetText} />
+      </section>
+
+      {/* 3 ── Upgrade pillars as an index */}
+      <section className="px-page pb-24 lg:pb-40">
+        <ul className="border-t border-ink">
           {content.pillars.map((pillar, order) => (
-            <PillarCard key={pillar.index} pillar={pillar} order={order} />
+            <PillarRow key={pillar.index} pillar={pillar} order={order} />
           ))}
         </ul>
       </section>
 
-      {/* ── Footer: poster mottos ──────────────────────────────────── */}
-      <footer className="relative flex flex-col gap-6 border-t border-rule px-page py-12 md:flex-row md:items-end md:justify-between">
-        <SlashLabel words={content.mottos.primary} />
-        <p className="font-technical text-micro text-graphite uppercase">{content.footer.note}</p>
-        <SlashLabel words={content.mottos.secondary} className="md:text-right" />
+      {/* 4 ── Footer + bleeding wordmark */}
+      <footer className="relative">
+        <div className="flex flex-col gap-6 px-page pb-8 md:flex-row md:items-end md:justify-between">
+          <SlashLabel words={content.mottos.primary} />
+          <p className="font-technical text-micro text-graphite uppercase">{content.footer.note}</p>
+          <SlashLabel words={content.mottos.secondary} className="md:text-right" />
+        </div>
+        <ParallaxLayer speed={-0.15} className="pointer-events-none select-none">
+          <div className="h-[0.7em] overflow-hidden px-page text-wordmark">
+            <InkReveal trigger="inView">
+              <p className="-rotate-2 font-brush leading-none whitespace-nowrap">{brand.wordmark}</p>
+            </InkReveal>
+          </div>
+        </ParallaxLayer>
       </footer>
     </main>
   );

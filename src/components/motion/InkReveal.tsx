@@ -13,6 +13,8 @@ type InkRevealProps = {
   className?: string;
   /** Applied to each line's mask (e.g. bottom padding so descenders are not clipped). */
   lineClassName?: string;
+  /** Per-line extra classes by index, e.g. to indent the second line of a headline. */
+  lineClassNames?: readonly string[];
   delay?: number;
   stagger?: number;
   /** `mount` plays on load; `inView` plays once when scrolled into view. */
@@ -33,6 +35,7 @@ export const InkReveal = ({
   children,
   className,
   lineClassName,
+  lineClassNames,
   delay = 0,
   stagger = DEFAULT_STAGGER,
   trigger = "mount",
@@ -53,7 +56,7 @@ export const InkReveal = ({
       {items.map((item, index) => (
         <Mask
           key={index}
-          className={cn("block overflow-hidden", lineClassName)}
+          className={cn("block overflow-hidden", lineClassName, lineClassNames?.[index])}
           initial={reducedMotion ? false : "hidden"}
           {...play}
         >

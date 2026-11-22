@@ -7,7 +7,7 @@ Status key: **Done**, **Placeholder** (route exists, shows "Coming soon", functi
 | Feature | Route | Status |
 | --- | --- | --- |
 | Root redirect | `/` -> 302 `/maintenance` | Done |
-| Maintenance page | `/maintenance` | Done: database-driven content, live countdown, layered motion ([spec](screens/MAINTENANCE_BUSINESS.md)) |
+| Maintenance page | `/maintenance` | Done: database-driven content, full-width type layout, countdown + calibration ruler, ticker, index rows ([spec](screens/MAINTENANCE_BUSINESS.md)) |
 | Custom 404 | `/404`, unknown routes 302 here | Placeholder |
 | Public portfolio | TBD | Planned (not started) |
 
@@ -42,6 +42,6 @@ Status key: **Done**, **Placeholder** (route exists, shows "Coming soon", functi
 | `MagicIcon` (6 action-reactive icons) | Done (not yet used on any page) |
 | `ActionButton` (6 methods, 2 variants) | Done (not yet used on any page) |
 | WebGL halftone canvas | Specified, not built |
-| Editorial motion components (InkReveal, ParallaxLayer, CalibrationRig ...) | Done |
+| Editorial motion components (InkReveal, Marquee, VelocitySkew, ParallaxLayer, CalibrationRig ...) | Done |
 | Database-managed screen content (`site_screens`) + admin content API | Done (admin UI later) |
 | UI styling of pages | Not started (intentionally) |

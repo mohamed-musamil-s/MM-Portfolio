@@ -45,16 +45,15 @@ src/
         dashboard|release|content|resume|chat|analytics/page.tsx
   components/studio/        # client components (login form, logout button, placeholders)
   components/ui/            # shared across surfaces: MotionProvider, MagicIcon, ActionButton
-  components/motion/        # reusable editorial motion pieces (InkReveal, ParallaxLayer, CalibrationRig ...)
+  components/motion/        # reusable editorial motion pieces (InkReveal, Marquee, VelocitySkew, ParallaxLayer, CalibrationRig ...)
   components/public/        # PublicShell, PosterFrame, SlashLabel
-  components/maintenance/   # /maintenance sections (Countdown, plates, pillars, screen composition)
+  components/maintenance/   # /maintenance sections (Countdown, WindowRuler, PillarRow, screen composition)
   hooks/                    # shared hooks: useMotionTheme, useActionRunner, useMagnetic, useParallax
   lib/
     shared/routes.ts        # route constants, safe redirect helper (client-safe)
     shared/cn.ts            # cn(): clsx + tailwind-merge
     shared/content/         # zod content schemas + screen registry (shared with the future admin form)
     server/content/         # getScreenContent / saveScreenContent (site_screens)
-    server/assets.ts        # does a /public asset referenced by content exist?
     motion/                 # motion tokens, action state machine, GSAP and anime.js setup
     server/
       env.ts                # lazy, validated env access

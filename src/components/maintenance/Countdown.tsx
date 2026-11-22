@@ -5,11 +5,13 @@ import { MagicIcon } from "@/components/ui/MagicIcon";
 import { useCountdown, type CountdownParts } from "@/hooks/useCountdown";
 import { useMotionTheme } from "@/hooks/useMotionTheme";
 import type { MaintenanceContent } from "@/lib/shared/content/maintenance-schema";
+import { WindowRuler } from "./WindowRuler";
 
 type CountdownProps = {
   timeline: MaintenanceContent["timeline"];
   /** Pre-formatted on the server (UTC) so SSR and client agree. */
-  windowText: string;
+  startLabel: string;
+  endLabel: string;
 };
 
 const UNIT_KEYS = ["days", "hours", "minutes", "seconds"] as const satisfies readonly (keyof CountdownParts)[];
@@ -23,18 +25,23 @@ const fillTemplate = (template: string, parts: CountdownParts) =>
     .replace("{hours}", String(parts.hours))
     .replace("{minutes}", String(parts.minutes));
 
-/** A single digit that slides out downward as the next one drops in. */
+/**
+ * A single digit that slides out downward as the next one drops in. The mask
+ * is exactly 1em tall and sized by an invisible copy of the digit (tabular
+ * figures share one width), so both animated copies are clipped to it.
+ */
 const Digit = ({ char }: { char: string }) => {
   const { tokens, reducedMotion } = useMotionTheme();
   return (
-    <span className="relative inline-block overflow-hidden">
-      <AnimatePresence mode="popLayout" initial={false}>
+    <span className="relative inline-block h-[1em] overflow-hidden align-top leading-none">
+      <span className="invisible">{char}</span>
+      <AnimatePresence initial={false}>
         <motion.span
           key={char}
-          className="inline-block"
-          initial={reducedMotion ? false : { y: "-100%", opacity: 0 }}
-          animate={{ y: "0%", opacity: 1 }}
-          exit={reducedMotion ? undefined : { y: "100%", opacity: 0 }}
+          className="absolute inset-0"
+          initial={reducedMotion ? false : { y: "-100%" }}
+          animate={{ y: "0%" }}
+          exit={reducedMotion ? undefined : { y: "100%" }}
           transition={{ duration: tokens.duration.fast * 1.5, ease: tokens.ease }}
         >
           {char}
@@ -44,23 +51,23 @@ const Digit = ({ char }: { char: string }) => {
   );
 };
 
-export const Countdown = ({ timeline, windowText }: CountdownProps) => {
-  const { tokens } = useMotionTheme();
+/** Full-width instrument: giant tabular readout split by hairlines, then the window ruler. */
+export const Countdown = ({ timeline, startLabel, endLabel }: CountdownProps) => {
   const countdown = useCountdown(timeline.targetAt, timeline.windowStart);
   const overdue = countdown?.overdue ?? false;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-baseline justify-between gap-2 font-technical text-micro text-graphite uppercase">
+    <div className="flex flex-col gap-10 md:gap-14">
+      <div className="flex flex-wrap items-baseline justify-between gap-2 border-t border-rule pt-4 font-technical text-micro text-graphite uppercase">
         <span>{timeline.label}</span>
-        <span>{windowText}</span>
+        <span>{timeline.countdownLabel}</span>
       </div>
 
       {overdue ? (
-        <div className="flex items-center gap-4" role="status">
-          <MagicIcon name="sync" state="loading" size={36} />
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:gap-8" role="status">
+          <MagicIcon name="sync" state="loading" size={56} />
           <div>
-            <p className="text-h2 font-extrabold uppercase">{timeline.overdue.title}</p>
+            <p className="text-h1 font-extrabold uppercase md:text-display">{timeline.overdue.title}</p>
             <p className="font-technical text-micro text-graphite uppercase">{timeline.overdue.detail}</p>
           </div>
         </div>
@@ -69,23 +76,18 @@ export const Countdown = ({ timeline, windowText }: CountdownProps) => {
           role="timer"
           aria-live="off"
           aria-label={countdown ? fillTemplate(timeline.srRemaining, countdown.parts) : undefined}
-          className="flex flex-col gap-2"
         >
-          <span className="font-technical text-micro text-graphite uppercase">{timeline.countdownLabel}</span>
-          <div aria-hidden className="flex items-start gap-2 sm:gap-4">
-            {UNIT_KEYS.map((unit, index) => {
+          <div aria-hidden className="grid grid-cols-4">
+            {UNIT_KEYS.map((unit) => {
               const value = countdown ? pad(countdown.parts[unit]) : PLACEHOLDER;
               return (
-                <div key={unit} className="flex items-start gap-2 sm:gap-4">
-                  {index > 0 ? <span className="text-h1 font-extrabold text-graphite">:</span> : null}
-                  <div className="flex flex-col items-start">
-                    <span className="text-h1 font-extrabold tabular-nums">
-                      {value.split("").map((char, position) => (
-                        <Digit key={`${unit}-${value.length - position}`} char={char} />
-                      ))}
-                    </span>
-                    <span className="font-technical text-micro text-graphite">{timeline.units[unit]}</span>
-                  </div>
+                <div key={unit} className="flex flex-col gap-3 border-l border-rule pl-3 first:border-l-0 first:pl-0 md:pl-6">
+                  <span className="text-h1 leading-none font-extrabold tabular-nums md:text-display">
+                    {value.split("").map((char, position) => (
+                      <Digit key={`${unit}-${value.length - position}`} char={char} />
+                    ))}
+                  </span>
+                  <span className="font-technical text-micro text-graphite">{timeline.units[unit]}</span>
                 </div>
               );
             })}
@@ -93,14 +95,13 @@ export const Countdown = ({ timeline, windowText }: CountdownProps) => {
         </div>
       )}
 
-      <div aria-hidden className="relative h-px w-full bg-rule/25">
-        <motion.span
-          className="absolute inset-y-0 left-0 w-full origin-left bg-ink"
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: countdown?.progress ?? 0 }}
-          transition={{ duration: tokens.duration.slow, ease: tokens.ease }}
-        />
-      </div>
+      <WindowRuler
+        windowStart={timeline.windowStart}
+        targetAt={timeline.targetAt}
+        progress={countdown?.progress ?? null}
+        startLabel={startLabel}
+        endLabel={endLabel}
+      />
     </div>
   );
 };

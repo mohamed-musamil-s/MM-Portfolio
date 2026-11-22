@@ -58,15 +58,6 @@ const SCREENS = {
       primary: ["MINDSET", "AMBITION", "FREEDOM"],
       secondary: ["FOCUS", "DISCIPLINE", "CONSISTENCY", "EXECUTION"],
     },
-    stamp: { lines: ["SYS // UPGRADE", "EST. 2000"] },
-    images: {
-      portrait: {
-        src: "/images/maintenance/maintenance-portrait-ink.png",
-        alt: "Ink portrait of Mohamed Musamil wearing sunglasses",
-      },
-      gridPlate: { src: "/images/maintenance/maintenance-grid-plate.png", alt: "" },
-      stamp: { src: "/images/maintenance/maintenance-stamp-mark.png", alt: "" },
-    },
     footer: { note: "© 2026 MOHAMED MUSAMIL. ALL RIGHTS RESERVED." },
   },
 };

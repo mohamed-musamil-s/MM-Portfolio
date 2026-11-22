@@ -359,17 +359,16 @@ The navigation mirrors the poster's top-right label, `MINDSET / AMBITION / FREED
 
 The business rules, content model and motion layers are in [screens/MAINTENANCE_BUSINESS.md](screens/MAINTENANCE_BUSINESS.md). **Every string, date and image path comes from the database** (`site_screens`, `_id: "maintenance"`), never from code.
 
-As of 2026-11-22 this is a three-part scrolling page (it used to be a single viewport):
+As of 2026-11-22 this is a **single full-width typographic column**, with no image column:
 
-1. **Hero poster** (`min-h-svh`):
-   - registration frame (`PosterFrame`), with the brand label top-left and a live status line top-right;
-   - type column: kicker, headline (`text-h1 font-extrabold uppercase` with ink-mask line reveals), partial underline rule, `EST.` line, then the countdown;
-   - depth stack in the right columns: grid plate, 4:5 portrait with crop marks, stamp, calibration rig. Each sits on its own parallax layer;
-   - the brush wordmark crosses the bottom of the art.
-2. **Narrative:** body copy in `text-lead`, at most 68ch, then the upgrade pillars in a three-column grid split by rules.
-3. **Footer:** the two slash-label motto groups and the small print.
-
-On mobile everything stacks: the art first, then the wordmark, type, countdown, pillars and footer. Only the corner crosshairs are shown.
+1. **Hero** (`min-h-svh`):
+   - registration frame, with the brand label top-left and the live status line top-right;
+   - the `EST.` line, then an oversized `text-display` headline with the second line indented (`md:pl-24 lg:pl-48`), leaning with scroll velocity;
+   - a half-width ink rule and the body copy, aligned to that indent;
+   - a full-bleed **ink ticker band** (`bg-ink text-paper`) scrolling the status kicker.
+2. **Countdown instrument:** four giant tabular cells split by hairlines (`text-h1`, `md:text-display`), above a full-width **calibration ruler** (day ticks, hatched elapsed part, bullseye needle, start and end dates).
+3. **Index:** the upgrade pillars as full-width rows (`index / TITLE / description / icon`). Hover floods a row with ink.
+4. **Footer:** the two motto groups and the small print, above an oversized brush wordmark cropped by the page bottom.
 
 ### 6.5 404 screen
 

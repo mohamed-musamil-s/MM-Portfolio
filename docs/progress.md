@@ -101,9 +101,24 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] Admin API checked: 401, 404, 200 (edit appears on the page), 409, 400 (with the failing fields), 403. The original content was restored afterwards.
 - Not verified: the reduced-motion behaviour (it couldn't be emulated in the test browser) and the copy with your real image files, which don't exist yet.
 
+## 2026-11-22: `/maintenance` redesign (image column removed)
+
+- [x] New layout:
+  - hero with an oversized indented headline (leaning with scroll velocity), rule, body, and an ink ticker band;
+  - a countdown instrument with giant numerals and a calibration ruler for the window;
+  - the pillars as full-width index rows with an ink-flood hover;
+  - a footer with a bleeding brush wordmark.
+- [x] New reusable pieces: `Marquee`, `VelocitySkew` and `useScrollVelocity`.
+- [x] Removed for this screen: the portrait, grid plate and stamp (components, schema fields and `assets.ts`).
+- [x] Database migration: `$unset` of `content.images` and `content.stamp` on the `maintenance` document (version 4 → 5). Other content was kept as it was.
+- [x] Fixed: the countdown digits spilled outside their mask at display size; the mask is now a fixed 1em.
+- [x] Checked on a production build at 1440×900 and 375×812:
+  - no horizontal overflow;
+  - the screen-reader texts are correct (headline, ticker announced once, timer label);
+  - the row hover inverts the row.
+
 ## Open items
 
-- [ ] Export the three maintenance images into `public/images/maintenance/` (file names are in the screen spec).
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.
 - [ ] Trace the poster's "Musamil" lettering as an SVG wordmark. The page uses Permanent Marker until then.
 

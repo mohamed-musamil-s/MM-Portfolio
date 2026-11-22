@@ -74,6 +74,8 @@ src/lib/motion/
 src/components/motion/   # reusable editorial motion pieces
   InkReveal.tsx       # masked ink-stamp line reveal (mount or in-view)
   InkRule.tsx         # partial headline rule drawn from the left
+  Marquee.tsx         # infinite ticker; scroll velocity speeds it up and reverses it
+  VelocitySkew.tsx    # skews large type with scroll velocity (clamped)
   ParallaxLayer.tsx   # scroll (GSAP, outer) + pointer (motion, inner) depth layer
   CalibrationRig.tsx  # counter-rotating rings, vernier draw-in, lock-on reticle, scroll turn
   RegistrationMark.tsx# breathing print crosshair (open / bullseye)
@@ -82,6 +84,7 @@ src/components/motion/   # reusable editorial motion pieces
 src/hooks/
   useCountdown.ts     # second-aligned clock (useSyncExternalStore), SSR-safe, pauses when hidden
   usePointerParallax.ts # viewport-relative pointer depth springs
+  useScrollVelocity.ts  # smoothed window scroll velocity (Marquee, VelocitySkew)
   useMotionTheme.ts   # { theme, tokens, reducedMotion } from the provider
   useActionRunner.ts  # runs an async action through the state machine
   useMagnetic.ts      # magnetic cursor pull (portfolio only)
@@ -294,6 +297,7 @@ Leave out `onAction` and drive `status` from the form's pending state. The butto
 | `useActionRunner()` | `run(action)`, `arm()`, `disarm()`, plus `state`. Used by ActionButton; reuse it for any async control (forms, menu items). |
 | `useMagnetic(enabled)` | Returns `anchorRef`, which you attach to a static wrapper, and the `x`/`y` springs for the moving element. Only active on fine pointers, with motion allowed, when the theme has `magnetic`. |
 | `useParallax(ref, { speed })` | Scrubbed ScrollTrigger drift. Cleanup comes from `useGSAP` context revert. Off under reduced motion. |
+| `useScrollVelocity()` | Smoothed, signed window scroll velocity (px/s) as a motion value. It drives `Marquee` and `VelocitySkew`. |
 | `usePointerParallax(depth)` | `x`/`y` springs that move up to `depth` px with the cursor (negative depth moves against it). Fine pointers only. |
 | `useCountdown(targetAt, windowStart)` | `{ parts, overdue, progress }`, or `null` during SSR. Ticks on the second boundary and pauses while the tab is hidden. |
 
@@ -341,7 +345,7 @@ Each layer gets its own `useParallax` speed:
 
 - **Ink-stamp line reveal (motion):** each headline line is masked (`overflow-hidden`), slides up from 100%, and clips in left to right. Lines are staggered by 80ms, run once, on first view.
 - **Microtext decoding (anime.js `scrambleText`):** slash labels such as `MINDSET / AMBITION / FREEDOM` resolve character by character, using mono glyphs, over 600ms.
-- **Scroll-velocity skew (GSAP `Observer`):** large type skews in proportion to scroll velocity, clamped to ±4° and eased back to 0.
+- **Scroll-velocity skew (motion, built as `VelocitySkew`):** large type skews in proportion to scroll velocity, clamped to ±4° and springing back to 0. Motion owns transforms, so `useScroll` + `useVelocity` is used here instead of GSAP `Observer`.
 - **Accessibility:**
   - real text stays in the DOM; split spans are `aria-hidden`, with the original text kept in an `aria-label` or a visually hidden copy;
   - under reduced motion there's no decoding and no skew.

@@ -1,6 +1,6 @@
 # Screen: `/maintenance`, Business Spec
 
-Version 1.0, 2026-11-22. Public route. Look: [STYLE.md](../STYLE.md). Motion: [ANIMATION_UI.md](../ANIMATION_UI.md).
+Version 1.1, 2026-11-22. Layout revised the same day: a single full-width typographic column, with the image column removed. Public route. Look: [STYLE.md](../STYLE.md). Motion: [ANIMATION_UI.md](../ANIMATION_UI.md).
 
 ---
 
@@ -27,14 +27,13 @@ The default content below is what the seed writes. All of it can be changed in t
 
 | Element | Default |
 | --- | --- |
-| Status kicker | `SYSTEM UPGRADE IN PROGRESS // CORE INFRASTRUCTURE & EDITORIAL ENGINE` |
+| Status kicker (scrolls in the ink ticker band) | `SYSTEM UPGRADE IN PROGRESS // CORE INFRASTRUCTURE & EDITORIAL ENGINE` |
 | Headline | `UPGRADING THE SYSTEM.` |
 | Body | MM-Portfolio is undergoing a scheduled system upgrade: hardening database and session security, refining the motion and UI systems, and preparing the next release. |
 | Pillar 01 | `CORE ENGINE`: database and session architecture calibration |
 | Pillar 02 | `MOTION & UI`: editorial kinetic typography, WebGL grain and SVG choreography |
 | Pillar 03 | `RELEASE PIPELINE`: staging verification and studio readiness |
 | Mottos | `MINDSET / AMBITION / FREEDOM` · `FOCUS / DISCIPLINE / CONSISTENCY / EXECUTION` |
-| Stamp | `SYS // UPGRADE` · `EST. 2000` |
 
 > **Disclosure note.** Copy that names internal systems ("database and session security") tells anyone, attackers included, what's being worked on. It's kept because it was requested, and it's one database edit away from a more general wording.
 
@@ -59,15 +58,13 @@ No user-facing text, date or asset path is hardcoded in the page or its componen
 | Field | Type | Rules |
 | --- | --- | --- |
 | `meta.title`, `meta.description` | text | ≤ 70 and ≤ 160 characters. Used for `<title>` and the meta description. |
-| `brand.label`, `brand.wordmark`, `brand.established` | text | Top-left label, brush wordmark, `EST.` line. |
-| `status.kicker`, `status.label` | text | Kicker above the headline; short live-status label. |
-| `headline.lines` | 1 to 3 lines | Each line reveals separately. |
+| `brand.label`, `brand.wordmark`, `brand.established` | text | Top-left label, the bleeding brush wordmark in the footer, and the `EST.` line above the headline. |
+| `status.kicker`, `status.label` | text | The ticker band text (announced once to screen readers); the short live-status label top-right. |
+| `headline.lines` | 1 to 3 lines | Each line reveals separately. From `md` up the second line is indented. |
 | `body` | text | ≤ 600 characters. |
 | `pillars[]` | 1 to 4 items | `{ index, title, description, icon }`. `icon` must be a MagicIcon name. |
-| `timeline` | object | `label`, `windowStart`, `targetAt` (dates; `targetAt` must be after `windowStart`), `countdownLabel`, `units { days, hours, minutes, seconds }`, `overdue { title, detail }`. |
+| `timeline` | object | `label`, `windowStart`, `targetAt` (dates; `targetAt` must be after `windowStart`), `countdownLabel`, `srRemaining` (screen-reader template with `{days}`, `{hours}` and `{minutes}`), `units { days, hours, minutes, seconds }`, `overdue { title, detail }`. |
 | `mottos.primary[]`, `mottos.secondary[]` | 1 to 5 words each | Rendered as slash labels. |
-| `stamp.lines[]` | 1 to 3 lines | Text on the SVG stamp fallback. |
-| `images.portrait`, `images.gridPlate`, `images.stamp` | `{ src, alt }` | `src` must be under `/images/` and be png, jpg, webp, avif or svg. An empty `alt` marks the image as decorative. |
 | `footer.note` | text | Small print. |
 
 ### Saving changes (for the admin panel)
@@ -86,13 +83,13 @@ No user-facing text, date or asset path is hardcoded in the page or its componen
 | Rule | Behaviour |
 | --- | --- |
 | Source | `timeline.windowStart` and `timeline.targetAt` from the database (stored as dates). The default seed uses a placeholder window, 2026-11-22 → 2026-12-31 (UTC); **set the real date** through the API. |
-| Display | The window is shown as `22 NOV 2026 → 31 DEC 2026`, formatted on the server in UTC, so every visitor sees the same text. |
-| Readout | `DD : HH : MM : SS` using tabular numbers. Labels come from `timeline.units`. Days aren't capped (`120 : 04 : 09 : 33` is valid). |
+| Display | The window's start and end dates (`22 NOV 2026`, `31 DEC 2026`) label the two ends of the calibration ruler. They're formatted on the server in UTC, so every visitor sees the same text. |
+| Readout | Four giant tabular-number cells (days, hours, minutes, seconds) split by hairlines. Labels come from `timeline.units`. Days aren't capped (`120` is valid). |
 | Ticking | `useCountdown` ticks on the wall-clock second boundary, so it doesn't drift, and pauses while the tab is hidden. Each digit that changes slides in; unchanged digits stay still. |
 | First paint | The server renders `-- : -- : -- : --` and the client fills in real values on mount. This avoids a hydration mismatch from the time difference between server and client. |
 | Reaching zero | Exactly at `targetAt` the readout switches to the overdue state. It never shows negative numbers. |
 | Overdue | Shows `timeline.overdue.title` (default `FINALIZING DEPLOY`) and `timeline.overdue.detail` (default `WINDOW EXTENDED`). The status icon keeps orbiting. |
-| Progress | A hairline bar shows the share of the window that has passed, `(now - windowStart) / (targetAt - windowStart)`, clamped to 0..1. |
+| Progress | **Calibration ruler** across the full width:<br>• one tick per day of the window (weekly ticks only once it's over 120 days), with a major tick every 7 days;<br>• the elapsed part is hatched, and a bullseye needle marks "now";<br>• elapsed share = `(now - windowStart) / (targetAt - windowStart)`, clamped to 0..1. |
 | Accessibility | The readout is `role="timer"`, with an `aria-label` that updates once per minute (not every second), so screen readers aren't flooded. |
 
 ---
@@ -103,28 +100,17 @@ The motion direction is "200%": high-energy, layered and kinetic, within the STY
 
 | Layer | Motion | Built with |
 | --- | --- | --- |
-| Entrance | Staggered **ink-mask reveals**: kicker, then headline lines, rule, body, countdown digits, then pillars as they scroll into view | `InkReveal` (motion) |
-| Calibration rig | Counter-rotating degree and orbital rings, vernier ticks drawn with stroke-dashoffset, and a crosshair reticle that **locks on** at load. Leans toward the pointer; turns with scroll. | `CalibrationRig` (motion + anime.js + GSAP) |
-| Registration marks | Frame crosshairs at the corners and edge midpoints, with a slow breathing scale and opacity | `RegistrationMark` |
-| Depth parallax | The portrait, grid plate, calibration rig and stamp move at different scroll speeds and pointer depths | `ParallaxLayer` (GSAP ScrollTrigger + pointer springs) |
+| Frame | Registration crosshairs at the corners and edge midpoints spin in, then breathe | `PosterFrame`, `RegistrationMark` |
+| Headline | Ink-mask line reveals (staggered). The block **leans with scroll velocity** (skew clamped to ±4°). | `InkReveal`, `VelocitySkew` |
+| Rule and body | The rule draws in from the left, then the body copy reveals | `InkRule`, `InkReveal` |
+| Ticker band | Full-bleed ink band: the status kicker scrolls infinitely, **speeds up with scroll speed and reverses when you scroll back up** | `Marquee` |
+| Countdown | Per-digit slide inside a fixed 1em mask | `Countdown` |
+| Calibration ruler | Ticks draw in left to right; the hatch and needle spring to "now" | `WindowRuler` (anime.js draw + motion) |
+| Index rows | Rows rise in on view. Hover floods the row with ink and inverts the text (difference blend); the row's MagicIcon reacts. | `PillarRow`, `MagicIcon` |
+| Wordmark | Oversized brush wordmark, cropped by the page bottom, on its own scroll parallax layer | `ParallaxLayer`, `InkReveal` |
 | Scroll | Lenis inertial scroll | `MotionProvider theme="portfolio"` |
-| Icons | Status: `sync` orbiting. Pillars: icon set in the database, reacting on hover. | `MagicIcon` |
-| Countdown | Per-digit slide transitions, plus progress bar growth | `Countdown` |
 
-### Image assets
-
-Image paths are configured in the database. Missing files fall back gracefully, and the page never breaks.
-
-| Asset | Expected file | Spec | Fallback if the file is missing |
-| --- | --- | --- | --- |
-| Portrait | `public/images/maintenance/maintenance-portrait-ink.png` | 4:5 vertical, black-and-white screen-print or ink portrait, calm and focused, halftone grain on `#F4F3EE` | A framed halftone plate with registration crosshairs (decorative, no text) |
-| Grid plate | `public/images/maintenance/maintenance-grid-plate.png` | 1:1 or 4:5, technical grid, calibration ticks, halftone dots, newsprint grain | A generated SVG technical grid with ticks |
-| Stamp | `public/images/maintenance/maintenance-stamp-mark.png` | 1:1 risograph ink stamp with distressed edges | An SVG stamp drawing `stamp.lines` with a distressed edge filter |
-
-- The server checks whether each file exists on every request, so dropping a file into `public/images/maintenance/` takes effect without a code change.
-- All photos get the STYLE.md treatment: `grayscale contrast-125`, no radius.
-
----
+**Image assets:** none. The revised layout has no image column, so the portrait, grid-plate and stamp images, and their content fields, were removed from the screen and from the database document (migration on 2026-11-22: `$unset content.images, content.stamp`, version 4 → 5).
 
 ## 6. Reuse and scope boundaries
 
@@ -134,9 +120,9 @@ These are reusable by any future page.
 
 | Module | Reused for |
 | --- | --- |
-| `PublicShell` | Every public page: surface tokens, fonts, MotionProvider, grain |
-| `InkReveal`, `RegistrationMark`, `CalibrationRig`, `ParallaxLayer`, `CropMarks` (`src/components/motion/`) | Any editorial section |
-| `useCountdown`, `usePointerParallax`, `useParallax` (`src/hooks/`) | Any timed or parallax UI |
+| `PublicShell`, `PosterFrame`, `SlashLabel` | Every public page: surface tokens, fonts, MotionProvider, grain, frame, labels |
+| `InkReveal`, `InkRule`, `VelocitySkew`, `Marquee`, `ParallaxLayer`, `RegistrationMark`, `XMark` (`src/components/motion/`) | Any editorial section |
+| `useCountdown`, `useScrollVelocity`, `useParallax` (`src/hooks/`) | Any timed or scroll-reactive UI |
 | `MagicIcon` (new `calibrate` icon), `ActionButton` | App-wide |
 | `getScreenContent` and the `site_screens` collection | Every future configurable screen (add a schema to the registry) |
 
@@ -152,7 +138,8 @@ This spec, the `/maintenance` route, its components, the content API, and the se
 | Notify-me or email capture | Not approved |
 | Any link to `/studio` from public pages | Not allowed |
 | Other public pages | Not approved |
-| The WebGL halftone canvas (ANIMATION_UI §10.1) | Not used here: SVG and CSS cover the depth |
+| The WebGL halftone canvas (ANIMATION_UI §10.1) | Not used here: type and SVG carry the motion |
+| Images on this screen | Removed with the layout revision |
 
 ---
 
@@ -163,5 +150,4 @@ This spec, the `/maintenance` route, its components, the content API, and the se
 | Content document missing | Logged (`screen content missing: run npm run seed:screens`); the error page shows a 500. |
 | Content document invalid (fails the schema) | Logged with the zod issues; error page, 500. |
 | Database unreachable | Logged by the db layer; error page, 500. |
-| Image file missing | Fallback visual (see §5); the page itself returns 200. |
 | JavaScript disabled | All text is server-rendered and readable. The countdown shows the target window without ticking. |

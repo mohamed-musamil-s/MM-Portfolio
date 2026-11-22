@@ -12,10 +12,25 @@
 
 export const MONOGRAM_VIEWBOX = { width: 414, height: 170 } as const;
 
-/** Both letterforms as one path (filled). */
-export const MONOGRAM_LETTERS =
-  "M0 170V0H46.4L98 86.9L149.6 0H198.4L116.05 138.72A21 21 0 0 1 79.95 138.72L42 74.7V170Z" +
+/** First M: stem + V, its right arm running into the second M. */
+export const MONOGRAM_M1 = "M0 170V0H46.4L98 86.9L149.6 0H198.4L116.05 138.72A21 21 0 0 1 79.95 138.72L42 74.7V170Z";
+
+/** Second M: left stem cut parallel to the first M's arm, V, right stem. */
+export const MONOGRAM_M2 =
   "M163 170V75.3L207.7 0H209.4L261 86.9L312.6 0H363V170H321V68L279.05 138.72A21 21 0 0 1 242.95 138.72L205 74.7V170Z";
+
+/** Both letterforms as one path (filled). */
+export const MONOGRAM_LETTERS = MONOGRAM_M1 + MONOGRAM_M2;
+
+/**
+ * Centre line of the diagonal gap between the two Ms, from the top edge down
+ * to where the second M's stem cut ends. The slice-split animation draws it
+ * and slides the letters apart along it.
+ */
+export const MONOGRAM_CUT = { x1: 203.05, y1: 0, x2: 158.3, y2: 75.3 } as const;
+
+/** Unit vector along the cut, pointing down-left (first M's way out). */
+export const MONOGRAM_CUT_DIRECTION = { x: -0.511, y: 0.86 } as const;
 
 /** The period: sits on the baseline, one stem-gap right of the last stem. */
 export const MONOGRAM_DOT = { cx: 398, cy: 154, r: 16 } as const;

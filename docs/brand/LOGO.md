@@ -56,16 +56,27 @@ import { Monogram } from "@/components/brand/Monogram";
 <Monogram dot="letter" className="h-8 w-auto text-paper" /> // on ink
 ```
 
-Used in the header of `/maintenance` and the 404 page.
+The headers of `/maintenance` and the 404 page use the animated version, `<AnimatedMonogram className="h-6 w-auto" />` (§6).
 
-## 6. Usage rules
+## 6. Animation: slice split
+
+`src/components/brand/AnimatedMonogram.tsx` (motion). Geometry: `MONOGRAM_M1`, `MONOGRAM_M2`, `MONOGRAM_CUT`, `MONOGRAM_CUT_DIRECTION` in `monogram.ts`.
+
+| Moment | What happens |
+| --- | --- |
+| Intro (once, ~1.2s) | Each M is cut into **five horizontal slices** that slide in from alternating sides (64 units, 0.6s, 0.06s stagger; the second M 0.12s behind) and lock into place. The two letters start **12 units apart along their diagonal cut** and snap together with a spring while an **orange line flashes down the cut**. The orange full stop pops in last. |
+| Hover | The letters **slide apart along the cut** (7 units each way), the orange cut line draws between them, and the full stop swells 1.2×. They close again on leave. |
+| Rest | The slices are swapped for whole paths, so the mark has no seams. |
+| Reduced motion | The finished mark; no intro and no hover. |
+
+## 7. Usage rules
 
 - Clear space: at least half the cap height on every side.
 - Minimum size: 20px tall for flat, 120px wide for circuit.
 - Don't stretch, rotate, outline, add shadows to the flat mark, or recolour the letters orange.
 - Never put the mark on a busy photo. Use paper, newsprint or ink.
 
-## 7. Image-generation prompts
+## 8. Image-generation prompts
 
 For producing raster renders (presentations, social images) with an image model. The SVG files above remain the source of truth.
 

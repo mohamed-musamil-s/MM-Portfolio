@@ -195,6 +195,10 @@ Verified with a production build (`next start`) connected to Atlas:
 
 - [x] Replaced the oversized hero button with `StatusPillButton`: a 48px ink pill with a label-size font. Hover only dims the fill; no hover movement, magnetic pull, orange corner brackets, halo, sheen or shockwaves. The status labels still change (`CHECKING STATUS...` → `STILL UPGRADING`). Verified: no transform on hover, label sequence by sampling, zero overflow at 1440×900, 1280×720 and 360×640.
 
+## 2026-11-23: Animated logo (slice split)
+
+- [x] `AnimatedMonogram` in the headers of `/maintenance` and the 404 page. Intro: each M arrives as five horizontal slices from alternating sides, the letters snap together along their diagonal cut with an orange flash, then the full stop pops in. Hover: the letters split along the cut with an orange line between them. Verified by sampling transforms through the intro and on hover; after the intro the slices are replaced by whole paths.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

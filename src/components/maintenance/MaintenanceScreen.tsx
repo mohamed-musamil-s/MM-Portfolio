@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Monogram } from "@/components/brand/Monogram";
+import { AnimatedMonogram } from "@/components/brand/AnimatedMonogram";
 import { InkReveal } from "@/components/motion/InkReveal";
 import { StatusDot } from "@/components/motion/StatusDot";
 import { withSignalStop } from "@/components/public/signal-stop";
@@ -51,7 +51,7 @@ export const MaintenanceScreen = ({ content, windowStartText, targetText }: Main
 
         <header className="flex items-center justify-between py-6 lg:py-10 [@media(max-height:820px)]:lg:py-6">
           <div className="flex items-center gap-4">
-            <Monogram className="h-6 w-auto" />
+            <AnimatedMonogram className="h-6 w-auto" />
             <span className="hidden text-label font-bold whitespace-nowrap uppercase sm:inline">{brand.label}</span>
           </div>
           <span className="flex items-center gap-3 font-technical text-micro whitespace-nowrap uppercase">

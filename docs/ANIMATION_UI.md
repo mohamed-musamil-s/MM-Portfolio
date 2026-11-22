@@ -102,6 +102,9 @@ src/components/ui/
   StatusPillButton.tsx# small primary pill whose label follows the status (§8b)
   status-pill/        # tv() slots for the status pill
   CustomCursor.tsx    # signal dot + spring ring / reticle (§8c)
+src/components/brand/
+  Monogram.tsx        # static "MM." mark (flat / circuit)
+  AnimatedMonogram.tsx# slice-split intro + split-along-the-cut hover (docs/brand/LOGO.md §6)
 src/components/maintenance/
   DepthStage.tsx      # CSS 3D slab + floating props around the film (§8d)
 src/lib/shared/

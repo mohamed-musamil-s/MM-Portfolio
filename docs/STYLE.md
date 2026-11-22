@@ -446,7 +446,7 @@ Spec: [screens/NOT_FOUND_BUSINESS.md](screens/NOT_FOUND_BUSINESS.md). Same frame
 
 ### 6.10 Monogram
 
-The "MM." mark (`<Monogram />`) is specified in [brand/LOGO.md](brand/LOGO.md). On the site it uses `currentColor` for the letters and signal for the full stop.
+The "MM." mark (`<Monogram />`) is specified in [brand/LOGO.md](brand/LOGO.md). On the site it uses `currentColor` for the letters and signal for the full stop. In page headers it's `<AnimatedMonogram />`: a **slice-split** intro (horizontal slices slide in from alternating sides, the two Ms snap together along their diagonal cut with an orange flash, the full stop pops in) and a hover that splits the letters along the cut.
 
 ---
 

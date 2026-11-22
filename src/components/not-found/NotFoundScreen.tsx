@@ -1,4 +1,4 @@
-import { Monogram } from "@/components/brand/Monogram";
+import { AnimatedMonogram } from "@/components/brand/AnimatedMonogram";
 import { InkReveal } from "@/components/motion/InkReveal";
 import { withSignalStop } from "@/components/public/signal-stop";
 import { ActionButton } from "@/components/ui/ActionButton";
@@ -31,7 +31,7 @@ export const NotFoundScreen = ({ content }: { content: NotFoundContent }) => (
           href={ROUTES.home}
           className="flex items-center gap-4 outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-signal"
         >
-          <Monogram className="h-6 w-auto" />
+          <AnimatedMonogram className="h-6 w-auto" />
           <span className="hidden text-label font-bold whitespace-nowrap uppercase sm:inline">
             {content.brand.label}
           </span>

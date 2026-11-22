@@ -1,6 +1,8 @@
 # MM-Portfolio Public Design System
 
-Version 1.0, 2026-11-22. Source artwork: `docs/reference/Gemini_MM.png` (the "Musamil" editorial poster).
+Version 1.1, 2026-11-22. Source artwork: `docs/reference/Gemini_MM.png` (the "Musamil" editorial poster).
+
+**Styling is done with Tailwind CSS v4.** Every rule below names the utility classes that implement it. The token layer is `src/app/globals.css`.
 
 ---
 
@@ -17,17 +19,33 @@ Version 1.0, 2026-11-22. Source artwork: `docs/reference/Gemini_MM.png` (the "Mu
 
 ### How the separation is enforced in code
 
-- The root layout (`src/app/layout.tsx`) stays neutral: it holds no theme tokens, no fonts and no global styles from this system.
-- All tokens in this document are scoped to a public wrapper, not to `:root`:
+`src/app/globals.css` splits tokens into **names** and **values**.
+
+- **Names (Tailwind utilities).** `@theme inline` declares them: `bg-paper`, `text-ink`, `font-grotesk`, `text-display`, `px-page` and so on. Each one points at a CSS variable.
+- **Values (the variables).** They live only on the public surface:
 
   ```css
-  [data-surface="public"] { /* tokens from sections 2 to 4 */ }
+  @layer base {
+    [data-surface="public"] { --bg-primary: #f4f3ee; /* ... */ }
+  }
   ```
 
-- Public pages render inside a `PublicShell` component that sets `data-surface="public"` and loads the public stylesheet and fonts. Two ways to use it:
+- **What that achieves.** Because the theme is `inline`, a public utility used outside the public surface resolves to an undefined variable and renders as nothing. The poster theme therefore can't quietly style a studio page.
+- **No default palette.** `@theme { --color-*: initial; }` removes Tailwind's built-in colors, so classes like `bg-red-500` or `text-white` don't exist anywhere in the project.
+- **The shell.** Public pages render inside a `PublicShell` component. It sets `data-surface="public"` and adds the `next/font` class names. Two ways to use it:
   - public routes move into an `app/(public)/` route group whose layout wraps them in the shell;
   - `not-found.tsx` lives at the app root, so it wraps its own content in `PublicShell`.
-- Studio routes never render inside `PublicShell`, so they inherit nothing from this system.
+- **The studio** will get its own `[data-surface="studio"]` values and token names (see `ADMIN_STYLE.md`). It never renders inside `PublicShell`.
+
+### Tailwind conventions
+
+- **Style with utilities on the element.** Don't write inline `style` attributes or CSS modules, and don't use `@apply` for components.
+- **Colors come only from tokens** (`bg-paper`, `text-ink`, `border-rule`). There's no default palette to fall back on.
+- **Variants use `tv()`** from `tailwind-variants`. Type a component's variant props with `VariantProps`.
+- **Conditional classes go through `cn()`** (`src/lib/shared/cn.ts`, clsx + tailwind-merge). Put the incoming `className` last so it can override defaults.
+- **Prefer on-scale values and named tokens.** An arbitrary `[...]` value is a last resort, for a true one-off.
+- **Class order is automatic.** `prettier-plugin-tailwindcss` sorts classes; run `npm run format`.
+- **Mobile-first:** write the base classes for mobile, then layer `sm:`, `md:` and `lg:` on top.
 
 ---
 
@@ -37,49 +55,56 @@ Version 1.0, 2026-11-22. Source artwork: `docs/reference/Gemini_MM.png` (the "Mu
 
 The palette is strictly monochrome: warm ivory paper and carbon ink. There are **no saturated accent colors**, including for links, focus, success or error states.
 
-| Token | Hex | Role |
-| --- | --- | --- |
-| `--bg-primary` | `#F4F3EE` | Archival ivory paper. Full-viewport canvas behind every public page. |
-| `--bg-surface` | `#EAE8E1` | Aged newsprint tint. Cards, blocks, image placeholders, input fills. |
-| `--text-primary` | `#0A0A0A` | Screen-print carbon ink. All headings, body text, the wordmark, primary buttons. |
-| `--text-secondary` | `#2E2E2E` | Charcoal graphite. Microtext, metadata, captions, secondary labels. |
-| `--border-ink` | `#141414` | Hairline rules, frames, registration marks, crosshairs. |
+| CSS variable | Hex | Tailwind name | Role |
+| --- | --- | --- | --- |
+| `--bg-primary` | `#F4F3EE` | `paper` | Archival ivory paper. Full-viewport canvas behind every public page. |
+| `--bg-surface` | `#EAE8E1` | `newsprint` | Aged newsprint tint. Cards, blocks, image placeholders, input fills. |
+| `--text-primary` | `#0A0A0A` | `ink` | Screen-print carbon ink. All headings, body text, the wordmark, primary buttons. |
+| `--text-secondary` | `#2E2E2E` | `graphite` | Charcoal graphite. Microtext, metadata, captions, secondary labels. |
+| `--border-ink` | `#141414` | `rule` | Hairline rules, frames, registration marks, crosshairs. |
+
+Each name works with every color utility: `bg-paper`, `text-ink`, `border-rule`, `outline-ink`, `fill-ink`, `stroke-rule`, `decoration-ink`.
 
 These are the only five color values allowed. Every other tone is one of them with opacity applied (see 2.4).
 
 Measured from the poster, the paper is `#F7F5E9` and the ink is pure black. The tokens deliberately pull the paper slightly away from yellow and lift the ink off `#000`, which keeps large ivory areas from looking tinted on screens and softens the black-on-ivory glare in long text.
 
+> The CSS variable `--text-primary` is a **color**. Tailwind's `--text-*` theme namespace holds **font sizes**, so the brief's variable names stay on the surface and never go into `@theme`. Utilities use the names in the third column.
+
 ### 2.2 Contrast (WCAG 2.2)
 
-| Foreground | On `--bg-primary` | On `--bg-surface` | Allowed use |
+| Foreground | On `bg-paper` | On `bg-newsprint` | Allowed use |
 | --- | --- | --- | --- |
-| `--text-primary` `#0A0A0A` | 17.8 : 1 | 16.2 : 1 | Any text size (AAA). |
-| `--border-ink` `#141414` | 16.6 : 1 | 15.0 : 1 | Rules and marks; text too if needed. |
-| `--text-secondary` `#2E2E2E` | 12.2 : 1 | 11.1 : 1 | Any text size (AAA). |
-| `--bg-primary` on `--text-primary` (inverted) | 17.8 : 1 | | Inverted blocks and buttons. |
+| `text-ink` `#0A0A0A` | 17.8 : 1 | 16.2 : 1 | Any text size (AAA). |
+| `rule` `#141414` | 16.6 : 1 | 15.0 : 1 | Rules and marks; text too if needed. |
+| `text-graphite` `#2E2E2E` | 12.2 : 1 | 11.1 : 1 | Any text size (AAA). |
+| `text-paper` on `bg-ink` (inverted) | 17.8 : 1 | | Inverted blocks and buttons. |
 
 ### 2.3 Contrast rules
 
-1. Text is always ink on paper or paper on ink. Never place text in `--text-secondary` on an inverted ink block; use `--bg-primary` there.
+1. Text is always ink on paper or paper on ink. Never place `text-graphite` on a `bg-ink` block; use `text-paper` there.
 2. Opacity variants (2.4) are **never** used for text that carries meaning, because they drop below 4.5 : 1.
-3. Text placed over imagery sits on a solid `--bg-primary` or `--text-primary` plate, never directly on the photo.
+3. Text placed over imagery sits on a solid `bg-paper` or `bg-ink` plate, never directly on the photo.
 4. State is never shown by color alone, because there is no color. Errors, success and the current page use words, icons, rules or weight.
 
 ### 2.4 Derived tones
 
-Derived tones are opacity applied to the five base tokens. They are not new hex values.
+Derived tones are opacity applied to the base tokens, using Tailwind's `/` modifier. They are not new hex values.
 
-| Token | Value | Use |
-| --- | --- | --- |
-| `--ink-12` | `rgb(10 10 10 / 0.12)` | Halftone dots on imagery. |
-| `--ink-disabled` | `rgb(10 10 10 / 0.40)` | Disabled controls. Exempt from contrast rules and always paired with `aria-disabled`. |
-| `--grain-opacity` | `0.04` | Paper grain overlay (allowed range `0.03` to `0.05`). |
+| Use | Classes |
+| --- | --- |
+| Halftone dots on imagery | `bg-ink/12` |
+| Disabled controls (always paired with `aria-disabled`; exempt from contrast rules) | `text-ink/40 border-ink/40` |
+| Construction lines | `stroke-ink/60` |
+| Paper grain overlay (range 3% to 5%) | `opacity-4` |
 
 ### 2.5 Dark mode
 
-The public site has **no automatic dark mode**: the ivory paper is the brand. Set `color-scheme: light` on the public shell.
+The public site has **no dark mode**: the ivory paper is the brand.
 
-Inverted sections (ivory text on an ink plate, like the black label box on the poster's collar) are allowed as deliberate editorial moments. They are not a theme.
+- The public surface sets `color-scheme: light`.
+- Never use the `dark:` variant in public components.
+- Inverted sections (`bg-ink text-paper`, like the black label box on the poster's collar) are allowed as deliberate editorial moments. They are not a theme.
 
 ---
 
@@ -89,14 +114,14 @@ Inverted sections (ivory text on an ink plate, like the black label box on the p
 
 The poster uses three voices. The headline and the slash-separated labels are a **bold, regular-width neo-grotesque**, not a condensed face. The name is **dry-brush marker lettering**. Edge annotations such as `EST. 2000` and `XXX` are **technical markings**.
 
-| Role | Typeface | Weights | Loaded via |
+| Role | Typeface | Weights | Utility |
 | --- | --- | --- | --- |
-| Display and headlines | **Inter Tight** | 700, 800 | `next/font/google` (`Inter_Tight`) |
-| Body | **Inter Tight** | 400, 500 | same family |
-| Editorial labels (poster style) | **Inter Tight** | 700 | same family |
-| Technical microtext | **JetBrains Mono** | 400, 500 | `next/font/google` (`JetBrains_Mono`) |
+| Display and headlines | **Inter Tight** | 700, 800 | `font-grotesk font-extrabold` |
+| Body | **Inter Tight** | 400, 500 | `font-grotesk font-normal` |
+| Editorial labels (poster style) | **Inter Tight** | 700 | `font-grotesk font-bold` |
+| Technical microtext | **JetBrains Mono** | 400, 500 | `font-technical` |
 | Brush wordmark "Musamil" | **Custom SVG** traced from the poster | n/a | `public/brand/musamil-wordmark.svg` |
-| Brush accents (other words) | **Permanent Marker** | 400 | `next/font/google` (`Permanent_Marker`) |
+| Brush accents (other words) | **Permanent Marker** | 400 | `font-brush` |
 
 Why these:
 
@@ -104,32 +129,42 @@ Why these:
 - **The wordmark is an SVG asset, not a font.** No web font reproduces the poster's lettering: the slant, the dry-brush edges, the long descending "M" stroke. Trace it once and use it as a logo.
 - **Permanent Marker for other brush words.** It's the closest open-source match in weight. Caveat Brush is too light and casual next to the wordmark.
 
-Expose the fonts as CSS variables: `--font-grotesk`, `--font-mono` and `--font-brush`. Self-host them through `next/font` (no runtime request to Google), with `display: "swap"`.
+**Loading the fonts.** Load them with `next/font/google`, which self-hosts them (no request to Google at runtime). Use `display: "swap"` and these `variable` names:
+
+| `next/font` import | `variable` |
+| --- | --- |
+| `Inter_Tight` | `--font-inter-tight` |
+| `JetBrains_Mono` | `--font-jetbrains-mono` |
+| `Permanent_Marker` | `--font-permanent-marker` |
+
+`PublicShell` puts those three class names on its root element. The public surface then maps them to `font-grotesk`, `font-technical` and `font-brush`.
 
 ### 3.2 Type scale
 
-Mobile-first. The fluid sizes use `clamp()` and scale between a 360px and a 1440px viewport.
+Mobile-first. The fluid sizes use `clamp()` and scale between a 360px and a 1440px viewport. Each utility sets size, line height and tracking together.
 
-| Token | Size | Line height | Tracking | Face and style |
+| Utility | Size | Line height | Tracking | Pair with |
 | --- | --- | --- | --- | --- |
-| `--fs-wordmark` | `clamp(5rem, 20vw, 18rem)` | 0.85 | n/a | Brush SVG (height-driven) |
-| `--fs-display` | `clamp(3.5rem, 10vw, 9rem)` | 0.92 | `-0.02em` | Grotesk 800, uppercase |
-| `--fs-h1` | `clamp(2.5rem, 6vw, 5rem)` | 0.95 | `-0.015em` | Grotesk 800, uppercase |
-| `--fs-h2` | `clamp(1.75rem, 3.5vw, 3rem)` | 1.0 | `-0.01em` | Grotesk 800, uppercase |
-| `--fs-h3` | `clamp(1.25rem, 2vw, 1.75rem)` | 1.1 | `0` | Grotesk 700, uppercase |
-| `--fs-lead` | `clamp(1.125rem, 1.6vw, 1.375rem)` | 1.45 | `0` | Grotesk 400, sentence case |
-| `--fs-body` | `1rem` (16px), `1.0625rem` from 1024px | 1.6 | `0` | Grotesk 400, sentence case |
-| `--fs-label` | `0.8125rem` (13px) | 1.3 | `0.04em` | Grotesk 700, uppercase |
-| `--fs-micro` | `0.6875rem` (11px) | 1.4 | `0.2em` | Mono 400–500, uppercase |
-| `--fs-micro-deco` | `0.625rem` (10px) | 1.4 | `0.25em` | Mono, decorative only |
+| (wordmark SVG height) | `clamp(5rem, 20vw, 18rem)` via `text-wordmark` + `h-[1em]` | 0.85 | n/a | brush SVG |
+| `text-display` | `clamp(3.5rem, 10vw, 9rem)` | 0.92 | `-0.02em` | `font-grotesk font-extrabold uppercase` |
+| `text-h1` | `clamp(2.5rem, 6vw, 5rem)` | 0.95 | `-0.015em` | `font-grotesk font-extrabold uppercase` |
+| `text-h2` | `clamp(1.75rem, 3.5vw, 3rem)` | 1.0 | `-0.01em` | `font-grotesk font-extrabold uppercase` |
+| `text-h3` | `clamp(1.25rem, 2vw, 1.75rem)` | 1.1 | `0` | `font-grotesk font-bold uppercase` |
+| `text-lead` | `clamp(1.125rem, 1.6vw, 1.375rem)` | 1.45 | `0` | `font-grotesk` |
+| `text-body` | `1rem` (16px), `1.0625rem` from 1024px | 1.6 | `0` | `font-grotesk` |
+| `text-label` | `0.8125rem` (13px) | 1.3 | `0.04em` | `font-grotesk font-bold uppercase` |
+| `text-micro` | `0.6875rem` (11px) | 1.4 | `0.2em` | `font-technical uppercase` |
+| `text-micro-deco` | `0.625rem` (10px) | 1.4 | `0.25em` | `font-technical uppercase`, decorative only |
+
+Don't use Tailwind's default `text-sm`, `text-xl` and so on in public components. They aren't part of this scale.
 
 ### 3.3 Typography rules
 
 **Headlines**
 
-1. Headlines are uppercase via `text-transform: uppercase`. Type the source text in normal case so screen readers don't spell it out letter by letter.
+1. Headlines use the `uppercase` utility. Type the source text in normal case so screen readers don't spell it out letter by letter.
 2. A headline can end with full stops between words, as in `CREATE. INSPIRE. ELEVATE.` This is the signature cadence. Use it only for short manifesto lines of 2 to 4 words.
-3. Underline a headline with a **partial rule**: 2px of ink, set 0.35em below the baseline, and shorter than the text (roughly 70% of the line width), exactly as on the poster.
+3. Underline a headline with a **partial rule**: a `<span aria-hidden>` beneath it with `block h-0.5 w-[70%] bg-ink mt-[0.35em]`. That's a 2px ink rule, shorter than the text, exactly as on the poster.
 
 **Brush lettering**
 
@@ -141,14 +176,14 @@ Mobile-first. The fluid sizes use `clamp()` and scale between a 360px and a 1440
 **Labels and microtext**
 
 5. Labels follow the poster's slash pattern, `MINDSET / AMBITION / FREEDOM`: words separated by ` / ` with a regular space on each side. Wrap the separators in `aria-hidden` spans, or write them as a list.
-6. Technical microtext (mono) is for metadata only: dates, indices, coordinates, figure numbers, `EST. 2000`.
-   - The smallest readable size is 11px. The 10px size is only for `aria-hidden` decoration.
-   - Vertical edge annotations use `writing-mode: vertical-rl`, rotated so they read bottom to top, as on the poster's right edge.
+6. Technical microtext (`font-technical`) is for metadata only: dates, indices, coordinates, figure numbers, `EST. 2000`.
+   - The smallest readable size is `text-micro` (11px). `text-micro-deco` is only for `aria-hidden` decoration.
+   - Vertical edge annotations use `[writing-mode:vertical-rl] rotate-180`, so they read bottom to top as on the poster's right edge.
 
 **Body text**
 
-7. Body text runs at most 68 characters wide (`max-width: 68ch`), is left-aligned and has a ragged right edge. Never justify it.
-8. Use only two weights per screen in the grotesk (for example 800 and 400). Use bold as structure, never as decoration.
+7. Body text runs at most 68 characters wide (`max-w-[68ch]`), is left-aligned and has a ragged right edge. Never use `text-justify`.
+8. Use only two weights per screen in the grotesk (for example `font-extrabold` and `font-normal`). Use bold as structure, never as decoration.
 
 ---
 
@@ -156,52 +191,57 @@ Mobile-first. The fluid sizes use `clamp()` and scale between a 360px and a 1440
 
 ### 4.1 Spacing scale
 
-The base unit is 4px. Use only these steps.
+Spacing uses Tailwind's default 4px (`0.25rem`) scale. Only these steps are allowed:
 
-| Token | Value | Token | Value |
-| --- | --- | --- | --- |
-| `--space-1` | 4px | `--space-7` | 48px |
-| `--space-2` | 8px | `--space-8` | 64px |
-| `--space-3` | 12px | `--space-9` | 96px |
-| `--space-4` | 16px | `--space-10` | 128px |
-| `--space-5` | 24px | `--space-11` | 192px |
-| `--space-6` | 32px | | |
+| Step | px | Example | Step | px | Example |
+| --- | --- | --- | --- | --- | --- |
+| `1` | 4 | `gap-1` | `8` | 32 | `p-8` |
+| `2` | 8 | `gap-2` | `12` | 48 | `mt-12` |
+| `3` | 12 | `gap-3` | `16` | 64 | `py-16` |
+| `4` | 16 | `p-4` | `24` | 96 | `py-24` |
+| `6` | 24 | `gap-6` | `32` | 128 | `py-32` |
+| | | | `48` | 192 | `py-48` |
 
-Section rhythm: `--space-9` between sections on mobile, `--space-11` on desktop.
+Section rhythm: `py-24` on mobile and `lg:py-48` on desktop. Use `gap-*` between siblings rather than margins.
 
 ### 4.2 Frame and margins
 
 These are measured from the poster and expressed as fractions of the viewport.
 
-| Token | Value | Meaning |
+| Utility | Value | Meaning |
 | --- | --- | --- |
-| `--frame-inset` | `clamp(16px, 3.5vw, 56px)` | Distance from the viewport edge to the registration crosshairs. |
-| `--page-margin` | `clamp(24px, 7vw, 128px)` | Distance from the edge to text content (the poster's left text column). |
-| `--max-content` | `1440px` | The grid stops growing here. The paper background keeps going. |
+| `frame` (as in `inset-frame`, `top-frame`, `p-frame`) | `clamp(16px, 3.5vw, 56px)` | Distance from the viewport edge to the registration crosshairs. |
+| `page` (as in `px-page`, `left-page`) | `clamp(24px, 7vw, 128px)` | Distance from the edge to text content (the poster's left text column). |
+| `max-w-poster` | `1440px` | The grid stops growing here. The paper background keeps going. |
 
 ### 4.3 Swiss editorial grid
 
-- The desktop grid has 12 columns with a `--space-5` gutter. Tablet uses 8 columns and mobile uses 4.
+- The grid is `grid grid-cols-4 gap-6 md:grid-cols-8 lg:grid-cols-12`.
 - **The layout is asymmetric by default.** The hero follows the poster:
   - Columns 1 to 5 are mostly empty paper. At least 40% of the canvas stays open.
-  - The image fills columns 5 to 12 and **bleeds off the right edge**.
-  - Text anchors to the **bottom-left** of the empty field, about two-thirds of the way down.
+  - The image fills `lg:col-start-5 lg:col-end-13` and **bleeds off the right edge**.
+  - Text anchors to the **bottom-left** of the empty field, about two-thirds of the way down (`self-end`).
 - Never center a hero composition. Center alignment is only for the single status line on very small screens.
-- The space is split by stark 1px `--border-ink` rules, never by background color changes or shadows. One structural rule per section edge is enough.
+- The space is split by stark 1px rules (`border-t border-rule`), never by background color changes or shadows. One structural rule per section edge is enough.
 - **Negative space is content.** Don't fill the empty field with stock graphics, gradients or extra copy.
 
 ### 4.4 Shape rules
 
-- Every element has `border-radius: 0`: buttons, inputs, cards, images, tags and modals.
-- The **only** curves in the system are the crosshair circles, the bullseye mark and the brush lettering.
-- No `box-shadow` and no `drop-shadow` anywhere. Depth comes from overlap and rules, as in print.
-- Borders are always 1px `--border-ink`. The heavy rule is 2px, used only for headline underlines and the active nav item.
+- **No radius.** Never use `rounded-*` in public components. The default is square; write `rounded-none` only when overriding a primitive.
+  - The **only** curves in the system are the crosshair circles (`rounded-full` inside the mark component), the bullseye mark and the brush lettering.
+- **No shadows.** Never use `shadow-*` or `drop-shadow-*`. Depth comes from overlap and rules, as in print.
+- **Borders:** always `border border-rule` (1px). The heavy rule is 2px (`border-b-2 border-ink` or `h-0.5 bg-ink`), used only for headline underlines and the active nav item.
 
 ---
 
 ## 5. Signature print motifs and texture
 
-Every motif is decorative. Each one must be `aria-hidden="true"`, have `pointer-events: none`, sit outside the tab order, and be removed in `@media print`.
+Every motif is decorative and must carry all of the following:
+
+- `aria-hidden="true"`
+- `pointer-events-none`
+- no place in the tab order
+- `print:hidden`
 
 ### 5.1 Registration crosshair
 
@@ -209,115 +249,130 @@ This is the core mark: a circle with a cross through it, the cross extending pas
 
 | Property | Value |
 | --- | --- |
-| Circle diameter | 24px (desktop), 18px (mobile) |
+| Circle diameter | `size-6` (24px) on desktop, `size-4.5` (18px) on mobile |
 | Cross length | 1.5 × the diameter, centered |
-| Stroke | 1px `--border-ink`, no fill |
-| Placement (desktop) | 4 corners at `--frame-inset`, plus the midpoints of the top, bottom, left and right edges |
-| Placement (below 640px) | 4 corners only |
+| Stroke | 1px `stroke-rule`, `fill-none` |
+| Placement (desktop) | 4 corners at `inset-frame`, plus the midpoints of the top, bottom, left and right edges |
+| Placement (below 640px) | 4 corners only; the midpoint marks get `hidden sm:block` |
 
-- **Corner companions.** A corner crosshair can carry a 64px horizontal hairline just below it, plus a 40px vertical tick beside it, mirroring the poster's top-left corner.
+- **Corner companions.** A corner crosshair can carry a 64px hairline just below it (`h-px w-16 bg-rule`), plus a 40px vertical tick beside it (`h-10 w-px bg-rule`), mirroring the poster's top-left corner.
 - **Bullseye variant.** A crosshair with a solid ink dot (40% of the diameter) at its center. Use it at most twice per screen, top-right and bottom-right, to mark the "registered" corner.
-- Build the crosshair once as an inline SVG component (`<RegistrationMark variant="open" | "bullseye" />`). Don't use the text glyph `⊕`, because its rendering varies by font.
+- Build the crosshair once as an inline SVG component, `<RegistrationMark variant="open" | "bullseye" />`, with a `tv()` recipe. Don't use the text glyph `⊕`, because its rendering varies by font.
 
 ### 5.2 Crop marks
 
 Crop marks are L-shaped corner ticks drawn outside a framed image.
 
-- Each leg is 12px long, 1px `--border-ink`.
-- The marks sit 8px outside the image's bounding box.
+- Each leg is 12px long (`w-3` or `h-3`), 1px `bg-rule`.
+- The marks sit 8px outside the image's bounding box (`-top-2 -left-2`, and so on).
 - Use them on feature images and the maintenance or 404 frame, never on small thumbnails.
 
 ### 5.3 X marks
 
 These are hand-drawn crossed strokes, as on the poster's right edge.
 
-- Use an SVG with slightly irregular strokes, 1.5px.
+- Use an SVG with slightly irregular strokes, 1.5px, `stroke-ink`.
 - Place 1 or 2 per screen, near an edge, as rhythm markers. Never use them as a close or delete icon. That needs a clean, geometric UI icon, so it isn't confused with decoration.
 
 ### 5.4 Newsprint dividers and columns
 
-- **Section divider:** a full-width 1px rule. You can put a mono label at its left end, for example `01 / WORK`, on the `--bg-primary` background with a `--space-3` gap.
+- **Section divider:** `border-t border-rule`. You can put a mono label at its left end, for example `01 / WORK`, styled `-translate-y-1/2 bg-paper pr-3 font-technical text-micro uppercase`.
 - **Newsprint column texture.** The poster's columns of small text behind the portrait are a **texture layer**, shipped as a raster or SVG image.
   - Never put lorem-ipsum text in the DOM: it's selectable, gets indexed, and is read aloud by screen readers.
-  - If real text forms the texture (for example project notes), it must be real content at a readable size of 11px or more.
+  - If real text forms the texture (for example project notes), it must be real content at `text-micro` or larger.
 
 ### 5.5 Construction lines
 
-Use thin straight strokes (0.75px ink at 60% opacity) that cross the edges of an image at an angle, like the sketch lines around the sunglasses. Use at most 3 per image, and only on hero imagery.
+Use thin straight SVG strokes (0.75px, `stroke-ink/60`) that cross the edges of an image at an angle, like the sketch lines around the sunglasses. Use at most 3 per image, and only on hero imagery.
 
 ### 5.6 Paper grain overlay
 
-```css
-[data-surface="public"]::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-grain);
-  pointer-events: none;
-  opacity: var(--grain-opacity);          /* 0.03 to 0.05 */
-  mix-blend-mode: multiply;
-  background-image: url("/textures/grain.svg"); /* feTurbulence noise, tiled */
-  background-size: 256px;
-}
+Render the grain as one element inside `PublicShell`:
+
+```tsx
+<div
+  aria-hidden
+  className="pointer-events-none fixed inset-0 z-50 bg-[url(/textures/grain.svg)] bg-size-[256px] opacity-4 mix-blend-multiply print:hidden contrast-more:hidden"
+/>
 ```
 
+- `grain.svg` is tiled `feTurbulence` noise.
+- Adjust the opacity only within `opacity-3` to `opacity-5`.
 - The grain is static. **Never animate it** (no flickering film grain), because animating a full-screen layer costs frame rate.
-- It sits above content but below focus rings and any open modal.
-- Remove it with `@media print`, and also under `@media (prefers-contrast: more)`.
+- It sits above content (`z-50`) but below focus rings and any open modal (`z-100`).
+- `contrast-more:hidden` removes it for users who ask the system for more contrast.
 
 ### 5.7 Halftone
 
 Halftone belongs on **imagery only**, not on flat surfaces.
 
-- Apply a dot pattern (`radial-gradient` at a 4px pitch, `--ink-12`) as an overlay on the image frame.
+- Overlay the image frame with a dot pattern: an absolutely positioned element using `bg-[radial-gradient(var(--text-primary)_1px,transparent_1px)] bg-size-[4px_4px] opacity-12`.
 - Or bake the halftone into the image asset itself.
 
 ---
 
 ## 6. Components
 
+Components with variants define a `tv()` recipe in a `*.styles.ts` file next to the component. Variant props come from `VariantProps<typeof recipe>`.
+
 ### 6.1 Buttons
 
-All variants share these properties:
+```ts
+// src/components/public/button.styles.ts
+import { tv, type VariantProps } from "tailwind-variants";
 
-| Property | Value |
-| --- | --- |
-| Type | `--fs-label`, uppercase |
-| Padding | 14px 24px |
-| Minimum height | 44px (touch target) |
-| Corners | radius 0 |
-| Border | 1px |
+export const button = tv({
+  base: [
+    "inline-flex min-h-11 items-center justify-center px-6 py-3.5",
+    "font-grotesk text-label font-bold uppercase",
+    "border border-ink",
+    "transition-colors duration-120 ease-print",
+    "focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ink",
+    "active:translate-y-px",
+    "aria-disabled:cursor-not-allowed aria-disabled:border-ink/40 aria-disabled:text-ink/40",
+  ],
+  variants: {
+    intent: {
+      primary: "bg-ink text-paper hover:bg-paper hover:text-ink",
+      secondary: "bg-transparent text-ink hover:bg-ink hover:text-paper",
+      text: "min-h-0 border-0 px-0 py-0 text-ink underline decoration-1 underline-offset-4 hover:decoration-2",
+    },
+    inverted: {
+      true: "focus-visible:outline-paper",
+    },
+  },
+  defaultVariants: { intent: "primary" },
+});
 
-| Variant | Rest | Hover | Active |
-| --- | --- | --- | --- |
-| Primary | ink background, ivory text, ink border | inverts: ivory background, ink text | `translateY(1px)` |
-| Secondary | transparent, ink text, ink border | ink background, ivory text | `translateY(1px)` |
-| Text | ink text, 1px underline at 4px offset | 2px underline | none |
+export type ButtonVariants = VariantProps<typeof button>;
+```
 
-- **Focus (all variants):** `outline: 2px solid var(--text-primary); outline-offset: 3px;`. On an inverted ink plate, use a `--bg-primary` outline instead. Focus is always visible: use `:focus-visible` and never remove the outline.
-- **Disabled:** `--ink-disabled` for text and border, `cursor: not-allowed`, plus `aria-disabled="true"`. No hover change.
+- **Touch target:** at least 44px tall (`min-h-11`).
+- **Hover:** primary inverts, secondary fills with ink, text buttons thicken their underline.
+- **Focus:** always visible, using `focus-visible:` only. On an inverted ink plate, pass `inverted` to get a `outline-paper` ring.
+- **Disabled:** set `aria-disabled="true"`. The `aria-disabled:` styles apply and hover does nothing.
 - **Loading:** keep the button's width and swap the label for mono `LOADING` text. No spinner colors.
-- **Transitions:** background and color only, over 120ms. Never `transition: all`.
+- **Transitions:** use `transition-colors` only. Never `transition-all`.
 
 ### 6.2 Links
 
-- **Inline links:** `--text-primary`, with a 1px underline at `text-underline-offset: 3px`. On hover the underline becomes 2px.
+- **Inline links:** `text-ink underline decoration-1 underline-offset-3 hover:decoration-2`.
 - There's **no color change** for hover or visited links. Weight and underline carry the state.
 - **External links** end with a small mono `↗`, and include an `aria-label` that mentions the new tab when one opens.
-- **Label links** (nav and footer) use `--fs-label` and show no underline until hover or the current page.
+- **Label links** (nav and footer) use `text-label font-bold uppercase no-underline hover:underline`.
 
 ### 6.3 Navigation
 
 The navigation mirrors the poster's top-right label, `MINDSET / AMBITION / FREEDOM`.
 
 - **Desktop:**
-  - A single row of label links separated by ` / `, top-right, aligned to `--page-margin`.
+  - A single row of label links separated by ` / ` (`hidden md:flex items-center gap-2`), top-right, aligned to `px-page`.
   - No bar, background or logo block.
   - A small brush or grotesk monogram sits top-left.
-- **Current page:** a 2px ink rule under the label, plus `aria-current="page"`.
+- **Current page:** `aria-current="page"` plus `aria-[current=page]:border-b-2 aria-[current=page]:border-ink`.
 - **Below 768px:**
-  - The row collapses into a single `MENU` label button.
-  - The button opens a full-screen `--bg-primary` overlay. Its links use `--fs-h1` in uppercase grotesk and are stacked left-aligned, with crosshairs in the four corners.
+  - The row collapses into a single `MENU` label button (`md:hidden`).
+  - The button opens a full-screen overlay: `fixed inset-0 z-100 bg-paper`. Its links use `text-h1 font-extrabold uppercase` and are stacked left-aligned, with crosshairs in the four corners.
   - The overlay traps focus, closes with `Esc`, and gives focus back to the `MENU` button when it closes.
 - The nav never uses brush lettering.
 
@@ -342,13 +397,13 @@ This is a full-viewport "poster" composition, the reference layout for the whole
 ⊕                       ⊕                        ⦿
 ```
 
-- **Height:** exactly one viewport. Use `min-height: 100svh`; never let it scroll on desktop.
-- **Headline:** `--fs-h1` grotesk 800 with full-stop cadence (`PORTFOLIO COMING SOON.`), the partial underline rule, and `EST. 2000` in `--fs-label` below.
-- **Status line:** mono microtext, top-right.
+- **Root element:** `relative min-h-svh overflow-hidden`. It's exactly one viewport and never scrolls on desktop.
+- **Headline:** `text-h1 font-extrabold uppercase` with full-stop cadence (`PORTFOLIO COMING SOON.`) and the partial underline rule. `EST. 2000` sits below in `text-label font-bold`.
+- **Status line:** `font-technical text-micro uppercase text-graphite`, top-right.
 - **Wordmark:** the brush SVG anchored bottom-right, overlapping the art. It carries `role="img"` and `aria-label="Musamil"`.
 - **Footer row:** two slash-label groups, bottom-left and bottom-right.
 - **Mobile:**
-  - The art stacks above the text. It is cropped at the shoulders, not shrunk.
+  - The art stacks above the text. It is cropped at the shoulders (`object-cover object-top`), not shrunk.
   - The wordmark spans the full width under the art.
   - Only the corner crosshairs are shown.
 - **Content:** no links except an optional contact label link. This page is a holding poster, not a navigation hub.
@@ -356,7 +411,7 @@ This is a full-viewport "poster" composition, the reference layout for the whole
 ### 6.5 404 screen
 
 - Use the same poster frame as maintenance, so the two read as one family.
-- The `404` numerals use `--fs-display` grotesk 800, set in the empty left field. Mono microtext beneath reads `ERROR / PAGE NOT FOUND`.
+- The `404` numerals use `text-display font-extrabold`, set in the empty left field. Beneath them is `ERROR / PAGE NOT FOUND` in `font-technical text-micro uppercase`.
 - Add 1 or 2 X marks near the numerals. This is the only screen where the X motif sits next to a heading.
 - Add one primary button, `BACK TO HOME`. It points to `/` (which currently lands on `/maintenance`).
 - Don't show the portrait here. The empty paper itself signals "nothing here".
@@ -364,37 +419,31 @@ This is a full-viewport "poster" composition, the reference layout for the whole
 
 ### 6.6 Image treatment
 
-```css
-.public-image {
-  filter: grayscale(100%) contrast(125%);
-  border-radius: 0;
-  object-fit: cover;
-  background: var(--bg-surface); /* placeholder while loading */
-}
-```
+**Photos:** `next/image` with `className="bg-newsprint object-cover grayscale contrast-125"`.
 
 - Every photo and screenshot is shown grayscale and high-contrast. Never show a color image on the public site.
-- The filter is applied in CSS so source assets stay untouched. For hero assets, prefer baking the grayscale in so the image ships smaller and isn't filtered at runtime.
+- The filter is applied with utilities so source assets stay untouched. For hero assets, prefer baking the grayscale in so the image ships smaller and isn't filtered at runtime.
 - **Framing options:**
   - none (full bleed);
-  - a 1px `--border-ink` frame;
+  - a 1px frame, `border border-rule`;
   - a frame with crop marks (5.2).
-- **Captions** go below the image in mono microtext, `FIG. 01 / PROJECT NAME`, left-aligned to the image edge.
-- **Hover:** no color reveal and no zoom on hover. A link wrapping an image underlines its caption instead.
+- **Captions:** `mt-2 font-technical text-micro uppercase text-graphite`, for example `FIG. 01 / PROJECT NAME`, left-aligned to the image edge.
+- **Hover:** no color reveal and no zoom. A link wrapping an image underlines its caption instead (`group` on the link, `group-hover:underline` on the caption).
 - **Brand assets** (the wordmark, marks and icons) never get the filter. They are already ink-only.
-- Always use `next/image` with explicit `sizes`, `alt` text for content images, and `alt=""` for decorative ones.
+- **`next/image` props:** explicit `sizes`, `alt` text for content images, and `alt=""` for decorative ones.
 
 ### 6.7 Cards and surfaces
 
-- **Cards:** `--bg-surface` background, 1px `--border-ink` border, radius 0, no shadow, `--space-5` padding.
-- **Card title:** `--fs-h3`. **Metadata:** mono microtext. **Hover:** the border thickens to 2px by animating `outline` or an inset box-shadow (not `border`), so the layout doesn't shift.
+- **Card:** `border border-rule bg-newsprint p-6`, with no radius and no shadow.
+- **Card title:** `text-h3 font-bold uppercase`. **Metadata:** `font-technical text-micro uppercase text-graphite`.
+- **Hover:** `hover:outline-2 hover:-outline-offset-2 hover:outline-ink`. The outline makes the frame look 2px thick without changing its size, so the layout doesn't shift.
 
 ### 6.8 Form fields (future contact form)
 
-- **Field:** bottom border only, 1px ink, transparent fill, radius 0.
-- **Label:** `--fs-label`, placed above the field. Never use a placeholder as the label.
-- **Focus:** the bottom border becomes 2px, plus the standard focus outline.
-- **Error:** mono microtext below the field, beginning `ERROR /`, linked with `aria-describedby`. The field gets a 2px bottom border. No red.
+- **Field:** `border-0 border-b border-ink bg-transparent px-0 py-2 text-body`.
+- **Label:** `text-label font-bold uppercase`, placed above the field. Never use a placeholder as the label.
+- **Focus:** `focus-visible:border-b-2` plus the standard focus outline.
+- **Error:** a line of `font-technical text-micro uppercase` text below the field, beginning `ERROR /`, linked with `aria-describedby`. The field gets `aria-invalid:border-b-2`. No red.
 
 ---
 
@@ -402,99 +451,64 @@ This is a full-viewport "poster" composition, the reference layout for the whole
 
 The site should feel like print: restrained, never bouncy.
 
-| Token | Value |
+| Purpose | Classes |
 | --- | --- |
-| `--duration-fast` | 120ms (hover, press) |
-| `--duration-base` | 240ms (overlays, reveals) |
-| `--ease-print` | `cubic-bezier(0.2, 0, 0, 1)` |
+| Hover and press | `duration-120 ease-print` |
+| Overlays and reveals | `duration-240 ease-print` |
 
 - **Allowed:** an ink-wipe reveal using `clip-path` (left to right, once per element, on first view); opacity fades; the nav overlay sliding in.
 - **Not allowed:** parallax, scroll-jacking, spring or bounce easing, animated grain, or animating the color of anything.
-- Animate only `transform`, `opacity` and `clip-path`.
-- Under `@media (prefers-reduced-motion: reduce)`, every transition is instant and reveals are skipped.
+- Transition only `transform`, `opacity` and `clip-path`: use `transition-transform`, `transition-opacity`, or a named property. Never `transition-all`.
+- Every animated element also carries `motion-reduce:transition-none motion-reduce:animate-none`.
 
 ---
 
 ## 8. Token reference
 
-```css
-[data-surface="public"] {
-  color-scheme: light;
+The source of truth is `src/app/globals.css`.
 
-  /* Color */
-  --bg-primary: #F4F3EE;
-  --bg-surface: #EAE8E1;
-  --text-primary: #0A0A0A;
-  --text-secondary: #2E2E2E;
-  --border-ink: #141414;
-  --ink-12: rgb(10 10 10 / 0.12);
-  --ink-disabled: rgb(10 10 10 / 0.4);
-  --grain-opacity: 0.04;
+| Group | Utilities | Variable on `[data-surface="public"]` |
+| --- | --- | --- |
+| Color | `paper`, `newsprint`, `ink`, `graphite`, `rule` | `--bg-primary`, `--bg-surface`, `--text-primary`, `--text-secondary`, `--border-ink` |
+| Font family | `font-grotesk`, `font-technical`, `font-brush` | `--public-font-grotesk`, `--public-font-technical`, `--public-font-brush` |
+| Type size | `text-wordmark`, `text-display`, `text-h1`, `text-h2`, `text-h3`, `text-lead`, `text-body`, `text-label`, `text-micro`, `text-micro-deco` | `--fs-*` |
+| Spacing | `*-frame`, `*-page` (padding, margin, inset, gap) | `--frame-inset`, `--page-margin` |
+| Width | `max-w-poster` | `--max-content` |
+| Easing | `ease-print` | fixed: `cubic-bezier(0.2, 0, 0, 1)` |
 
-  /* Type: families come from next/font variables */
-  --font-grotesk: var(--font-inter-tight), "Helvetica Neue", Arial, sans-serif;
-  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", monospace;
-  --font-brush: var(--font-permanent-marker), "Marker Felt", cursive;
+**Adding a token:**
 
-  --fs-wordmark: clamp(5rem, 20vw, 18rem);
-  --fs-display: clamp(3.5rem, 10vw, 9rem);
-  --fs-h1: clamp(2.5rem, 6vw, 5rem);
-  --fs-h2: clamp(1.75rem, 3.5vw, 3rem);
-  --fs-h3: clamp(1.25rem, 2vw, 1.75rem);
-  --fs-lead: clamp(1.125rem, 1.6vw, 1.375rem);
-  --fs-body: 1rem;
-  --fs-label: 0.8125rem;
-  --fs-micro: 0.6875rem;
-  --fs-micro-deco: 0.625rem;
+1. Put the value on `[data-surface="public"]`.
+2. Map a name to it in the public `@theme inline` block.
+3. Add a row to this table.
 
-  /* Space */
-  --space-1: 4px;  --space-2: 8px;   --space-3: 12px;  --space-4: 16px;
-  --space-5: 24px; --space-6: 32px;  --space-7: 48px;  --space-8: 64px;
-  --space-9: 96px; --space-10: 128px; --space-11: 192px;
-
-  /* Layout */
-  --frame-inset: clamp(16px, 3.5vw, 56px);
-  --page-margin: clamp(24px, 7vw, 128px);
-  --max-content: 1440px;
-  --rule: 1px solid var(--border-ink);
-  --rule-heavy: 2px solid var(--text-primary);
-  --radius: 0;
-
-  /* Motion */
-  --duration-fast: 120ms;
-  --duration-base: 240ms;
-  --ease-print: cubic-bezier(0.2, 0, 0, 1);
-
-  /* Layers */
-  --z-content: 1;
-  --z-marks: 2;
-  --z-nav: 10;
-  --z-grain: 50;
-  --z-overlay: 100;
-
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: var(--font-grotesk);
-  font-size: var(--fs-body);
-  line-height: 1.6;
-}
-
-@media (min-width: 1024px) {
-  [data-surface="public"] { --fs-body: 1.0625rem; }
-}
-```
+Never put a raw hex value in a component.
 
 ---
 
 ## 9. Quick checklist for any new public page
 
-- [ ] Renders inside `PublicShell` (`data-surface="public"`), never touches `/studio`.
-- [ ] Only the five color tokens (plus opacity-derived tones); no new hex values.
-- [ ] Every radius is 0 and there are no shadows.
+**Setup**
+
+- [ ] Renders inside `PublicShell` (`data-surface="public"`) and never touches `/studio`.
+
+**Tailwind usage**
+
+- [ ] Styled with Tailwind utilities only: no inline styles, no CSS modules, no `@apply`.
+- [ ] Colors come only from the token utilities, with no `dark:` variants.
+- [ ] Components with variants use `tv()`, and conditional classes use `cn()`.
+- [ ] Classes sorted by `npm run format`.
+
+**Visual rules**
+
+- [ ] No `rounded-*` and no `shadow-*`.
 - [ ] Asymmetric composition with at least 40% open paper in the hero.
 - [ ] At most one brush element per viewport, and none under 48px.
-- [ ] Images are grayscale with contrast 125% and have captions in mono.
-- [ ] Decorative marks are `aria-hidden`, have no pointer events, and are hidden in print.
-- [ ] Focus is visible on every control, and touch targets are at least 44px.
-- [ ] Text meets the minimum sizes (11px for microtext, 16px for body), and runs no wider than 68ch.
-- [ ] Reduced motion is respected.
+- [ ] Images are `grayscale contrast-125`, with captions in `font-technical`.
+- [ ] Decorative marks have `aria-hidden`, `pointer-events-none` and `print:hidden`.
+
+**Accessibility**
+
+- [ ] Focus is visible on every control (`focus-visible:`), and touch targets are at least `min-h-11`.
+- [ ] Text meets the minimum sizes (`text-micro` for microtext, `text-body` for body) and runs no wider than `max-w-[68ch]`.
+- [ ] `motion-reduce:` is respected.

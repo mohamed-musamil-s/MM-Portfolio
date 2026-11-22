@@ -61,6 +61,15 @@ Verified with a production build (`next start`) connected to Atlas:
 - Display font is Inter Tight, not a condensed face, because the poster's headline is a regular-width grotesque. The "Musamil" wordmark will be a traced SVG asset.
 - Nothing is implemented in CSS or components yet. The `/studio` design system (`ADMIN_STYLE.md`) is still to be defined.
 
+## 2026-11-22: Tailwind CSS adopted
+
+- [x] Installed Tailwind CSS 4.3, plus `tailwind-variants`, `tailwind-merge`, `clsx`, Prettier and `prettier-plugin-tailwindcss`.
+- [x] `src/app/globals.css` holds the public tokens from STYLE.md. They are scoped to `[data-surface="public"]`, and Tailwind's default palette is turned off.
+- [x] `cn()` helper added.
+- [x] STYLE.md rewritten so every rule names its Tailwind classes. All 40 classes the spec uses were checked to compile with Tailwind 4.3.
+- [x] ADMIN_STYLE.md records the Tailwind decision.
+- Side effect: Tailwind's reset (Preflight) now removes the browser's default heading sizes and margins, so the current unstyled placeholder pages look plainer. No page uses the design tokens yet.
+
 ## Open items
 
 - [ ] Choose a longer `ADMIN_ACCESS_CODE` before deploying.

@@ -9,6 +9,7 @@
 | Database | MongoDB Atlas via the official `mongodb` driver, database `mm-portfolio` |
 | Session signing | `jose` (HS256 JWT) |
 | Logging | `pino` (JSON), `pino-pretty` in development |
+| Styling | Tailwind CSS v4 (`@tailwindcss/postcss`), `tailwind-variants` (`tv()`), `clsx` + `tailwind-merge` (`cn()`), Prettier with `prettier-plugin-tailwindcss` |
 
 Next.js 16 renamed Middleware to **Proxy**: the file is `src/proxy.ts` and it runs on the Node.js runtime.
 
@@ -21,7 +22,8 @@ src/
   proxy.ts                  # runs before every request: request id, / redirect, studio guard
   instrumentation.ts        # boot logging, early DB connect, global server error sink
   app/
-    layout.tsx              # root layout (no styling yet)
+    layout.tsx              # root layout: imports globals.css, no theme of its own
+    globals.css             # Tailwind entry + design tokens (names in @theme, values per data-surface)
     not-found.tsx           # 404 placeholder
     error.tsx               # 500 boundary
     global-error.tsx        # root-layout failure boundary
@@ -40,6 +42,7 @@ src/
   components/studio/        # client components (login form, logout button, placeholders)
   lib/
     shared/routes.ts        # route constants, safe redirect helper (client-safe)
+    shared/cn.ts            # cn(): clsx + tailwind-merge
     server/
       env.ts                # lazy, validated env access
       logger.ts             # pino logger + scoped children
@@ -54,6 +57,18 @@ src/
 - `auth/session-token.ts`, `logger.ts` and `env.ts` skip the `server-only` import because `proxy.ts` and `instrumentation.ts` import them, and those files don't resolve the `react-server` export condition that `server-only` relies on.
 - `src/lib/shared` holds only code that is safe in the browser.
 - Client components live in `src/components` and talk to the server only through `/api` routes.
+
+## Styling
+
+- **Tailwind CSS v4 is the only styling method.** It's configured in CSS (`src/app/globals.css`); there is no `tailwind.config` file.
+- **Each design surface has its own tokens.**
+  - Public pages are wrapped in `data-surface="public"` and follow [STYLE.md](STYLE.md).
+  - The studio will use `data-surface="studio"` and follow [ADMIN_STYLE.md](ADMIN_STYLE.md).
+  - Utilities reference the surface's variables inline, so one surface's tokens render as nothing on the other.
+- **Tailwind's default color palette is turned off.** Only the project's tokens exist, so a class like `bg-red-500` doesn't compile.
+- **Formatting:**
+  - `npm run format` runs Prettier, which also sorts Tailwind classes.
+  - `npm run format:check` checks formatting without writing.
 
 ## Request flow
 

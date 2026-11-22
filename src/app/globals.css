@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+/*
+ * Token architecture
+ * ------------------
+ * 1. `@theme` / `@theme inline` declare the Tailwind utility NAMES (bg-paper,
+ *    text-ink, font-grotesk, text-display, px-page ...).
+ * 2. The VALUES live on a design surface: `[data-surface="public"]` below
+ *    (docs/STYLE.md), and later `[data-surface="studio"]` (docs/ADMIN_STYLE.md).
+ *
+ * `inline` makes each utility reference the surface variable directly, so a
+ * public utility used outside the public surface resolves to nothing. That
+ * keeps the poster theme from leaking into /studio.
+ */
+
+/* Only project tokens exist: no default palette, so raw colors like bg-red-500 cannot be used. */
+@theme {
+  --color-*: initial;
+}
+
+/* ----------------------------------------------------------------------------
+ * Public portfolio tokens: docs/STYLE.md
+ * ------------------------------------------------------------------------- */
+@theme inline {
+  /* Color */
+  --color-paper: var(--bg-primary);
+  --color-newsprint: var(--bg-surface);
+  --color-ink: var(--text-primary);
+  --color-graphite: var(--text-secondary);
+  --color-rule: var(--border-ink);
+
+  /* Font families */
+  --font-grotesk: var(--public-font-grotesk);
+  --font-technical: var(--public-font-technical);
+  --font-brush: var(--public-font-brush);
+
+  /* Type scale: size from the surface, line-height and tracking fixed here */
+  --text-wordmark: var(--fs-wordmark);
+  --text-wordmark--line-height: 0.85;
+  --text-display: var(--fs-display);
+  --text-display--line-height: 0.92;
+  --text-display--letter-spacing: -0.02em;
+  --text-h1: var(--fs-h1);
+  --text-h1--line-height: 0.95;
+  --text-h1--letter-spacing: -0.015em;
+  --text-h2: var(--fs-h2);
+  --text-h2--line-height: 1;
+  --text-h2--letter-spacing: -0.01em;
+  --text-h3: var(--fs-h3);
+  --text-h3--line-height: 1.1;
+  --text-lead: var(--fs-lead);
+  --text-lead--line-height: 1.45;
+  --text-body: var(--fs-body);
+  --text-body--line-height: 1.6;
+  --text-label: var(--fs-label);
+  --text-label--line-height: 1.3;
+  --text-label--letter-spacing: 0.04em;
+  --text-micro: var(--fs-micro);
+  --text-micro--line-height: 1.4;
+  --text-micro--letter-spacing: 0.2em;
+  --text-micro-deco: var(--fs-micro-deco);
+  --text-micro-deco--line-height: 1.4;
+  --text-micro-deco--letter-spacing: 0.25em;
+
+  /* Layout */
+  --spacing-frame: var(--frame-inset);
+  --spacing-page: var(--page-margin);
+  --container-poster: var(--max-content);
+
+  /* Motion */
+  --ease-print: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@layer base {
+  [data-surface="public"] {
+    color-scheme: light;
+
+    /* Color (exact values from docs/STYLE.md section 2) */
+    --bg-primary: #f4f3ee;
+    --bg-surface: #eae8e1;
+    --text-primary: #0a0a0a;
+    --text-secondary: #2e2e2e;
+    --border-ink: #141414;
+
+    /* Fonts: --font-inter-tight etc. are set by next/font on the PublicShell */
+    --public-font-grotesk: var(--font-inter-tight), "Helvetica Neue", Arial, sans-serif;
+    --public-font-technical: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", monospace;
+    --public-font-brush: var(--font-permanent-marker), "Marker Felt", cursive;
+
+    /* Type scale */
+    --fs-wordmark: clamp(5rem, 20vw, 18rem);
+    --fs-display: clamp(3.5rem, 10vw, 9rem);
+    --fs-h1: clamp(2.5rem, 6vw, 5rem);
+    --fs-h2: clamp(1.75rem, 3.5vw, 3rem);
+    --fs-h3: clamp(1.25rem, 2vw, 1.75rem);
+    --fs-lead: clamp(1.125rem, 1.6vw, 1.375rem);
+    --fs-body: 1rem;
+    --fs-label: 0.8125rem;
+    --fs-micro: 0.6875rem;
+    --fs-micro-deco: 0.625rem;
+
+    /* Layout */
+    --frame-inset: clamp(16px, 3.5vw, 56px);
+    --page-margin: clamp(24px, 7vw, 128px);
+    --max-content: 1440px;
+
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--public-font-grotesk);
+    font-size: var(--fs-body);
+    line-height: 1.6;
+
+    @media (width >= 64rem) {
+      --fs-body: 1.0625rem;
+    }
+  }
+}

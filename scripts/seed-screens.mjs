@@ -75,7 +75,30 @@ const SCREENS = {
     meta: { title: "Studio sign in" },
     brand: { name: "Studio" },
     steps: { email: "Email", code: "Access code" },
-    showcase: { status: "All systems online", workspace: "Workspace" },
+    showcase: {
+      status: "All systems online",
+      illustration: {
+        overview: {
+          title: "Overview",
+          period: "This week",
+          metricLabel: "Visitors",
+          metricValue: "12.4k",
+          delta: "+8.2%",
+          days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        },
+        uptime: { label: "Uptime", value: "99.9%" },
+        activity: {
+          title: "Recent activity",
+          items: [
+            { label: "Deploy succeeded", time: "2m" },
+            { label: "Page updated", time: "1h" },
+            { label: "Backup completed", time: "3h" },
+          ],
+        },
+        toggle: { label: "Auto-sync", state: "On" },
+        security: { label: "Secure session", detail: "End-to-end encrypted" },
+      },
+    },
     emailStep: {
       title: "Welcome back",
       description: "Sign in with your authorized email address to continue.",

@@ -57,7 +57,7 @@ export default async function StudioLoginPage({ searchParams }: PageProps<"/stud
       className="grid min-h-svh bg-background lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]"
     >
       <BodyScope theme="light" />
-      <LoginShowcase showcase={content.showcase} brandName={content.brand.name} />
+      <LoginShowcase showcase={content.showcase} />
       <div className="flex min-h-svh flex-col lg:min-h-0">
         <LoginShowcaseBand showcase={content.showcase} />
         <LoginFlow content={content} redirectTo={redirectTo} codeLength={codeBoxes()} />

@@ -239,6 +239,12 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] `npm run ui:add -- <name>` wraps the shadcn CLI and removes the stray `cn` package it keeps installing.
 - [x] Verified: tooltip (dark bubble), change email → step 1 prefilled, correct code → dashboard; no scroll at 1440×900, 1280×720, 375×667.
 
+## 2026-11-23: New login illustration (labelled widget cluster)
+
+- [x] Replaced the tilted workspace window with a cluster of labelled glass widgets: Overview (visitors, delta, gradient area chart, days), uptime ring, recent activity, auto-sync toggle, secure-session badge. Generic labels from the DB (`showcase.illustration`, version 7), animated and pointer-leaning.
+- [x] Fixed: SVG gradient stops ignored CSS variables in the `stopColor` attribute; they're set through `style` now.
+- [x] No scroll and no widget outside the panel at 1440×900, 1280×720 and 1024×768.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

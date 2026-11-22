@@ -1,6 +1,6 @@
 # MM-Portfolio Studio Design System
 
-Version 1.3, 2026-11-23 (modern auth form: icon tile, segmented progress, gradient button, icon actions with tooltips; overlays get the studio scope). The design system for the admin studio: every `/studio/...` route. Its aim is **operational efficiency, precision, clarity and craft**. First screen built on it: [`/studio/login`](screens/STUDIO_LOGIN_BUSINESS.md) (screenshots: [light desktop](screens/studio-login/desktop-light-1440x900.jpg), [code step](screens/studio-login/desktop-code-1440x900.jpg), [1024×768](screens/studio-login/desktop-1024x768.jpg), [mobile](screens/studio-login/mobile-375x667.jpg)).
+Version 1.4, 2026-11-23 (login illustration: labelled glass widget cluster). The design system for the admin studio: every `/studio/...` route. Its aim is **operational efficiency, precision, clarity and craft**. First screen built on it: [`/studio/login`](screens/STUDIO_LOGIN_BUSINESS.md) (screenshots: [light desktop](screens/studio-login/desktop-light-1440x900.jpg), [code step](screens/studio-login/desktop-code-1440x900.jpg), [1024×768](screens/studio-login/desktop-1024x768.jpg), [mobile](screens/studio-login/mobile-375x667.jpg)).
 
 ---
 
@@ -82,7 +82,7 @@ Names follow the shadcn/ui convention, so shadcn components work without edits. 
 - Cards: `rounded-xl`, 1px `border`, `shadow-sm`, internal padding 24px (`px-6`, `py-6`), 24px between groups.
 - Controls: `rounded-md`; inputs and buttons `h-10` in forms (`h-9` in dense tables later).
 - Focus: a 3px `ring/50` halo plus a `ring` border on every interactive element (`focus-visible`).
-- **Auth layout: split screen, light only.** `lg` and up: two columns (`1.15fr / 1fr`, `1.45fr / 1fr` from `xl`). Left, an inset (`m-3 rounded-3xl`) brand panel with a **light gradient shade** (mist base, periwinkle top-left, lavender top, sky bottom-left, washing to white at the bottom right, two faint diagonal light streaks), a tilted **3D workspace illustration** (glass app window with logo tile, "Studio", "Workspace", a blue chart card, line chart, toggle, gauge; abstract glass pills without text floating out; a shelf and tick ruler below), sized to fill the panel. No feature names or taglines on the panel. Right, the form in a 400px column. Below `lg`: a compact gradient band on top, the form below.
+- **Auth layout: split screen, light only.** `lg` and up: two columns (`1.15fr / 1fr`, `1.45fr / 1fr` from `xl`). Left, an inset (`m-3 rounded-3xl`) brand panel with a **light gradient shade** (mist base, periwinkle top-left, lavender top, sky bottom-left, washing to white at the bottom right, two faint diagonal light streaks), a **labelled glass widget cluster** in gently tilted 3D (an Overview card with a visitor count, delta badge, gradient area chart and day labels; an uptime ring; a recent-activity list; an auto-sync toggle chip; a secure-session badge), sized to fill the panel. Labels are generic UI copy from the database, never real data or feature names. Right, the form in a 400px column. Below `lg`: a compact gradient band on top, the form below.
 - Glass surfaces (`bg-card/80`, `border-card`, `backdrop-blur-xl`) only sit on the gradient panel.
 
 ## 5. Components (shadcn/ui)
@@ -115,7 +115,8 @@ Shared components keep working on this surface: `ActionButton variant="studio-ac
 Uses the `studio` theme in `src/lib/motion/tokens.ts`: 0.12 / 0.18 / 0.28s, `ease-print`, stiff springs, 0.97 press, no magnetism, no smooth scroll.
 
 - Step and view changes: fade + 24px slide, 0.28s, out then in.
-- Brand panel: gradient fields drift on 24–30s loops. The illustration floats (7s) and leans up to 5° toward the pointer; its chart line draws, bars grow, the gauge needle sweeps, the toggle flips and the pills slide in, then bob.
+- Brand panel: gradient fields drift on 24–30s loops. The widget cluster leans up to 5° toward the pointer; each widget rises in and then bobs on its own loop; the chart line draws and its area fades in, the end point pulses, the uptime ring fills, activity rows slide in, the sync icon turns and the toggle switches on.
+- SVG gradients: set `stop-color` through `style` (`style={{ stopColor: "var(--…)" }}`); the `stopColor` attribute doesn't accept CSS variables.
 - Alerts: height + opacity in and out, 0.18s, so the layout never jumps.
 - Progress indicators: `scaleX` from the left.
 - Spinners only inside the control that is busy (`LoaderCircle` + `animate-spin`).

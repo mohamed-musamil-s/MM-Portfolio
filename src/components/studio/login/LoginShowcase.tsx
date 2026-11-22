@@ -5,9 +5,9 @@ import { Monogram } from "@/components/brand/Monogram";
 import { useMotionTheme } from "@/hooks/useMotionTheme";
 import type { StudioLoginContent } from "@/lib/shared/content/studio-login-schema";
 import { AuroraBackdrop } from "./AuroraBackdrop";
-import { WorkspaceIllustration } from "./WorkspaceIllustration";
+import { WidgetCluster } from "./WidgetCluster";
 
-type ShowcaseProps = { showcase: StudioLoginContent["showcase"]; brandName: string };
+type ShowcaseProps = { showcase: StudioLoginContent["showcase"] };
 
 const EASE = [0.2, 0, 0, 1] as const;
 
@@ -21,8 +21,8 @@ const StatusPill = ({ label }: { label: string }) => (
   </span>
 );
 
-/** Desktop brand panel: light gradient shade with the tilted workspace illustration, as large as the panel allows. */
-export const LoginShowcase = ({ showcase, brandName }: ShowcaseProps) => {
+/** Desktop brand panel: light gradient shade with the labelled glass widget cluster, as large as the panel allows. */
+export const LoginShowcase = ({ showcase }: ShowcaseProps) => {
   const { reducedMotion } = useMotionTheme();
   const rise = (delay: number) => ({
     initial: reducedMotion ? false : { opacity: 0, y: 14 },
@@ -40,7 +40,7 @@ export const LoginShowcase = ({ showcase, brandName }: ShowcaseProps) => {
 
       {/* Sized by the space left: as wide as the panel, or as tall as it, whichever is smaller. */}
       <motion.div className="[container-type:size] grid min-h-0 flex-1 place-items-center" {...rise(0.1)}>
-        <WorkspaceIllustration title={brandName} workspace={showcase.workspace} className="w-[min(100cqw,100cqh)]" />
+        <WidgetCluster labels={showcase.illustration} className="w-[min(100cqw,100cqh)]" />
       </motion.div>
     </aside>
   );

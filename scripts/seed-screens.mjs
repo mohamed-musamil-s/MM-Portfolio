@@ -132,6 +132,50 @@ const SCREENS = {
     },
     footer: { note: "Restricted area. Sign-in attempts are logged and rate limited." },
   },
+  "studio-shell": {
+    brand: { name: "Studio" },
+    // Generic on purpose: the live database holds the real owner's name, the repository never does.
+    owner: { name: "Studio Owner", role: "Owner" },
+    breadcrumbRoot: "Studio",
+    groups: [
+      { label: "Workspace", items: ["dashboard", "release", "content"] },
+      { label: "Tools", items: ["resume", "chat", "analytics"] },
+    ],
+    modules: {
+      dashboard: {
+        label: "Dashboard",
+        title: "Dashboard",
+        description: "An overview of the site, releases and activity at a glance.",
+      },
+      release: {
+        label: "Release Version",
+        title: "Release Version",
+        description: "Plan, publish and roll back site versions.",
+      },
+      content: {
+        label: "Content Management",
+        title: "Content Management",
+        description: "Edit every page's copy, dates and images from one place.",
+      },
+      resume: {
+        label: "Resume Generator",
+        title: "Resume Generator",
+        description: "Build and export a resume from your portfolio content.",
+      },
+      chat: { label: "Chats", title: "Chats", description: "Read and answer messages from visitors." },
+      analytics: { label: "Analytics", title: "Analytics", description: "Traffic, sources and engagement over time." },
+    },
+    placeholder: { badge: "Coming soon", body: "This module is on the way. The shell and navigation are ready for it." },
+    actions: {
+      collapse: "Collapse sidebar",
+      expand: "Expand sidebar",
+      openMenu: "Open menu",
+      navigation: "Navigation",
+      signOut: "Sign out",
+      signingOut: "Signing out…",
+      shortcut: "Ctrl B",
+    },
+  },
 };
 
 /** Site-wide switches. Seeded only when missing; never overwritten by --force. */

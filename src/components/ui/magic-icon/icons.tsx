@@ -6,6 +6,7 @@ import { CHECK_PATH, X_STROKE_A, X_STROKE_B, circlePath, pick } from "./geometry
 import { useIconContext } from "./icon-context";
 import { InkPath } from "./ink-path";
 import type { IconName } from "./types";
+import { STUDIO_ICONS } from "./studio-icons";
 import { useOrbit } from "./use-orbit";
 
 type StateVariants = { idle: TargetAndTransition } & Partial<Record<string, TargetAndTransition>>;
@@ -183,4 +184,5 @@ export const ICONS: Record<IconName, FC> = {
   sync: Sync,
   status: Status,
   calibrate: Calibrate,
+  ...STUDIO_ICONS,
 };

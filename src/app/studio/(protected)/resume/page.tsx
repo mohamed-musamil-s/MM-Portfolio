@@ -1,11 +1,7 @@
-import type { Metadata } from "next";
-import { requireSession } from "@/lib/server/auth/guard";
-import { ROUTES } from "@/lib/shared/routes";
-import { ComingSoon } from "@/components/studio/coming-soon";
+import { createModulePage } from "../_lib/module-page";
 
-export const metadata: Metadata = { title: "Resume" };
+// Placeholder until the module is built (docs/components/STUDIO_SHELL_BUSINESS.md §2).
+const { generateMetadata, ModulePage } = createModulePage("resume");
 
-export default async function StudioResumePage() {
-  await requireSession(ROUTES.studio.resume);
-  return <ComingSoon title="Resume" />;
-}
+export { generateMetadata };
+export default ModulePage;

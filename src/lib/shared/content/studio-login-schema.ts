@@ -29,7 +29,10 @@ export const studioLoginContentSchema = z.object({
       uptime: z.object({ label: text(16), value: text(8) }),
       activity: z.object({
         title: text(24),
-        items: z.array(z.object({ label: text(32), time: text(8) })).min(1).max(3),
+        items: z
+          .array(z.object({ label: text(32), time: text(8) }))
+          .min(1)
+          .max(3),
       }),
       toggle: z.object({ label: text(24), state: text(8) }),
       security: z.object({ label: text(24), detail: text(32) }),

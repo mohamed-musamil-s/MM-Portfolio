@@ -23,15 +23,6 @@ export const ROUTES = {
   },
 } as const;
 
-export const STUDIO_NAV = [
-  { href: ROUTES.studio.dashboard, label: "Dashboard" },
-  { href: ROUTES.studio.release, label: "Release" },
-  { href: ROUTES.studio.content, label: "Content" },
-  { href: ROUTES.studio.resume, label: "Resume" },
-  { href: ROUTES.studio.chat, label: "Chat" },
-  { href: ROUTES.studio.analytics, label: "Analytics" },
-] as const;
-
 export const isStudioPath = (pathname: string): boolean =>
   pathname === ROUTES.studio.root || pathname.startsWith(`${ROUTES.studio.root}/`);
 

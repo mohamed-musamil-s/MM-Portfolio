@@ -249,6 +249,13 @@ Verified with a production build (`next start`) connected to Atlas:
 
 - [x] The widget cluster now uses the whole brand panel (logo row overlaid instead of stacked), the panel is `1.6fr` from `xl`, and the Overview, uptime and activity cards are larger. About 800px wide at 1440×900 (was about 720px). No scroll at 1440×900, 1280×720 and 1024×768.
 
+## 2026-11-23: Studio shell (sidebar + topbar)
+
+- [x] Spec: docs/components/STUDIO_SHELL_BUSINESS.md (reference video inspected frame by frame).
+- [x] Collapsible sidebar (256px / 68px rail, cookie-persisted, Ctrl/Cmd+B, tooltips when collapsed, sliding active pill), mobile Sheet drawer, sticky topbar with breadcrumb and owner chip, sign-out row. Eight new animated MagicIcons. Module pages are "Coming soon" placeholders inside the shell. Shell copy from site_screens/studio-shell (owner name set only in the DB). Studio is light-only.
+- [x] Verified: navigation + active state, collapse persists through reload, centred rail icons, tooltip, mobile drawer opens with all six links, next= redirect after login.
+- [ ] Not yet verified in the browser: sign-out from the sidebar row, closing the drawer by choosing a page.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

@@ -1,4 +1,21 @@
-export const ICON_NAMES = ["arrow-up-right", "lock", "copy", "menu", "sync", "status", "calibrate"] as const;
+export const ICON_NAMES = [
+  "arrow-up-right",
+  "lock",
+  "copy",
+  "menu",
+  "sync",
+  "status",
+  "calibrate",
+  // Studio navigation (studio-icons.tsx)
+  "dashboard",
+  "release",
+  "content",
+  "resume",
+  "chat",
+  "analytics",
+  "logout",
+  "panel",
+] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];
 

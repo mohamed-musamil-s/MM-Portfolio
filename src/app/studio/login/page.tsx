@@ -54,7 +54,7 @@ export default async function StudioLoginPage({ searchParams }: PageProps<"/stud
   return (
     <main
       data-studio-theme="light"
-      className="grid min-h-svh bg-background lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]"
+      className="grid min-h-svh bg-background lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]"
     >
       <BodyScope theme="light" />
       <LoginShowcase showcase={content.showcase} />

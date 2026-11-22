@@ -266,19 +266,19 @@ export const WidgetCluster = ({ labels, className }: { labels: Labels; className
       <div className="relative aspect-square perspective-[1800px]">
         <div className="absolute top-[78%] left-[14%] h-[12%] w-[72%] rounded-[50%] bg-aurora-indigo/15 blur-3xl" />
         <motion.div className="absolute inset-0 transform-3d" style={{ rotateX, rotateY }}>
-          <Floating className="top-[21%] left-[13%] w-[64%]" z={0} bob={6} delay={0.1} still={still}>
+          <Floating className="top-[19%] left-[9%] w-[72%]" z={0} bob={6} delay={0.1} still={still}>
             <OverviewCard labels={labels.overview} still={still} />
           </Floating>
-          <Floating className="top-[6%] left-[66%] w-[26%]" z={70} bob={9} delay={0.3} still={still}>
+          <Floating className="top-[3%] left-[69%] w-[28%]" z={70} bob={9} delay={0.3} still={still}>
             <UptimeCard labels={labels.uptime} still={still} />
           </Floating>
-          <Floating className="top-[7%] left-[3%]" z={40} bob={7} delay={0.45} still={still}>
+          <Floating className="top-[5%] left-[2%]" z={40} bob={7} delay={0.45} still={still}>
             <ToggleChip labels={labels.toggle} still={still} />
           </Floating>
-          <Floating className="top-[71%] left-[1%] w-[46%]" z={55} bob={8} delay={0.6} still={still}>
+          <Floating className="top-[70%] left-[2%] w-[49%]" z={55} bob={8} delay={0.6} still={still}>
             <ActivityCard labels={labels.activity} still={still} />
           </Floating>
-          <Floating className="top-[79%] left-[53%]" z={85} bob={10} delay={0.75} still={still}>
+          <Floating className="top-[83%] left-[54%]" z={85} bob={10} delay={0.75} still={still}>
             <SecurityBadge labels={labels.security} />
           </Floating>
         </motion.div>

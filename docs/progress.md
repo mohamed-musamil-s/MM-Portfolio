@@ -245,6 +245,10 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] Fixed: SVG gradient stops ignored CSS variables in the `stopColor` attribute; they're set through `style` now.
 - [x] No scroll and no widget outside the panel at 1440×900, 1280×720 and 1024×768.
 
+## 2026-11-23: Bigger login illustration
+
+- [x] The widget cluster now uses the whole brand panel (logo row overlaid instead of stacked), the panel is `1.6fr` from `xl`, and the Overview, uptime and activity cards are larger. About 800px wide at 1440×900 (was about 720px). No scroll at 1440×900, 1280×720 and 1024×768.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

@@ -31,16 +31,21 @@ export const LoginShowcase = ({ showcase }: ShowcaseProps) => {
   });
 
   return (
-    <aside className="relative isolate m-3 hidden flex-col gap-4 overflow-hidden rounded-3xl border border-card p-6 lg:flex xl:p-8">
+    <aside className="relative isolate m-3 hidden overflow-hidden rounded-3xl border border-card lg:block">
       <AuroraBackdrop />
-      <motion.div className="flex items-center justify-between gap-4" {...rise(0)}>
+      {/* The illustration takes the whole panel; the logo row floats over its top edge. */}
+      <motion.div
+        className="[container-type:size] absolute inset-0 grid place-items-center px-4 pt-14 pb-3 xl:pt-16"
+        {...rise(0.1)}
+      >
+        <WidgetCluster labels={showcase.illustration} className="w-[min(100cqw,100cqh)]" />
+      </motion.div>
+      <motion.div
+        className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between gap-4 p-6 xl:px-8"
+        {...rise(0)}
+      >
         <Monogram dot="letter" className="h-7 w-auto text-foreground" />
         <StatusPill label={showcase.status} />
-      </motion.div>
-
-      {/* Sized by the space left: as wide as the panel, or as tall as it, whichever is smaller. */}
-      <motion.div className="[container-type:size] grid min-h-0 flex-1 place-items-center" {...rise(0.1)}>
-        <WidgetCluster labels={showcase.illustration} className="w-[min(100cqw,100cqh)]" />
       </motion.div>
     </aside>
   );

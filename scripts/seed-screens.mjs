@@ -4,6 +4,7 @@
  *
  *   npm run seed:screens            insert missing screens only
  *   npm run seed:screens -- --force replace existing screens with these defaults
+ *   npm run seed:screens -- --force --only=studio-login   replace just one screen
  *
  * This is the ONLY place default copy lives. The app never falls back to it:
  * at runtime all content is read from MongoDB and validated by the zod schema
@@ -73,18 +74,26 @@ const SCREENS = {
   "studio-login": {
     meta: { title: "Studio sign in" },
     brand: { name: "Studio" },
-    stepIndicator: "Step {current} of {total}",
+    steps: { email: "Email", code: "Access code" },
+    showcase: {
+      status: "All systems online",
+      headline: "Operate the studio.",
+      body: "Releases, content, resume, chat and analytics, managed from one quiet, precise workspace.",
+      modules: ["Release", "Content", "Resume", "Chat", "Analytics"],
+      card: { label: "Current release", title: "v2.0", status: "Ready to ship" },
+      footer: "© 2026 Studio",
+    },
     emailStep: {
-      title: "Admin Access",
-      description: "Please enter your authorized email address to proceed.",
+      title: "Welcome back",
+      description: "Sign in with your authorized email address to continue.",
       label: "Email address",
       placeholder: "name@example.com",
       submit: "Continue",
       pending: "Checking…",
     },
     codeStep: {
-      title: "Security Check",
-      description: "Enter the secure access code for {email}.",
+      title: "Enter your access code",
+      description: "Type your access code to finish signing in.",
       label: "Access code",
       submit: "Authenticate",
       pending: "Verifying…",
@@ -118,6 +127,7 @@ const main = async () => {
     throw new Error("MONGODB_URI is not set (run with --env-file=.env.local)");
   }
   const force = process.argv.includes("--force");
+  const only = process.argv.find((arg) => arg.startsWith("--only="))?.slice("--only=".length);
   const client = new MongoClient(uri, { appName: "mm-portfolio-seed", serverSelectionTimeoutMS: 10_000 });
 
   try {
@@ -135,6 +145,9 @@ const main = async () => {
     }
 
     for (const [slug, content] of Object.entries(SCREENS)) {
+      if (only && slug !== only) {
+        continue;
+      }
       const existing = await screens.findOne({ _id: slug }, { projection: { version: 1 } });
       if (existing && !force) {
         console.log(`skip    ${slug} (exists, version ${existing.version}; use --force to replace)`);

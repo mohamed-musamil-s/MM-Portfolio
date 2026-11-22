@@ -1,13 +1,15 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Check, Eye, EyeOff, LoaderCircle, ShieldCheck } from "lucide-react";
+import { REGEXP_ONLY_DIGITS } from "input-otp";
+import { Check, Eye, EyeOff, LoaderCircle, ShieldCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/studio/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/studio/ui/form";
 import { Input } from "@/components/studio/ui/input";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/studio/ui/input-otp";
 import { LOGIN_LIMITS } from "@/lib/shared/auth/login-input";
 import type { StudioLoginContent } from "@/lib/shared/content/studio-login-schema";
 
@@ -15,6 +17,8 @@ type CodeStepProps = {
   copy: StudioLoginContent["codeStep"];
   errors: StudioLoginContent["errors"];
   email: string;
+  /** Number of boxes for a numeric code (4–8), or null to use a plain masked field. */
+  codeLength: number | null;
   status: "idle" | "pending" | "success";
   disabled: boolean;
   /** Resolves false when the code was rejected; the field is then cleared and refocused. */
@@ -22,9 +26,38 @@ type CodeStepProps = {
   onBack: () => void;
 };
 
-/** Step 2: the access code (masked, numeric keypad), plus a way back to change the email. */
-export const CodeStep = ({ copy, errors, email, status, disabled, onSubmit, onBack }: CodeStepProps) => {
+/** The email from step 1 as an identity row, with the way back. */
+const IdentityRow = ({
+  email,
+  backLabel,
+  onBack,
+  busy,
+}: {
+  email: string;
+  backLabel: string;
+  onBack: () => void;
+  busy: boolean;
+}) => (
+  <div className="flex items-center gap-3 rounded-xl border bg-card p-2.5 pl-3">
+    <span
+      aria-hidden
+      className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/10 text-sm font-semibold text-primary uppercase"
+    >
+      {email.charAt(0)}
+    </span>
+    <span className="min-w-0 flex-1 truncate text-sm font-medium" title={email}>
+      {email}
+    </span>
+    <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={onBack}>
+      {backLabel}
+    </Button>
+  </div>
+);
+
+/** Step 2: the access code. Numeric codes get one box per digit and submit on the last one. */
+export const CodeStep = ({ copy, errors, email, codeLength, status, disabled, onSubmit, onBack }: CodeStepProps) => {
   const [revealed, setRevealed] = useState(false);
+  const minLength = codeLength ?? LOGIN_LIMITS.codeMinLength;
   const schema = useMemo(
     () =>
       z.object({
@@ -32,77 +65,105 @@ export const CodeStep = ({ copy, errors, email, status, disabled, onSubmit, onBa
           .string()
           .trim()
           .min(1, { error: errors.codeRequired })
-          .min(LOGIN_LIMITS.codeMinLength, { error: errors.codeTooShort })
+          .min(minLength, { error: errors.codeTooShort })
           .max(LOGIN_LIMITS.codeMaxLength, { error: errors.codeTooShort }),
       }),
-    [errors.codeRequired, errors.codeTooShort],
+    [errors.codeRequired, errors.codeTooShort, minLength],
   );
   const form = useForm<z.input<typeof schema>, unknown, z.output<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: { accessCode: "" },
-    mode: "onTouched",
+    mode: "onSubmit",
   });
   const busy = status !== "idle";
 
+  const submit = form.handleSubmit(async ({ accessCode }) => {
+    if (!(await onSubmit(accessCode))) {
+      form.reset();
+      // The field is still disabled from the pending state until the next render.
+      setTimeout(() => form.setFocus("accessCode"), 0);
+    }
+  });
+
+  const revealToggle = (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon-sm"
+      className="text-muted-foreground"
+      aria-label={revealed ? copy.hide : copy.show}
+      onClick={() => setRevealed((value) => !value)}
+    >
+      {revealed ? <EyeOff aria-hidden /> : <Eye aria-hidden />}
+    </Button>
+  );
+
   return (
     <Form {...form}>
-      <form
-        noValidate
-        onSubmit={form.handleSubmit(async ({ accessCode }) => {
-          if (!(await onSubmit(accessCode))) {
-            form.reset();
-            form.setFocus("accessCode");
-          }
-        })}
-        className="grid gap-6"
-      >
+      <form noValidate onSubmit={submit} className="grid gap-6">
         {/* Lets password managers pair the code with the email from step 1. */}
         <input type="email" name="username" autoComplete="username" value={email} readOnly hidden />
+        <IdentityRow email={email} backLabel={copy.back} onBack={onBack} busy={busy} />
         <FormField
           control={form.control}
           name="accessCode"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>{copy.label}</FormLabel>
-              <div className="relative">
-                <FormControl>
-                  <Input
+            <FormItem className="gap-3">
+              <div className="flex items-center justify-between">
+                <FormLabel>{copy.label}</FormLabel>
+                {revealToggle}
+              </div>
+              <FormControl>
+                {codeLength ? (
+                  <InputOTP
                     {...field}
-                    type={revealed ? "text" : "password"}
+                    maxLength={codeLength}
+                    pattern={REGEXP_ONLY_DIGITS}
                     inputMode="numeric"
                     autoComplete="current-password"
                     autoFocus
+                    disabled={busy || disabled}
+                    onComplete={() => void submit()}
+                    containerClassName="w-full"
+                  >
+                    <InputOTPGroup className="grid w-full auto-cols-fr grid-flow-col gap-3">
+                      {Array.from({ length: codeLength }, (_, index) => (
+                        <InputOTPSlot
+                          key={index}
+                          index={index}
+                          masked={!revealed}
+                          className="h-14 w-full rounded-xl border bg-card text-2xl font-semibold shadow-none first:rounded-xl last:rounded-xl data-[active=true]:ring-4"
+                        />
+                      ))}
+                    </InputOTPGroup>
+                  </InputOTP>
+                ) : (
+                  <Input
+                    {...field}
+                    type={revealed ? "text" : "password"}
+                    autoComplete="current-password"
+                    autoFocus
                     maxLength={LOGIN_LIMITS.codeMaxLength}
-                    className="h-10 pr-10 font-code tracking-[0.3em]"
+                    className="h-11 rounded-lg font-code tracking-[0.3em]"
                   />
-                </FormControl>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  className="absolute top-1/2 right-1 -translate-y-1/2 text-muted-foreground"
-                  aria-label={revealed ? copy.hide : copy.show}
-                  onClick={() => setRevealed((value) => !value)}
-                >
-                  {revealed ? <EyeOff aria-hidden /> : <Eye aria-hidden />}
-                </Button>
-              </div>
+                )}
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <div className="grid gap-3">
-          <Button type="submit" size="lg" disabled={busy || disabled} aria-busy={status === "pending" || undefined}>
-            {status === "pending" ? <LoaderCircle aria-hidden className="animate-spin" /> : null}
-            {status === "success" ? <Check aria-hidden /> : null}
-            {status === "idle" ? <ShieldCheck aria-hidden /> : null}
-            {status === "pending" ? copy.pending : status === "success" ? copy.success : copy.submit}
-          </Button>
-          <Button type="button" variant="ghost" size="lg" disabled={busy} onClick={onBack}>
-            <ArrowLeft aria-hidden />
-            {copy.back}
-          </Button>
-        </div>
+        <Button
+          type="submit"
+          size="lg"
+          className="h-11 rounded-lg"
+          disabled={busy || disabled}
+          aria-busy={status === "pending" || undefined}
+        >
+          {status === "pending" ? <LoaderCircle aria-hidden className="animate-spin" /> : null}
+          {status === "success" ? <Check aria-hidden /> : null}
+          {status === "idle" ? <ShieldCheck aria-hidden /> : null}
+          {status === "pending" ? copy.pending : status === "success" ? copy.success : copy.submit}
+        </Button>
       </form>
     </Form>
   );

@@ -102,6 +102,29 @@
 
   --font-ui: var(--studio-font-ui);
   --font-code: var(--studio-font-code);
+
+  /* Brand panel of the studio login: always dark, whatever the OS theme. */
+  --color-hero: var(--studio-hero);
+  --color-hero-foreground: var(--studio-hero-foreground);
+  --color-hero-muted: var(--studio-hero-muted);
+  --color-hero-success: var(--studio-hero-success);
+  --color-aurora-blue: var(--studio-aurora-blue);
+  --color-aurora-cyan: var(--studio-aurora-cyan);
+  --color-aurora-indigo: var(--studio-aurora-indigo);
+
+  /* shadcn input-otp caret */
+  --animate-caret-blink: caret-blink 1.1s ease-out infinite;
+  @keyframes caret-blink {
+    0%,
+    70%,
+    100% {
+      opacity: 1;
+    }
+    20%,
+    50% {
+      opacity: 0;
+    }
+  }
 }
 
 @layer base {
@@ -127,6 +150,14 @@
     --studio-border: #e2e8f0; /* decorative hairlines */
     --studio-input: #7b8ba3; /* field boundary, 3.5:1 (WCAG 1.4.11) */
     --studio-ring: #2563eb;
+
+    --studio-hero: #070b16;
+    --studio-hero-foreground: #f8fafc; /* 19:1 */
+    --studio-hero-muted: #94a3b8; /* 7.6:1 */
+    --studio-hero-success: #4ade80; /* 11:1 */
+    --studio-aurora-blue: #2563eb;
+    --studio-aurora-cyan: #06b6d4;
+    --studio-aurora-indigo: #6366f1;
 
     --studio-font-ui: var(--font-studio-inter), ui-sans-serif, system-ui, sans-serif;
     --studio-font-code: ui-monospace, "SFMono-Regular", Menlo, monospace;

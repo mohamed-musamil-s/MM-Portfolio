@@ -211,6 +211,13 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] **/studio/login** is a two-step flow: email (`POST /api/auth/initiate-login`, 10-minute challenge cookie, same answer for every valid email) → access code (`POST /api/auth/login`, now requires the challenge). Content from `site_screens/studio-login` (new).
 - [x] Verified in the browser (light and dark): field validation, step change, wrong code (alert, stays on step 2, field cleared and refocused), Change email (prefilled), correct code → `/studio/dashboard`, signed-in visit redirects. API: 400 / 403 / 200 + cookie / 400 `challenge_expired` by curl. No scroll at 375×667.
 
+## 2026-11-23: Studio login redesign (split screen)
+
+- [x] Replaced the centred card with a **split-screen** layout: an always-dark brand panel (animated aurora, grid, gradient headline, module chips, glass release card) and a clean form column with step pills, a leading-icon email field, an identity row and **shadcn InputOTP** boxes (masked, show/hide, auto-submit on the last digit). Compact aurora band on phones.
+- [x] Content model: `steps` and `showcase` added, `stepIndicator` removed, new copy ("Welcome back", "Enter your access code"). `npm run seed:screens -- --force --only=<slug>` replaces one screen.
+- [x] The shadcn CLI installed the unrelated `cn` package again; removed, and `components.json` now points `utils` at `@/lib/utils` (re-export) so it won't recur.
+- [x] Verified light and dark: wrong code auto-submits, alerts, clears, refocuses the first box; correct code → `/studio/dashboard`. No scroll at 1440×900, 1280×720, 1024×768 and 375×667.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

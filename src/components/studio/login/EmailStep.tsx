@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, LoaderCircle } from "lucide-react";
+import { ArrowRight, LoaderCircle, Mail } from "lucide-react";
 import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -49,25 +49,37 @@ export const EmailStep = ({ copy, errors, defaultEmail, pending, disabled, onSub
           render={({ field }) => (
             <FormItem>
               <FormLabel>{copy.label}</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  type="email"
-                  inputMode="email"
-                  autoComplete="username"
-                  autoCapitalize="none"
-                  spellCheck={false}
-                  autoFocus
-                  placeholder={copy.placeholder}
-                  maxLength={LOGIN_LIMITS.emailMaxLength}
-                  className="h-10"
+              <div className="relative">
+                <Mail
+                  aria-hidden
+                  className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground"
                 />
-              </FormControl>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="email"
+                    inputMode="email"
+                    autoComplete="username"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    autoFocus
+                    placeholder={copy.placeholder}
+                    maxLength={LOGIN_LIMITS.emailMaxLength}
+                    className="h-11 rounded-lg pl-10"
+                  />
+                </FormControl>
+              </div>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" size="lg" disabled={pending || disabled} aria-busy={pending || undefined}>
+        <Button
+          type="submit"
+          size="lg"
+          className="h-11 rounded-lg"
+          disabled={pending || disabled}
+          aria-busy={pending || undefined}
+        >
           {pending ? <LoaderCircle aria-hidden className="animate-spin" /> : null}
           {pending ? copy.pending : copy.submit}
           {pending ? null : <ArrowRight aria-hidden />}

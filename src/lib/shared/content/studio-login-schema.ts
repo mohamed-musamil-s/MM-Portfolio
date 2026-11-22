@@ -11,8 +11,17 @@ const text = (max: number) => z.string().trim().min(1).max(max);
 export const studioLoginContentSchema = z.object({
   meta: z.object({ title: text(70) }),
   brand: z.object({ name: text(24) }),
-  /** Placeholders: {current} {total}. */
-  stepIndicator: text(32),
+  /** Labels of the two step pills. */
+  steps: z.object({ email: text(24), code: text(24) }),
+  /** Left brand panel (desktop) / top band (phones). */
+  showcase: z.object({
+    status: text(40),
+    headline: text(60),
+    body: text(200),
+    modules: z.array(text(24)).min(1).max(6),
+    card: z.object({ label: text(32), title: text(16), status: text(32) }),
+    footer: text(60),
+  }),
   emailStep: z.object({
     title: text(40),
     description: text(160),

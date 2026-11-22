@@ -44,6 +44,8 @@ The global limit stops distributed guessing, but it also means an attacker can l
 
 The client IP comes from `x-forwarded-for`. That header is only trustworthy behind a proxy that sets it (Vercel, a load balancer). Without one, a client can spoof it, and only the global limit still applies.
 
+The login screen shows one input box per digit for a 4–8 digit numeric code, so the code's length is visible. The lockout above is what protects the code; the length alone doesn't help an attacker past it.
+
 **Recommendation:** use a longer access code in production. The limits above make 4 digits workable, but not strong.
 
 ## Sessions

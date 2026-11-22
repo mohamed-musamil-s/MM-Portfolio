@@ -4,14 +4,14 @@ import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useMotionTheme } from "@/hooks/useMotionTheme";
+import { LockKeyhole } from "lucide-react";
 import type { StudioLoginContent } from "@/lib/shared/content/studio-login-schema";
-import { cn } from "@/lib/shared/cn";
 import { ROUTES } from "@/lib/shared/routes";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/studio/ui/card";
 import { CodeStep } from "./CodeStep";
 import { EmailStep } from "./EmailStep";
 import { FormAlert } from "./FormAlert";
 import { postLogin, type LoginApiResult } from "./login-api";
+import { StepPills } from "./StepPills";
 
 /*
  * Two-step studio sign-in (docs/screens/STUDIO_LOGIN_BUSINESS.md):
@@ -31,6 +31,8 @@ type LoginFlowProps = {
   content: StudioLoginContent;
   /** Where to go after signing in (already validated as a /studio path). */
   redirectTo: string;
+  /** Boxes for a numeric access code, or null for a plain masked field. */
+  codeLength: number | null;
 };
 
 const fill = (template: string, values: Record<string, string | number>): string =>
@@ -70,7 +72,7 @@ const useLockout = () => {
   };
 };
 
-export const LoginFlow = ({ content, redirectTo }: LoginFlowProps) => {
+export const LoginFlow = ({ content, redirectTo, codeLength }: LoginFlowProps) => {
   const router = useRouter();
   const { tokens, reducedMotion } = useMotionTheme();
   const [step, setStep] = useState<Step>("email");
@@ -124,93 +126,80 @@ export const LoginFlow = ({ content, redirectTo }: LoginFlowProps) => {
 
   const stepIndex = STEP_ORDER.indexOf(step);
   const direction = step === "code" ? 1 : -1;
-  const slide = reducedMotion ? 0 : 16;
+  const slide = reducedMotion ? 0 : 24;
   const copy = step === "email" ? content.emailStep : content.codeStep;
 
   return (
-    <Card className="gap-0 overflow-hidden py-0">
-      {/* Step indicator */}
-      <div className="flex items-center justify-between gap-4 border-b border-border px-6 py-3">
-        <span className="text-xs font-medium text-muted-foreground tabular-nums">
-          {fill(content.stepIndicator, { current: stepIndex + 1, total: STEP_ORDER.length })}
-        </span>
-        <span aria-hidden className="flex gap-1.5">
-          {STEP_ORDER.map((key, index) => (
-            <span key={key} className="relative h-1 w-8 overflow-hidden rounded-full bg-muted">
-              <motion.span
-                className="absolute inset-0 origin-left rounded-full bg-primary"
-                initial={false}
-                animate={{ scaleX: index <= stepIndex ? 1 : 0 }}
-                transition={{ duration: tokens.duration.slow, ease: tokens.ease }}
-              />
-            </span>
-          ))}
-        </span>
+    <section className="flex flex-1 flex-col px-6 py-8 sm:px-10 lg:py-8">
+      <header className="hidden items-center justify-end lg:flex">
+        <span className="text-sm font-medium text-muted-foreground">{content.brand.name}</span>
+      </header>
+
+      <div className="flex flex-1 items-center justify-center py-6">
+        <div className="flex w-full max-w-[400px] flex-col gap-8">
+          <StepPills labels={[content.steps.email, content.steps.code]} current={stepIndex} />
+
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: direction * slide }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -direction * slide }}
+              transition={{ duration: tokens.duration.slow, ease: tokens.ease }}
+              className="flex flex-col gap-8"
+            >
+              <div className="flex flex-col gap-2">
+                <h1 className="text-3xl font-semibold tracking-tight text-balance">{copy.title}</h1>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {step === "email" ? (
+                    content.emailStep.description
+                  ) : (
+                    <DescriptionWithEmail template={content.codeStep.description} email={email} />
+                  )}
+                </p>
+              </div>
+              <FormAlert title={content.errors.title} message={error} />
+              {step === "email" ? (
+                <EmailStep
+                  copy={content.emailStep}
+                  errors={content.errors}
+                  defaultEmail={email}
+                  pending={status === "pending"}
+                  disabled={lockout.locked}
+                  onSubmit={submitEmail}
+                />
+              ) : (
+                <CodeStep
+                  copy={content.codeStep}
+                  errors={content.errors}
+                  email={email}
+                  codeLength={codeLength}
+                  status={status}
+                  disabled={lockout.locked}
+                  onSubmit={submitCode}
+                  onBack={goBack}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
 
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={step}
-          initial={{ opacity: 0, x: direction * slide }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -direction * slide }}
-          transition={{ duration: tokens.duration.slow, ease: tokens.ease }}
-          className="flex flex-col gap-6 py-6"
-        >
-          <CardHeader className="gap-2">
-            <CardTitle className="text-xl tracking-tight">{copy.title}</CardTitle>
-            <CardDescription className="leading-relaxed">
-              {step === "email" ? (
-                content.emailStep.description
-              ) : (
-                <DescriptionWithEmail template={content.codeStep.description} email={email} />
-              )}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-6">
-            <FormAlert title={content.errors.title} message={error} />
-            {step === "email" ? (
-              <EmailStep
-                copy={content.emailStep}
-                errors={content.errors}
-                defaultEmail={email}
-                pending={status === "pending"}
-                disabled={lockout.locked}
-                onSubmit={submitEmail}
-              />
-            ) : (
-              <CodeStep
-                copy={content.codeStep}
-                errors={content.errors}
-                email={email}
-                status={status}
-                disabled={lockout.locked}
-                onSubmit={submitCode}
-                onBack={goBack}
-              />
-            )}
-          </CardContent>
-        </motion.div>
-      </AnimatePresence>
-    </Card>
+      <footer className="flex items-center justify-center gap-2 text-xs text-muted-foreground lg:justify-start">
+        <LockKeyhole aria-hidden className="size-3.5" />
+        {content.footer.note}
+      </footer>
+    </section>
   );
 };
 
-/** Renders the code-step description with the email from step 1 set as a monospace chip. */
+/** Renders the code-step description with the email from step 1 in the foreground colour. */
 const DescriptionWithEmail = ({ template, email }: { template: string; email: string }) => {
   const [before, after] = template.split("{email}");
   return (
     <>
       {before}
-      <span
-        className={cn(
-          "inline-block max-w-full truncate rounded-sm bg-muted px-1.5 py-0.5 align-bottom font-code text-[0.8125rem] leading-snug text-foreground",
-          after === undefined && "hidden",
-        )}
-        title={email}
-      >
-        {email}
-      </span>
+      {after === undefined ? null : <span className="font-medium break-all text-foreground">{email}</span>}
       {after}
     </>
   );

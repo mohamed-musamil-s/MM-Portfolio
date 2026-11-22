@@ -231,6 +231,14 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] No feature names or taglines: the pills are abstract (dot + placeholder bars), and the headline, body and footer are gone from the panel and the phone band. `showcase` now holds only `status` and `workspace` (DB version 6).
 - [x] No scroll at 1440×900, 1280×720, 1024×768 and 375×667.
 
+## 2026-11-23: Modern login form + icon "Change email"
+
+- [x] Form restyle: icon tile per step, segmented gradient progress, 48px rounded fields with a soft focus ring, larger code boxes that tint when filled, gradient primary button. Column widened to 420px.
+- [x] "Change email" is now a pencil icon button with a shadcn Tooltip (and the same text as its accessible name).
+- [x] Fixed: Radix overlays (tooltips) rendered outside the studio scope; `BodyScope` mirrors the surface, light pin and font onto `<body>`, and light pinning now wins on the same element.
+- [x] `npm run ui:add -- <name>` wraps the shadcn CLI and removes the stray `cn` package it keeps installing.
+- [x] Verified: tooltip (dark bubble), change email → step 1 prefilled, correct code → dashboard; no scroll at 1440×900, 1280×720, 375×667.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

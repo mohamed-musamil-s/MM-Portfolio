@@ -1,6 +1,6 @@
 # MM-Portfolio Studio Design System
 
-Version 1.2, 2026-11-23 (light-only login, light gradient brand panel with a 3D workspace illustration). The design system for the admin studio: every `/studio/...` route. Its aim is **operational efficiency, precision, clarity and craft**. First screen built on it: [`/studio/login`](screens/STUDIO_LOGIN_BUSINESS.md) (screenshots: [light desktop](screens/studio-login/desktop-light-1440x900.jpg), [1024×768](screens/studio-login/desktop-1024x768.jpg), [mobile](screens/studio-login/mobile-375x667.jpg)).
+Version 1.3, 2026-11-23 (modern auth form: icon tile, segmented progress, gradient button, icon actions with tooltips; overlays get the studio scope). The design system for the admin studio: every `/studio/...` route. Its aim is **operational efficiency, precision, clarity and craft**. First screen built on it: [`/studio/login`](screens/STUDIO_LOGIN_BUSINESS.md) (screenshots: [light desktop](screens/studio-login/desktop-light-1440x900.jpg), [code step](screens/studio-login/desktop-code-1440x900.jpg), [1024×768](screens/studio-login/desktop-1024x768.jpg), [mobile](screens/studio-login/mobile-375x667.jpg)).
 
 ---
 
@@ -97,13 +97,16 @@ Generated with the shadcn CLI (`components.json`, style `new-york`) into `src/co
 | `Label` | Radix label. |
 | `Form` | react-hook-form + zod (`@hookform/resolvers`). `FormLabel`/`FormControl`/`FormMessage` wire `htmlFor`, `aria-invalid` and `aria-describedby`. |
 | `Alert` | `default` and `destructive` (tinted `destructive-surface` fill, `destructive/40` border). |
+| `Tooltip` | Dark bubble (`bg-foreground text-background`). Every icon-only button gets one, plus an `aria-label` with the same text. |
 | `InputOTP` | One box per digit (`h-14`, `rounded-xl`, `text-2xl`), separated boxes in a grid. Added a `masked` prop to `InputOTPSlot` so secrets show as dots. `animate-caret-blink` keyframes live in globals.css. |
 
 Icons: `lucide-react`, 16px, `aria-hidden` when next to text.
 
-Patterns used by the login: **step pills** (number → check when done, accent on the current one, a hairline between), **identity row** (avatar initial, email, ghost "Change" button), inputs with a leading icon (`pl-10`), `h-11 rounded-lg` for auth inputs and buttons.
+Patterns used by the login: an **icon tile** above each step's title (48px, `rounded-2xl`, primary → indigo gradient, white icon); a **segmented progress** bar (one segment per step, gradient fill, current step name and `n/total` above); an **identity chip** (gradient avatar initial, email, a pencil icon button with a tooltip to change it); `h-12 rounded-xl` fields with a 4px soft focus ring; **code boxes** `h-16 rounded-2xl` that tint (`border-primary/50 bg-primary/5`) once filled; a **gradient primary button** (`from-primary to-aurora-indigo`, coloured shadow, brightens on hover). Shared classes live in `src/components/studio/login/auth-styles.ts`.
 
-The shadcn CLI resolves `components.json` → `utils: "@/lib/utils"`, a re-export of `lib/shared/cn.ts`. With a custom path it installs an unrelated npm package named `cn`; if that ever reappears in package.json, remove it.
+Add shadcn components with **`npm run ui:add -- <name>`** (`scripts/shadcn-add.mjs`). The shadcn registry currently imports `cn` from an unrelated npm package of that name and installs it; the wrapper rewrites those imports to `@/lib/shared/cn` and uninstalls the package.
+
+**Overlays.** Radix portals render at the end of `<body>`, outside the page's `[data-surface]` wrapper. `BodyScope` (in `StudioShell`, and with `theme="light"` on the login) mirrors the surface, the pinned theme and the Inter font variable onto `<body>` while a studio page is mounted. The dark token rule is `[data-surface="studio"]:not([data-studio-theme="light"])`, so a pin on the same element wins.
 
 Shared components keep working on this surface: `ActionButton variant="studio-action"` now uses these token names (`border-input`, `bg-card`, `primary`, `destructive`).
 

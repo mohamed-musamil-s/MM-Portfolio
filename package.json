@@ -10,7 +10,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "seed:screens": "node --env-file=.env.local scripts/seed-screens.mjs",
-    "brand:assets": "node scripts/build-brand-assets.mjs"
+    "brand:assets": "node scripts/build-brand-assets.mjs",
+    "ui:add": "node scripts/shadcn-add.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

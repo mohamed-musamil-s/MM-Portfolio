@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { BodyScope } from "@/components/studio/BodyScope";
 import { LoginFlow } from "@/components/studio/login/LoginFlow";
 import { LoginShowcase, LoginShowcaseBand } from "@/components/studio/login/LoginShowcase";
 import { getCurrentSession } from "@/lib/server/auth/session";
@@ -55,6 +56,7 @@ export default async function StudioLoginPage({ searchParams }: PageProps<"/stud
       data-studio-theme="light"
       className="grid min-h-svh bg-background lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]"
     >
+      <BodyScope theme="light" />
       <LoginShowcase showcase={content.showcase} brandName={content.brand.name} />
       <div className="flex min-h-svh flex-col lg:min-h-0">
         <LoginShowcaseBand showcase={content.showcase} />

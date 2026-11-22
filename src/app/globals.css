@@ -195,7 +195,10 @@
     background-color: var(--studio-background);
     color: var(--studio-foreground);
     font-family: var(--studio-font-ui);
+  }
 
+  /* Dark colour set from the OS, except where the light theme is pinned (also when pinned on the same element, e.g. <body>). */
+  [data-surface="studio"]:not([data-studio-theme="light"]) {
     @media (prefers-color-scheme: dark) {
       color-scheme: dark;
       --studio-background: #0f172a;

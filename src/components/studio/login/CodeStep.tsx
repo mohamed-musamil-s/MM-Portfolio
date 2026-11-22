@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
-import { Check, Eye, EyeOff, LoaderCircle, ShieldCheck } from "lucide-react";
+import { Check, Eye, EyeOff, LoaderCircle, PencilLine, ShieldCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -10,8 +10,11 @@ import { Button } from "@/components/studio/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/studio/ui/form";
 import { Input } from "@/components/studio/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/studio/ui/input-otp";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/studio/ui/tooltip";
 import { LOGIN_LIMITS } from "@/lib/shared/auth/login-input";
 import type { StudioLoginContent } from "@/lib/shared/content/studio-login-schema";
+import { cn } from "@/lib/shared/cn";
+import { AUTH_FIELD, AUTH_PRIMARY_BUTTON } from "./auth-styles";
 
 type CodeStepProps = {
   copy: StudioLoginContent["codeStep"];
@@ -26,7 +29,7 @@ type CodeStepProps = {
   onBack: () => void;
 };
 
-/** The email from step 1 as an identity row, with the way back. */
+/** The email from step 1 as an identity chip, with an icon button back to step 1. */
 const IdentityRow = ({
   email,
   backLabel,
@@ -38,19 +41,32 @@ const IdentityRow = ({
   onBack: () => void;
   busy: boolean;
 }) => (
-  <div className="flex items-center gap-3 rounded-xl border bg-card p-2.5 pl-3">
+  <div className="flex items-center gap-3 rounded-2xl border bg-card p-2 pl-2.5 shadow-xs">
     <span
       aria-hidden
-      className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/10 text-sm font-semibold text-primary uppercase"
+      className="grid size-9 shrink-0 place-items-center rounded-full bg-linear-to-br from-primary to-aurora-indigo text-sm font-semibold text-primary-foreground uppercase"
     >
       {email.charAt(0)}
     </span>
     <span className="min-w-0 flex-1 truncate text-sm font-medium" title={email}>
       {email}
     </span>
-    <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={onBack}>
-      {backLabel}
-    </Button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="rounded-xl text-muted-foreground hover:text-foreground"
+          aria-label={backLabel}
+          disabled={busy}
+          onClick={onBack}
+        >
+          <PencilLine aria-hidden />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{backLabel}</TooltipContent>
+    </Tooltip>
   </div>
 );
 
@@ -132,7 +148,7 @@ export const CodeStep = ({ copy, errors, email, codeLength, status, disabled, on
                           key={index}
                           index={index}
                           masked={!revealed}
-                          className="h-14 w-full rounded-xl border bg-card text-2xl font-semibold shadow-none first:rounded-xl last:rounded-xl data-[active=true]:ring-4"
+                          className="h-16 w-full rounded-2xl border bg-card text-3xl font-semibold shadow-xs first:rounded-2xl last:rounded-2xl data-[active=true]:ring-4 data-[active=true]:ring-ring/15 data-[filled=true]:border-primary/50 data-[filled=true]:bg-primary/5"
                         />
                       ))}
                     </InputOTPGroup>
@@ -144,7 +160,7 @@ export const CodeStep = ({ copy, errors, email, codeLength, status, disabled, on
                     autoComplete="current-password"
                     autoFocus
                     maxLength={LOGIN_LIMITS.codeMaxLength}
-                    className="h-11 rounded-lg font-code tracking-[0.3em]"
+                    className={cn(AUTH_FIELD, "font-code tracking-[0.3em]")}
                   />
                 )}
               </FormControl>
@@ -155,7 +171,7 @@ export const CodeStep = ({ copy, errors, email, codeLength, status, disabled, on
         <Button
           type="submit"
           size="lg"
-          className="h-11 rounded-lg"
+          className={AUTH_PRIMARY_BUTTON}
           disabled={busy || disabled}
           aria-busy={status === "pending" || undefined}
         >

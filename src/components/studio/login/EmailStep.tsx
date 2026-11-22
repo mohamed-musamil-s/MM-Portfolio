@@ -9,6 +9,8 @@ import { Button } from "@/components/studio/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/studio/ui/form";
 import { Input } from "@/components/studio/ui/input";
 import { LOGIN_LIMITS } from "@/lib/shared/auth/login-input";
+import { cn } from "@/lib/shared/cn";
+import { AUTH_FIELD, AUTH_PRIMARY_BUTTON } from "./auth-styles";
 import type { StudioLoginContent } from "@/lib/shared/content/studio-login-schema";
 
 type EmailStepProps = {
@@ -52,7 +54,7 @@ export const EmailStep = ({ copy, errors, defaultEmail, pending, disabled, onSub
               <div className="relative">
                 <Mail
                   aria-hidden
-                  className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground"
+                  className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground"
                 />
                 <FormControl>
                   <Input
@@ -65,7 +67,7 @@ export const EmailStep = ({ copy, errors, defaultEmail, pending, disabled, onSub
                     autoFocus
                     placeholder={copy.placeholder}
                     maxLength={LOGIN_LIMITS.emailMaxLength}
-                    className="h-11 rounded-lg pl-10"
+                    className={cn(AUTH_FIELD, "pl-11")}
                   />
                 </FormControl>
               </div>
@@ -76,7 +78,7 @@ export const EmailStep = ({ copy, errors, defaultEmail, pending, disabled, onSub
         <Button
           type="submit"
           size="lg"
-          className="h-11 rounded-lg"
+          className={AUTH_PRIMARY_BUTTON}
           disabled={pending || disabled}
           aria-busy={pending || undefined}
         >

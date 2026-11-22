@@ -4,14 +4,15 @@ import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useMotionTheme } from "@/hooks/useMotionTheme";
-import { LockKeyhole } from "lucide-react";
+import { KeyRound, LockKeyhole, Mail } from "lucide-react";
+import { TooltipProvider } from "@/components/studio/ui/tooltip";
 import type { StudioLoginContent } from "@/lib/shared/content/studio-login-schema";
 import { ROUTES } from "@/lib/shared/routes";
 import { CodeStep } from "./CodeStep";
 import { EmailStep } from "./EmailStep";
 import { FormAlert } from "./FormAlert";
 import { postLogin, type LoginApiResult } from "./login-api";
-import { StepPills } from "./StepPills";
+import { StepProgress } from "./StepProgress";
 
 /*
  * Two-step studio sign-in (docs/screens/STUDIO_LOGIN_BUSINESS.md):
@@ -130,66 +131,74 @@ export const LoginFlow = ({ content, redirectTo, codeLength }: LoginFlowProps) =
   const copy = step === "email" ? content.emailStep : content.codeStep;
 
   return (
-    <section className="flex flex-1 flex-col px-6 py-8 sm:px-10 lg:py-8">
-      <header className="hidden items-center justify-end lg:flex">
-        <span className="text-sm font-medium text-muted-foreground">{content.brand.name}</span>
-      </header>
+    <TooltipProvider delayDuration={200}>
+      <section className="flex flex-1 flex-col px-6 py-8 sm:px-10 lg:py-8">
+        <header className="hidden items-center justify-end lg:flex">
+          <span className="text-sm font-medium text-muted-foreground">{content.brand.name}</span>
+        </header>
 
-      <div className="flex flex-1 items-center justify-center py-6">
-        <div className="flex w-full max-w-[400px] flex-col gap-8">
-          <StepPills labels={[content.steps.email, content.steps.code]} current={stepIndex} />
+        <div className="flex flex-1 items-center justify-center py-6">
+          <div className="flex w-full max-w-[420px] flex-col gap-10">
+            <StepProgress labels={[content.steps.email, content.steps.code]} current={stepIndex} />
 
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={step}
-              initial={{ opacity: 0, x: direction * slide }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -direction * slide }}
-              transition={{ duration: tokens.duration.slow, ease: tokens.ease }}
-              className="flex flex-col gap-8"
-            >
-              <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-semibold tracking-tight text-balance">{copy.title}</h1>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {step === "email" ? (
-                    content.emailStep.description
-                  ) : (
-                    <DescriptionWithEmail template={content.codeStep.description} email={email} />
-                  )}
-                </p>
-              </div>
-              <FormAlert title={content.errors.title} message={error} />
-              {step === "email" ? (
-                <EmailStep
-                  copy={content.emailStep}
-                  errors={content.errors}
-                  defaultEmail={email}
-                  pending={status === "pending"}
-                  disabled={lockout.locked}
-                  onSubmit={submitEmail}
-                />
-              ) : (
-                <CodeStep
-                  copy={content.codeStep}
-                  errors={content.errors}
-                  email={email}
-                  codeLength={codeLength}
-                  status={status}
-                  disabled={lockout.locked}
-                  onSubmit={submitCode}
-                  onBack={goBack}
-                />
-              )}
-            </motion.div>
-          </AnimatePresence>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={step}
+                initial={{ opacity: 0, x: direction * slide }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -direction * slide }}
+                transition={{ duration: tokens.duration.slow, ease: tokens.ease }}
+                className="flex flex-col gap-8"
+              >
+                <div className="flex flex-col gap-3">
+                  <span
+                    aria-hidden
+                    className="mb-3 grid size-12 place-items-center rounded-2xl bg-linear-to-br from-primary to-aurora-indigo text-primary-foreground shadow-lg shadow-primary/25"
+                  >
+                    {step === "email" ? <Mail className="size-5" /> : <KeyRound className="size-5" />}
+                  </span>
+                  <h1 className="text-[2rem] leading-tight font-semibold tracking-tight text-balance">{copy.title}</h1>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {step === "email" ? (
+                      content.emailStep.description
+                    ) : (
+                      <DescriptionWithEmail template={content.codeStep.description} email={email} />
+                    )}
+                  </p>
+                </div>
+                <FormAlert title={content.errors.title} message={error} />
+                {step === "email" ? (
+                  <EmailStep
+                    copy={content.emailStep}
+                    errors={content.errors}
+                    defaultEmail={email}
+                    pending={status === "pending"}
+                    disabled={lockout.locked}
+                    onSubmit={submitEmail}
+                  />
+                ) : (
+                  <CodeStep
+                    copy={content.codeStep}
+                    errors={content.errors}
+                    email={email}
+                    codeLength={codeLength}
+                    status={status}
+                    disabled={lockout.locked}
+                    onSubmit={submitCode}
+                    onBack={goBack}
+                  />
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
-      </div>
 
-      <footer className="flex items-center justify-center gap-2 text-xs text-muted-foreground lg:justify-start">
-        <LockKeyhole aria-hidden className="size-3.5" />
-        {content.footer.note}
-      </footer>
-    </section>
+        <footer className="flex items-center justify-center gap-2 text-xs text-muted-foreground lg:justify-start">
+          <LockKeyhole aria-hidden className="size-3.5" />
+          {content.footer.note}
+        </footer>
+      </section>
+    </TooltipProvider>
   );
 };
 

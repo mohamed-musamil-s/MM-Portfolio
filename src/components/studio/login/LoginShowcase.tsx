@@ -40,11 +40,7 @@ export const LoginShowcase = ({ showcase, brandName }: ShowcaseProps) => {
 
       {/* Sized by the space left: as wide as the panel, or as tall as it, whichever is smaller. */}
       <motion.div className="[container-type:size] grid min-h-0 flex-1 place-items-center" {...rise(0.1)}>
-        <WorkspaceIllustration
-          title={brandName}
-          workspace={showcase.workspace}
-          className="w-[min(100cqw,100cqh)]"
-        />
+        <WorkspaceIllustration title={brandName} workspace={showcase.workspace} className="w-[min(100cqw,100cqh)]" />
       </motion.div>
     </aside>
   );

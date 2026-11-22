@@ -2,6 +2,7 @@ import { Inter } from "next/font/google";
 import type { ReactNode } from "react";
 import { MotionProvider } from "@/components/ui/MotionProvider";
 import { cn } from "@/lib/shared/cn";
+import { BodyScope } from "./BodyScope";
 
 // Self-hosted by next/font; globals.css maps it to `font-ui` on the studio surface.
 const inter = Inter({ subsets: ["latin"], variable: "--font-studio-inter", display: "swap" });
@@ -13,6 +14,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-studio-inter", displ
  */
 export const StudioShell = ({ children }: { children: ReactNode }) => (
   <div data-surface="studio" className={cn(inter.variable, "min-h-svh font-ui antialiased")}>
+    <BodyScope surface="studio" className={inter.variable} />
     <MotionProvider theme="studio">{children}</MotionProvider>
   </div>
 );

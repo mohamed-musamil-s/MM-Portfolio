@@ -21,7 +21,7 @@ const StatusPill = ({ label }: { label: string }) => (
   </span>
 );
 
-/** Desktop brand panel: light gradient shade, the tilted workspace illustration, a short caption. */
+/** Desktop brand panel: light gradient shade with the tilted workspace illustration, as large as the panel allows. */
 export const LoginShowcase = ({ showcase, brandName }: ShowcaseProps) => {
   const { reducedMotion } = useMotionTheme();
   const rise = (delay: number) => ({
@@ -31,28 +31,20 @@ export const LoginShowcase = ({ showcase, brandName }: ShowcaseProps) => {
   });
 
   return (
-    <aside className="relative isolate m-3 hidden flex-col justify-between gap-6 overflow-hidden rounded-3xl border border-card p-10 lg:flex xl:p-12 [@media(max-height:800px)]:p-8">
+    <aside className="relative isolate m-3 hidden flex-col gap-4 overflow-hidden rounded-3xl border border-card p-6 lg:flex xl:p-8">
       <AuroraBackdrop />
       <motion.div className="flex items-center justify-between gap-4" {...rise(0)}>
         <Monogram dot="letter" className="h-7 w-auto text-foreground" />
         <StatusPill label={showcase.status} />
       </motion.div>
 
-      <motion.div className="flex min-h-0 flex-1 items-center justify-center" {...rise(0.1)}>
+      {/* Sized by the space left: as wide as the panel, or as tall as it, whichever is smaller. */}
+      <motion.div className="[container-type:size] grid min-h-0 flex-1 place-items-center" {...rise(0.1)}>
         <WorkspaceIllustration
           title={brandName}
           workspace={showcase.workspace}
-          modules={showcase.modules}
-          className="max-w-[680px] [@media(max-height:800px)]:max-w-[500px]"
+          className="w-[min(100cqw,100cqh)]"
         />
-      </motion.div>
-
-      <motion.div className="flex max-w-md flex-col gap-3" {...rise(0.25)}>
-        <h2 className="text-3xl font-semibold tracking-tight text-balance [@media(max-height:800px)]:text-2xl">
-          {showcase.headline}
-        </h2>
-        <p className="text-sm leading-relaxed text-muted-foreground">{showcase.body}</p>
-        <p className="pt-2 text-xs text-muted-foreground">{showcase.footer}</p>
       </motion.div>
     </aside>
   );
@@ -60,12 +52,9 @@ export const LoginShowcase = ({ showcase, brandName }: ShowcaseProps) => {
 
 /** Phones and tablets: a compact gradient band above the form. */
 export const LoginShowcaseBand = ({ showcase }: { showcase: StudioLoginContent["showcase"] }) => (
-  <div className="relative isolate m-3 mb-0 flex flex-col gap-4 overflow-hidden rounded-3xl border border-card p-6 lg:hidden">
+  <div className="relative isolate m-3 mb-0 flex items-center justify-between gap-4 overflow-hidden rounded-3xl border border-card p-5 lg:hidden">
     <AuroraBackdrop />
-    <div className="flex items-center justify-between gap-4">
-      <Monogram dot="letter" className="h-6 w-auto text-foreground" />
-      <StatusPill label={showcase.status} />
-    </div>
-    <h2 className="text-2xl leading-tight font-semibold tracking-tight">{showcase.headline}</h2>
+    <Monogram dot="letter" className="h-6 w-auto text-foreground" />
+    <StatusPill label={showcase.status} />
   </div>
 );

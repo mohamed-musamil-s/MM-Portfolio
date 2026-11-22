@@ -16,13 +16,8 @@ export const studioLoginContentSchema = z.object({
   /** Left brand panel (desktop) / top band (phones). */
   showcase: z.object({
     status: text(40),
-    headline: text(60),
-    body: text(200),
     /** Label under the app name in the illustration window. */
     workspace: text(24),
-    /** Floating pills in the illustration (up to 5). */
-    modules: z.array(text(32)).min(1).max(5),
-    footer: text(60),
   }),
   emailStep: z.object({
     title: text(40),

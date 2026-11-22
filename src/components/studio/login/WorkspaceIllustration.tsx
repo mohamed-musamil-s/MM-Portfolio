@@ -9,8 +9,8 @@ import { cn } from "@/lib/shared/cn";
 /*
  * Tilted "Studio workspace" illustration for the login brand panel: a glass
  * app window (logo, workspace label, a blue chart card, a line chart, a
- * toggle, a gauge) with the studio's modules floating out of it as glass
- * pills, a shelf and a tick ruler below. CSS 3D (perspective + preserve-3d),
+ * toggle, a gauge) with abstract glass pills (no text) floating out of it,
+ * a shelf and a tick ruler below. CSS 3D (perspective + preserve-3d),
  * sized in container units so it scales with the panel.
  *
  * Motion: the whole rig floats and leans a few degrees toward the pointer;
@@ -21,7 +21,6 @@ import { cn } from "@/lib/shared/cn";
 type WorkspaceIllustrationProps = {
   title: string;
   workspace: string;
-  modules: readonly string[];
   className?: string;
 };
 
@@ -30,12 +29,12 @@ const EASE = [0.2, 0, 0, 1] as const;
 const z = (px: number): CSSProperties => ({ transform: `translateZ(${px}px)` });
 
 const BARS = [34, 52, 44, 62, 48];
-const PILL_LAYOUT = [
-  { top: "5%", left: "56%" },
-  { top: "17%", left: "57.5%" },
-  { top: "29%", left: "59%" },
-  { top: "41%", left: "60.5%" },
-  { top: "53%", left: "62%" },
+/** Abstract glass pills floating out of the window: position and the two placeholder bar widths. */
+const PILLS = [
+  { top: "10%", left: "60%", bars: ["62%", "34%"] },
+  { top: "21%", left: "61.5%", bars: ["48%", "40%"] },
+  { top: "32%", left: "63%", bars: ["56%", "26%"] },
+  { top: "43%", left: "64.5%", bars: ["40%", "44%"] },
 ];
 
 const LogoTile = () => (
@@ -126,7 +125,7 @@ const Gauge = ({ still }: { still: boolean }) => (
   </svg>
 );
 
-export const WorkspaceIllustration = ({ title, workspace, modules, className }: WorkspaceIllustrationProps) => {
+export const WorkspaceIllustration = ({ title, workspace, className }: WorkspaceIllustrationProps) => {
   const { reducedMotion } = useMotionTheme();
   const lean = usePointerParallax(5);
   const rotateY = useTransform(lean.x, (value) => REST.rotateY + value);
@@ -135,9 +134,9 @@ export const WorkspaceIllustration = ({ title, workspace, modules, className }: 
 
   return (
     <div aria-hidden className={cn("[container-type:inline-size] relative w-full", className)}>
-      <div className="relative aspect-[6/5] perspective-[1800px]">
+      <div className="relative aspect-square perspective-[1800px]">
         {/* Soft shadow on the "floor" */}
-        <div className="absolute top-[70%] left-[10%] h-[18%] w-[75%] rounded-[50%] bg-aurora-indigo/15 blur-3xl" />
+        <div className="absolute top-[72%] left-[10%] h-[16%] w-[75%] rounded-[50%] bg-aurora-indigo/15 blur-3xl" />
 
         <motion.div className="absolute inset-0 transform-3d" style={{ rotateX, rotateY, rotateZ: REST.rotateZ }}>
           <motion.div
@@ -147,13 +146,13 @@ export const WorkspaceIllustration = ({ title, workspace, modules, className }: 
           >
             {/* Ghost card behind the window */}
             <div
-              className="absolute top-[14%] left-[10%] h-[60%] w-[76%] rounded-[4cqw] border border-card/70 bg-card/35"
+              className="absolute top-[18%] left-[10%] h-[56%] w-[76%] rounded-[4cqw] border border-card/70 bg-card/35"
               style={z(-70)}
             />
 
             {/* Main window */}
             <div
-              className="absolute top-[6%] left-[3%] flex h-[64%] w-[82%] flex-col gap-[2.4cqw] rounded-[4cqw] border border-card bg-card/80 p-[3.6cqw] shadow-2xl shadow-aurora-indigo/15 backdrop-blur-xl"
+              className="absolute top-[12%] left-[3%] flex h-[58%] w-[82%] flex-col gap-[2.4cqw] rounded-[4cqw] border border-card bg-card/80 p-[3.6cqw] shadow-2xl shadow-aurora-indigo/15 backdrop-blur-xl"
               style={z(0)}
             >
               <div className="flex items-center justify-between gap-[3cqw]">
@@ -211,7 +210,7 @@ export const WorkspaceIllustration = ({ title, workspace, modules, className }: 
 
             {/* Shelf under the window */}
             <div
-              className="absolute top-[74%] left-[0%] flex h-[9%] w-[70%] items-center gap-[3cqw] rounded-[3cqw] border border-card bg-card/80 px-[3.6cqw] shadow-xl shadow-aurora-indigo/10 backdrop-blur-xl"
+              className="absolute top-[74%] left-[0%] flex h-[8%] w-[70%] items-center gap-[3cqw] rounded-[3cqw] border border-card bg-card/80 px-[3.6cqw] shadow-xl shadow-aurora-indigo/10 backdrop-blur-xl"
               style={z(40)}
             >
               <span className="size-[4.4cqw] rounded-[1.2cqw] bg-aurora-indigo" />
@@ -219,7 +218,7 @@ export const WorkspaceIllustration = ({ title, workspace, modules, className }: 
             </div>
 
             {/* Tick ruler */}
-            <svg viewBox="0 0 300 12" className="absolute top-[88%] left-[8%] w-[78%]" style={z(10)}>
+            <svg viewBox="0 0 300 12" className="absolute top-[86%] left-[8%] w-[78%]" style={z(10)}>
               {Array.from({ length: 60 }, (_, index) => (
                 <line
                   key={index}
@@ -234,13 +233,12 @@ export const WorkspaceIllustration = ({ title, workspace, modules, className }: 
               ))}
             </svg>
 
-            {/* Modules floating out of the window */}
-            {modules.slice(0, PILL_LAYOUT.length).map((module, index) => {
-              const place = PILL_LAYOUT[index] ?? PILL_LAYOUT[0];
+            {/* Abstract pills floating out of the window */}
+            {PILLS.map(({ top, left, bars }, index) => {
               return (
-                <div key={module} className="absolute transform-3d" style={{ ...place, ...z(80 + index * 14) }}>
+                <div key={top} className="absolute w-[30%] transform-3d" style={{ top, left, ...z(80 + index * 14) }}>
                   <motion.div
-                    className="flex items-center gap-[1.8cqw] rounded-[2.2cqw] border border-card bg-card/80 px-[2.8cqw] py-[1.8cqw] whitespace-nowrap shadow-lg shadow-aurora-indigo/10 backdrop-blur-xl"
+                    className="flex items-center gap-[1.8cqw] rounded-[2.2cqw] border border-card bg-card/80 px-[2.8cqw] py-[2.2cqw] shadow-lg shadow-aurora-indigo/10 backdrop-blur-xl"
                     initial={still ? false : { opacity: 0, x: -20 }}
                     animate={still ? { opacity: 1 } : { opacity: 1, x: 0, y: [0, -4, 0] }}
                     transition={
@@ -257,7 +255,10 @@ export const WorkspaceIllustration = ({ title, workspace, modules, className }: 
                       className="size-[1.5cqw] rounded-full bg-aurora-indigo"
                       style={{ opacity: 1 - index * 0.15 }}
                     />
-                    <span className="text-[2.6cqw] font-medium text-foreground">{module}</span>
+                    <span className="flex flex-1 items-center gap-[1.2cqw]">
+                      <span className="h-[1.3cqw] rounded-full bg-aurora-indigo/25" style={{ width: bars[0] }} />
+                      <span className="h-[1.3cqw] rounded-full bg-aurora-periwinkle/45" style={{ width: bars[1] }} />
+                    </span>
                   </motion.div>
                 </div>
               );

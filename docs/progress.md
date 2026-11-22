@@ -225,6 +225,12 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] Content: `showcase.workspace` added, modules now `Releases and feature flags`, `Portfolio content`, `Website analytics`, `Expenses and budget`; the release card was removed (DB version 5).
 - [x] Sign-in verified again; no scroll at 1440×900, 1280×720, 1024×768 and 375×667.
 
+## 2026-11-23: Bigger login illustration, no feature text
+
+- [x] The workspace illustration fills the brand panel (square composition sized to the panel; panel widened to `1.45fr` from `xl`).
+- [x] No feature names or taglines: the pills are abstract (dot + placeholder bars), and the headline, body and footer are gone from the panel and the phone band. `showcase` now holds only `status` and `workspace` (DB version 6).
+- [x] No scroll at 1440×900, 1280×720, 1024×768 and 375×667.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

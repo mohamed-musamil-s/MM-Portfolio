@@ -75,14 +75,7 @@ const SCREENS = {
     meta: { title: "Studio sign in" },
     brand: { name: "Studio" },
     steps: { email: "Email", code: "Access code" },
-    showcase: {
-      status: "All systems online",
-      headline: "Operate the studio.",
-      body: "Releases, content, analytics and budget, managed from one quiet, precise workspace.",
-      workspace: "Workspace",
-      modules: ["Releases and feature flags", "Portfolio content", "Website analytics", "Expenses and budget"],
-      footer: "© 2026 Studio",
-    },
+    showcase: { status: "All systems online", workspace: "Workspace" },
     emailStep: {
       title: "Welcome back",
       description: "Sign in with your authorized email address to continue.",

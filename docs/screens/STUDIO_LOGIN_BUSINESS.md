@@ -1,6 +1,6 @@
 # Screen: `/studio/login`, Business Spec
 
-Version 1.2, 2026-11-23 (light-only, gradient brand panel with a 3D workspace illustration). Two-step sign-in for the admin studio: **email → Continue → access code → Authenticate**. Studio surface ([ADMIN_STYLE.md](../ADMIN_STYLE.md)), shadcn/ui components. Screenshots: [light desktop](studio-login/desktop-light-1440x900.jpg), [code step](studio-login/desktop-code-1024x768.jpg), [mobile](studio-login/mobile-375x667.jpg).
+Version 1.2, 2026-11-23 (light-only, gradient brand panel with a 3D workspace illustration). Two-step sign-in for the admin studio: **email → Continue → access code → Authenticate**. Studio surface ([ADMIN_STYLE.md](../ADMIN_STYLE.md)), shadcn/ui components. Screenshots: [light desktop](studio-login/desktop-light-1440x900.jpg), [1024×768](studio-login/desktop-1024x768.jpg), [mobile](studio-login/mobile-375x667.jpg).
 
 ## 1. Purpose
 
@@ -27,7 +27,7 @@ Every visible string, including validation and error messages, comes from `site_
 | `meta.title` | `Studio sign in` |
 | `brand.name` | `Studio` (next to the monogram) |
 | `steps` | `Email` · `Access code` (the two step pills) |
-| `showcase` | status `All systems online` · headline `Operate the studio.` · body · workspace `Workspace` · modules (the floating pills, up to 5) `Releases and feature flags`, `Portfolio content`, `Website analytics`, `Expenses and budget` · footer `© 2026 Studio`. The window title in the illustration is `brand.name`. |
+| `showcase` | status `All systems online` · workspace `Workspace` (label in the illustration window). The window title is `brand.name`. No feature names or taglines are shown (headline, body, modules and footer were removed on 2026-11-23, version 6). |
 | `emailStep` | `Welcome back` · "Sign in with your authorized email address to continue." · `Email address` · `name@example.com` · `Continue` · `Checking…` |
 | `codeStep` | `Enter your access code` · "Type your access code to finish signing in." · `Access code` · `Authenticate` · `Verifying…` · `Change email` · `Signed in. Opening the studio…` · `Show access code` / `Hide access code` |
 | `errors` | `Couldn't sign in` (alert title); email required / invalid; code required / too short; invalid credentials; locked (`{minutes}`); challenge expired; network; generic |
@@ -45,8 +45,8 @@ The same limits are enforced again on the server (`src/lib/shared/auth/login-inp
 ## 5. Layout and motion
 
 - **Split screen** from `lg`, **light only** (pinned with `data-studio-theme="light"`, so it stays light when the OS is dark).
-- Left: a light gradient brand panel (periwinkle, lavender and sky shades drifting) with the monogram and status pill on top, a tilted 3D workspace illustration in the middle (glass window, chart card, line chart, gauge, module pills floating out), and the headline, body and footer at the bottom. Right: the form in a 400px column with the brand name top-right and the security note at the bottom.
-- Below `lg`: a compact gradient band (monogram, status, headline) above the form.
+- Left: a light gradient brand panel (periwinkle, lavender and sky shades drifting) with the monogram and status pill on top and a large tilted 3D workspace illustration filling the rest (glass window, chart card, line chart, gauge, abstract text-free pills floating out). The panel is wider on large screens (`1.15fr`, `1.45fr` from `xl`). Right: the form in a 400px column with the brand name top-right and the security note at the bottom.
+- Below `lg`: a compact gradient band (monogram, status) above the form.
 - Step pills show progress; steps fade and slide 24px (0.28s); alerts expand and collapse; the button shows a spinner while busy and a check on success.
 - **Code boxes.** When `ADMIN_ACCESS_CODE` is 4–8 digits, the page renders one box per digit (the count comes from the server). This shows the code's length, which the lockout makes an acceptable trade for faster entry. Any other code format gets a single masked field instead.
 - No scroll at 1440×900, 1280×720, 1024×768 or 375×667 (the panel tightens at heights ≤ 800px).

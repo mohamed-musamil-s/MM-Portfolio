@@ -54,6 +54,13 @@ Verified with a production build (`next start`) connected to Atlas:
 | Browser: login form, then `?next=` target, then sign out | works |
 | Server errors during the run | none |
 
+## 2026-11-22: Public design system spec
+
+- [x] `docs/STYLE.md` written from the `Gemini_MM.png` poster. It covers the public portfolio only.
+- Colors measured from the poster: the paper is `#F7F5E9`, the ink is pure black. The brief's tokens (`#F4F3EE` paper, `#0A0A0A` ink) are kept, and every text pairing reaches WCAG AAA (at least 11:1).
+- Display font is Inter Tight, not a condensed face, because the poster's headline is a regular-width grotesque. The "Musamil" wordmark will be a traced SVG asset.
+- Nothing is implemented in CSS or components yet. The `/studio` design system (`ADMIN_STYLE.md`) is still to be defined.
+
 ## Open items
 
 - [ ] Choose a longer `ADMIN_ACCESS_CODE` before deploying.

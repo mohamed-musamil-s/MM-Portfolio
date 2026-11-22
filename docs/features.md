@@ -36,4 +36,6 @@ Status key: **Done**, **Placeholder** (route exists, shows "Coming soon", functi
 | Health check `GET /api/health` | Done |
 | Security headers | Done |
 | Login brute-force lockout | Done |
-| UI design / styling | Not started (intentionally) |
+| Public design system spec ([STYLE.md](STYLE.md)) | Done (documented, not yet implemented in code) |
+| Admin design system spec (`ADMIN_STYLE.md`) | Planned |
+| UI styling in code | Not started (intentionally) |

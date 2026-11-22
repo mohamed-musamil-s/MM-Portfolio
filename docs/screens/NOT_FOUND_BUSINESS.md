@@ -40,7 +40,6 @@ A broken link shouldn't lose the visitor. The page turns a dead end into a two-s
 | Field | Default | Rules |
 | --- | --- | --- |
 | `meta.title` / `meta.description` | `Page not found` / short sentence | ≤ 70 / ≤ 160 |
-| `brand.label` | `PORTFOLIO / STUDIO` | ≤ 40 |
 | `display.label` / `display.code` | `ERROR` / `404` | ≤ 16 / ≤ 8. Renders as the large "Error 404" graphic; an orange full stop follows the code. |
 | `heading` | `PAGE NOT FOUND.` | ≤ 40. A trailing `.` renders in orange. |
 | `body` | "The page you're looking for doesn't exist or has moved. We'll take you back to the main page in a moment." | ≤ 200 |
@@ -52,11 +51,13 @@ A broken link shouldn't lose the visitor. The page turns a dead end into a two-s
 | `redirect.srAnnouncement` | `Taking you to the main page in {seconds} seconds.` | ≤ 120. `{seconds}` is replaced. Announced politely, not every second (at start, at 5 and at 3). |
 | `footer.note` | `© 2026 ALL RIGHTS RESERVED.` | ≤ 80 |
 
+Header: the animated monogram only (`h-8`, `h-10` from `sm`), linking to `/` with the action label as its accessible name. The brand label was removed on 2026-11-23 (`content.brand` unset, version 1 → 2).
+
 ## 4. Layout
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│ [MM.]  PORTFOLIO / STUDIO                       ● ERROR 404  │
+│ [MM.] (animated, links home)                    ● ERROR 404  │
 │                                                              │
 │  PAGE NOT FOUND.                       ERROR                 │
 │  body copy                             404.   (giant, ink,   │

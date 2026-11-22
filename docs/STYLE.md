@@ -386,7 +386,7 @@ The business rules, content model and motion layers are in [screens/MAINTENANCE_
 As of 2026-11-23 (v1.7) this is **one viewport (`h-svh`) with no scrolling**, on a **clean ivory canvas**, with only the essential content:
 
 - **Background:** faint 12-column rules and one soft signal glow bottom-right.
-- **Header:** the **"MM." monogram** (signal full stop) and the brand label; on the right, the orange `StatusDot` and status label.
+- **Header:** the animated **"MM." monogram** alone (`h-8`, `h-10` from `sm`), no brand label; on the right, the orange `StatusDot` and status label.
 - **Middle:**
   - left (6 columns): kicker, headline (orange full stop), body, the small **CHECK AGAIN** status pill with its hint beside it, then the countdown (`ETA`);
   - right (columns 8 to 12, `lg` and up): the **3D-look stage**. The maintenance film plays on the screen of an extruded slab, with a cube, an extruded gear, an orb and a version chip floating at different depths. It leans to the pointer and reacts to every status check.
@@ -397,7 +397,7 @@ As of 2026-11-23 (v1.7) this is **one viewport (`h-svh`) with no scrolling**, on
 
 Spec: [screens/NOT_FOUND_BUSINESS.md](screens/NOT_FOUND_BUSINESS.md). Same frame and family as maintenance. All copy comes from the database (`site_screens`, `_id: "not-found"`).
 
-- **Header:** monogram + brand label; `● ERROR 404` on the right.
+- **Header:** the animated monogram alone (links home); `● ERROR 404` on the right.
 - **Error display:** a mono `ERROR` label with a short signal rule, over oversized `404` digits (`font-extrabold`, tracking -0.06em) and a **signal full stop** that echoes the monogram. Right column on `lg`, above the heading on phones.
 - **Heading:** `PAGE NOT FOUND.` with an orange full stop, then one short paragraph.
 - **Actions:** `RETURN TO MAIN PAGE` (`ActionButton` navigate, solid tone) and a **signal countdown ring** (10s by default) with `REDIRECTING IN` and a `PAUSE` / `RESUME` text button.

@@ -199,6 +199,10 @@ Verified with a production build (`next start`) connected to Atlas:
 
 - [x] `AnimatedMonogram` in the headers of `/maintenance` and the 404 page. Intro: each M arrives as five horizontal slices from alternating sides, the letters snap together along their diagonal cut with an orange flash, then the full stop pops in. Hover: the letters split along the cut with an orange line between them. Verified by sampling transforms through the intro and on hover; after the intro the slices are replaced by whole paths.
 
+## 2026-11-23: Bigger header logo, no brand label
+
+- [x] The header monogram is larger (32px tall on phones, 40px from `sm`) and stands alone: `PORTFOLIO / STUDIO` is gone from both headers. `content.brand` was removed from both schemas, the seed and MongoDB (maintenance v12, not-found v2). Verified zero overflow at 1440×900, 1280×720 and 360×640.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

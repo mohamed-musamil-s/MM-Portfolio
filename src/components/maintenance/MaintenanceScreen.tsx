@@ -29,7 +29,7 @@ const headlineLines = (lines: readonly string[]): ReactNode[] =>
  * /maintenance (docs/screens/MAINTENANCE_BUSINESS.md): one viewport, no
  * scrolling, clean ivory canvas, signal orange as the single accent.
  *
- *   header   MM. monogram + brand label · live status (orange beacon)
+ *   header   animated MM. monogram · live status (orange beacon)
  *   middle   kicker, headline, short text, check-again, countdown | maintenance storyboard
  *   ruler    window timeline (orange elapsed line + now dot)
  *   footer   last checked · next check (polls every minute) · note
@@ -37,7 +37,7 @@ const headlineLines = (lines: readonly string[]): ReactNode[] =>
  * Every string comes from `content` (MongoDB).
  */
 export const MaintenanceScreen = ({ content, windowStartText, targetText }: MaintenanceScreenProps) => {
-  const { brand, status, headline, timeline } = content;
+  const { status, headline, timeline } = content;
   const afterHeadline = HEADLINE_DELAY + headline.lines.length * LINE_STAGGER;
 
   return (
@@ -50,10 +50,8 @@ export const MaintenanceScreen = ({ content, windowStartText, targetText }: Main
         </div>
 
         <header className="flex items-center justify-between py-6 lg:py-10 [@media(max-height:820px)]:lg:py-6">
-          <div className="flex items-center gap-4">
-            <AnimatedMonogram className="h-6 w-auto" />
-            <span className="hidden text-label font-bold whitespace-nowrap uppercase sm:inline">{brand.label}</span>
-          </div>
+          {/* The logo's own text; it is the brand mark, not page copy. */}
+          <AnimatedMonogram label="MM." className="h-8 w-auto sm:h-10" />
           <span className="flex items-center gap-3 font-technical text-micro whitespace-nowrap uppercase">
             <StatusDot />
             {status.label}

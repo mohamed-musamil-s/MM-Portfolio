@@ -40,7 +40,6 @@ const timelineSchema = z
 
 export const maintenanceContentSchema = z.object({
   meta: z.object({ title: text(70), description: text(160) }),
-  brand: z.object({ label: text(40) }),
   /** Kept short on purpose: one small line above the headline. */
   status: z.object({ kicker: text(40), label: text(40) }),
   headline: z.object({ lines: z.array(text(40)).min(1).max(3) }),

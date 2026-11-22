@@ -12,7 +12,7 @@ import { RedirectProvider } from "./RedirectProvider";
 /**
  * 404 (docs/screens/NOT_FOUND_BUSINESS.md): one viewport, no scrolling.
  *
- *   header   monogram + brand label · error status
+ *   header   animated monogram (links home) · error status
  *   middle   heading, body, return button + countdown ring | large "Error 404"
  *   footer   orange progress line · note
  *
@@ -29,12 +29,10 @@ export const NotFoundScreen = ({ content }: { content: NotFoundContent }) => (
       <header className="flex items-center justify-between py-6 lg:py-10 [@media(max-height:820px)]:lg:py-6">
         <a
           href={ROUTES.home}
-          className="flex items-center gap-4 outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-signal"
+          aria-label={content.action.label}
+          className="flex items-center outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-signal"
         >
-          <AnimatedMonogram className="h-6 w-auto" />
-          <span className="hidden text-label font-bold whitespace-nowrap uppercase sm:inline">
-            {content.brand.label}
-          </span>
+          <AnimatedMonogram className="h-8 w-auto sm:h-10" />
         </a>
         <span className="flex items-center gap-3 font-technical text-micro whitespace-nowrap uppercase">
           <span aria-hidden className="size-2 rounded-full bg-signal" />

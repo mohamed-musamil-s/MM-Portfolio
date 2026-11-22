@@ -34,7 +34,7 @@ The defaults the seed writes are generic, with no personal details. All of them 
 | Live-check labels | `LAST CHECKED` · `NEXT CHECK` |
 | Check-again button and hint | `CHECK AGAIN` → `CHECKING STATUS...` → `STILL UPGRADING` · "This page checks by itself every minute, so there's no need to keep refreshing." |
 | Status | `STATUS / LIVE UPGRADE` |
-| Brand | `PORTFOLIO / STUDIO`, next to the "MM." monogram ([brand/LOGO.md](../brand/LOGO.md)) |
+| Logo | The animated "MM." monogram only ([brand/LOGO.md](../brand/LOGO.md)). The `brand` field (label and wordmark) was removed on 2026-11-23 (versions 11 and 12). |
 | Footer note | `© 2026 ALL RIGHTS RESERVED.` |
 
 Removed on 2026-11-22 to keep the screen focused: the upgrade pillars, both motto lists, the `EST.` line and the long kicker. The database was migrated with `$unset` (version 6 → 7).
@@ -58,7 +58,6 @@ No user-facing text, date or asset path is hardcoded in the page or its componen
 | Field | Type | Rules |
 | --- | --- | --- |
 | `meta.title`, `meta.description` | text | ≤ 70 and ≤ 160 characters. Used for `<title>` and the meta description. |
-| `brand.label` | text | The header label next to the monogram. (`brand.wordmark` was removed on 2026-11-23, version 10 → 11.) |
 | `status.kicker`, `status.label` | text, ≤ 40 each | The small kicker above the headline; the label next to the orange beacon. |
 | `headline.lines` | 1 to 3 lines, ≤ 40 each | Each line reveals separately. A trailing `.` on the last line renders in signal orange. |
 | `body` | text, ≤ 200 | One or two sentences. |
@@ -127,7 +126,7 @@ Verified on 2026-11-22: 401 without a session, 400 for a bad body, 403 cross-ori
 
 | Row | Content |
 | --- | --- |
-| Header | The "MM." monogram, and `brand.label` (from `sm`). On the right, the orange `StatusDot` and `status.label`. |
+| Header | The animated "MM." monogram alone (`h-8`, `h-10` from `sm`), no brand label. On the right, the orange `StatusDot` and `status.label`. |
 | Middle, left (6 columns) | Kicker, headline, body, the small **CHECK AGAIN** status pill with its hint beside it, then the countdown (`ETA`, `DD : HH : MM : SS`). |
 | Middle, right (columns 8 to 12, `lg` and up) | **3D-look stage**: the maintenance film plays on the screen of an extruded slab, with floating depth props and film subtitles below |
 | Ruler | Window timeline: day ticks, orange elapsed line and now dot, dates at both ends |

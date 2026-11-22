@@ -56,7 +56,7 @@ import { Monogram } from "@/components/brand/Monogram";
 <Monogram dot="letter" className="h-8 w-auto text-paper" /> // on ink
 ```
 
-The headers of `/maintenance` and the 404 page use the animated version, `<AnimatedMonogram className="h-6 w-auto" />` (§6).
+The headers of `/maintenance` and the 404 page use the animated version on its own, with no text label next to it: `<AnimatedMonogram className="h-8 w-auto sm:h-10" />` (§6).
 
 ## 6. Animation: slice split
 

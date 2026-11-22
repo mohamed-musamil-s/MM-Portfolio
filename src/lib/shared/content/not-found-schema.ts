@@ -9,7 +9,6 @@ const text = (max: number) => z.string().trim().min(1).max(max);
 
 export const notFoundContentSchema = z.object({
   meta: z.object({ title: text(70), description: text(160) }),
-  brand: z.object({ label: text(40) }),
   /** The large "Error 404" graphic. */
   display: z.object({ label: text(16), code: text(8) }),
   heading: text(40),

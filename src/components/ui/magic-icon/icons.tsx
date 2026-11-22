@@ -138,6 +138,43 @@ const Status: FC = () => {
   );
 };
 
+const TOOTH_ANGLES = [0, 45, 90, 135, 180, 225, 270, 315];
+
+/** A radial tick on the calibration ring, from radius r1 to r2 at `deg`. */
+const tooth = (deg: number, r1: number, r2: number): string => {
+  const rad = (deg * Math.PI) / 180;
+  const point = (r: number) => `${(12 + r * Math.cos(rad)).toFixed(2)} ${(12 + r * Math.sin(rad)).toFixed(2)}`;
+  return `M${point(r1)}L${point(r2)}`;
+};
+
+/**
+ * Calibration / gear: a ring with vernier teeth. Hover extends the teeth into
+ * a gear, active indexes it an eighth of a turn, loading spins it, success
+ * collapses the mark into a check.
+ */
+const Calibrate: FC = () => {
+  const { state } = useIconContext();
+  const loading = state === "loading";
+  const done = state === "success";
+  const rotate = useOrbit(loading, true);
+  const reach = state === "hover" || state === "active" ? 10.5 : 9;
+  const indexed: StateVariants = { idle: { rotate: 0 }, active: { rotate: 22.5 } };
+
+  return (
+    <>
+      <motion.g style={{ rotate, originX: 0.5, originY: 0.5 }}>
+        <motion.g initial={false} animate={pick(indexed, state)} style={{ originX: 0.5, originY: 0.5 }}>
+          <InkPath d={circlePath(12, 12, 5.5)} drawn={!done} order={0} />
+          {TOOTH_ANGLES.map((deg, index) => (
+            <InkPath key={deg} d={tooth(deg, 7.5, reach)} drawn={!done} order={index + 1} strokeWidth={1.25} />
+          ))}
+        </motion.g>
+      </motion.g>
+      <InkPath d={CHECK_PATH} drawn={done} />
+    </>
+  );
+};
+
 export const ICONS: Record<IconName, FC> = {
   "arrow-up-right": ArrowUpRight,
   lock: Lock,
@@ -145,4 +182,5 @@ export const ICONS: Record<IconName, FC> = {
   menu: Menu,
   sync: Sync,
   status: Status,
+  calibrate: Calibrate,
 };

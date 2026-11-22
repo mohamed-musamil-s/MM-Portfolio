@@ -9,6 +9,7 @@ The project currently contains only the foundation: routing, authentication, ses
 ```bash
 npm install
 cp .env.example .env.local   # then fill in the values
+npm run seed:screens         # one-time: default page content into MongoDB
 npm run dev                  # http://localhost:3000
 ```
 
@@ -20,6 +21,8 @@ Generate `SESSION_SECRET` with `openssl rand -base64 48`.
 | `npm run build` | production build |
 | `npm start` | serve the production build |
 | `npm run lint` | ESLint |
+| `npm run format` | Prettier (also sorts Tailwind classes) |
+| `npm run seed:screens` | Insert default screen content into MongoDB (`-- --force` to replace) |
 
 ## Docs
 
@@ -31,3 +34,4 @@ Generate `SESSION_SECRET` with `openssl rand -base64 48`.
 - [Public design system](docs/STYLE.md) (public portfolio only)
 - [Studio design system](docs/ADMIN_STYLE.md) (placeholder, with provisional tokens)
 - [Animation and interactive UI](docs/ANIMATION_UI.md) (motion stack, MagicIcon, ActionButton)
+- Screen specs: [Maintenance](docs/screens/MAINTENANCE_BUSINESS.md)

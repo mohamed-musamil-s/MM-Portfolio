@@ -357,35 +357,19 @@ The navigation mirrors the poster's top-right label, `MINDSET / AMBITION / FREED
 
 ### 6.4 Maintenance screen (`/maintenance`)
 
-This is a full-viewport "poster" composition, the reference layout for the whole system.
+The business rules, content model and motion layers are in [screens/MAINTENANCE_BUSINESS.md](screens/MAINTENANCE_BUSINESS.md). **Every string, date and image path comes from the database** (`site_screens`, `_id: "maintenance"`), never from code.
 
-```
-⊕ |                     ⊕                     |⦿
-───                                         ───
-                         STATUS / IN DEVELOPMENT
-          (empty paper)      [ portrait art, grayscale,
-                               bleeds off right edge ]
-⊕                                                ⊕
-  PORTFOLIO
-  COMING SOON.
-  ───────────
-  EST. 2000                     X
-                                 X
-          M u s a m i l   (brush SVG overlapping art)
-  MINDSET / AMBITION / FREEDOM     FOCUS / DISCIPLINE / ...
-⊕                       ⊕                        ⦿
-```
+As of 2026-11-22 this is a three-part scrolling page (it used to be a single viewport):
 
-- **Root element:** `relative min-h-svh overflow-hidden`. It's exactly one viewport and never scrolls on desktop.
-- **Headline:** `text-h1 font-extrabold uppercase` with full-stop cadence (`PORTFOLIO COMING SOON.`) and the partial underline rule. `EST. 2000` sits below in `text-label font-bold`.
-- **Status line:** `font-technical text-micro uppercase text-graphite`, top-right.
-- **Wordmark:** the brush SVG anchored bottom-right, overlapping the art. It carries `role="img"` and `aria-label="Musamil"`.
-- **Footer row:** two slash-label groups, bottom-left and bottom-right.
-- **Mobile:**
-  - The art stacks above the text. It is cropped at the shoulders (`object-cover object-top`), not shrunk.
-  - The wordmark spans the full width under the art.
-  - Only the corner crosshairs are shown.
-- **Content:** no links except an optional contact label link. This page is a holding poster, not a navigation hub.
+1. **Hero poster** (`min-h-svh`):
+   - registration frame (`PosterFrame`), with the brand label top-left and a live status line top-right;
+   - type column: kicker, headline (`text-h1 font-extrabold uppercase` with ink-mask line reveals), partial underline rule, `EST.` line, then the countdown;
+   - depth stack in the right columns: grid plate, 4:5 portrait with crop marks, stamp, calibration rig. Each sits on its own parallax layer;
+   - the brush wordmark crosses the bottom of the art.
+2. **Narrative:** body copy in `text-lead`, at most 68ch, then the upgrade pillars in a three-column grid split by rules.
+3. **Footer:** the two slash-label motto groups and the small print.
+
+On mobile everything stacks: the art first, then the wordmark, type, countdown, pillars and footer. Only the corner crosshairs are shown.
 
 ### 6.5 404 screen
 

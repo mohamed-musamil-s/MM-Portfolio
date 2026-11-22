@@ -71,7 +71,17 @@ src/lib/motion/
   action-machine.ts   # pure state machine + ActionError + failure normalisation
   gsap.ts             # single GSAP entry: registers ScrollTrigger, Observer, useGSAP once
   anime.ts            # token -> anime.js easing / ms helpers
+src/components/motion/   # reusable editorial motion pieces
+  InkReveal.tsx       # masked ink-stamp line reveal (mount or in-view)
+  InkRule.tsx         # partial headline rule drawn from the left
+  ParallaxLayer.tsx   # scroll (GSAP, outer) + pointer (motion, inner) depth layer
+  CalibrationRig.tsx  # counter-rotating rings, vernier draw-in, lock-on reticle, scroll turn
+  RegistrationMark.tsx# breathing print crosshair (open / bullseye)
+  XMark.tsx           # hand-drawn X drawn in on view
+  CropMarks.tsx       # static L crop marks
 src/hooks/
+  useCountdown.ts     # second-aligned clock (useSyncExternalStore), SSR-safe, pauses when hidden
+  usePointerParallax.ts # viewport-relative pointer depth springs
   useMotionTheme.ts   # { theme, tokens, reducedMotion } from the provider
   useActionRunner.ts  # runs an async action through the state machine
   useMagnetic.ts      # magnetic cursor pull (portfolio only)
@@ -166,7 +176,7 @@ idle ──ARM──▶ arming ──DISARM──▶ idle
 
 | Prop | Default | Notes |
 | --- | --- | --- |
-| `name` | (required) | `arrow-up-right` · `lock` · `copy` · `menu` · `sync` · `status` |
+| `name` | (required) | `arrow-up-right` · `lock` · `copy` · `menu` · `sync` · `status` · `calibrate` |
 | `state` | `idle` | `idle` · `hover` · `active` · `loading` · `success` · `error`. The parent control drives it. |
 | `size` | 20 | px; the icon is drawn on a 24-unit grid |
 | `strokeWidth` | 1.5 | square caps |
@@ -180,6 +190,7 @@ idle ──ARM──▶ arming ──DISARM──▶ idle
   - React renders only the initial `d`, so a re-render can't interrupt a tween.
   - A path that starts hidden renders with `pathLength=1` and `strokeDasharray="0 1"`, so it never flashes before anime.js takes over.
 - **`motion.g`** groups own transforms: lift, launch, layer separation, orbit and shake. They never touch `d`.
+- **Decorative motifs outside MagicIcon** (registration marks, X marks, the rig) may use motion `pathLength` on their own elements. The rule is per element: no element is ever driven by two libraries.
 - **The error state:**
   - the icon shakes (`ICON_SHAKE`);
   - its colour switches to `var(--icon-error)`. That is `--studio-danger` (red) on the studio surface and `currentColor` (unchanged ink) on the public surface, because STYLE.md forbids colour there.
@@ -193,6 +204,7 @@ idle ──ARM──▶ arming ──DISARM──▶ idle
 | `copy` (copy, export) | layers separate in depth | separated | n/a | squares erase, a hand-drawn check draws in, then settles back on reset | shake |
 | `menu` (drawer) | asymmetric rules lengthen | rules morph into the poster's hand-drawn X | n/a | n/a | n/a |
 | `sync` (DB, sync) | n/a | n/a | registration mark orbits continuously | decelerates into the next quarter turn and locks (centre dot) | shake |
+| `calibrate` (calibration, gear) | teeth extend into a gear | indexes an eighth of a turn | spins | ring and teeth erase, check draws in | shake |
 | `status` (inside ActionButton) | n/a | n/a | orbiting arc | check draws in | hand-drawn X draws in + shake |
 
 ### Adding an icon
@@ -282,6 +294,8 @@ Leave out `onAction` and drive `status` from the form's pending state. The butto
 | `useActionRunner()` | `run(action)`, `arm()`, `disarm()`, plus `state`. Used by ActionButton; reuse it for any async control (forms, menu items). |
 | `useMagnetic(enabled)` | Returns `anchorRef`, which you attach to a static wrapper, and the `x`/`y` springs for the moving element. Only active on fine pointers, with motion allowed, when the theme has `magnetic`. |
 | `useParallax(ref, { speed })` | Scrubbed ScrollTrigger drift. Cleanup comes from `useGSAP` context revert. Off under reduced motion. |
+| `usePointerParallax(depth)` | `x`/`y` springs that move up to `depth` px with the cursor (negative depth moves against it). Fine pointers only. |
+| `useCountdown(targetAt, windowStart)` | `{ parts, overdue, progress }`, or `null` during SSR. Ticks on the second boundary and pauses while the tab is hidden. |
 
 ---
 

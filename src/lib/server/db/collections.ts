@@ -3,6 +3,7 @@ import type { Collection, Db, ObjectId } from "mongodb";
 export const COLLECTIONS = {
   sessions: "sessions",
   authAttempts: "auth_attempts",
+  siteScreens: "site_screens",
 } as const;
 
 export type SessionDocument = {
@@ -30,3 +31,17 @@ export const sessionsCollection = (db: Db): Collection<SessionDocument> =>
 
 export const authAttemptsCollection = (db: Db): Collection<AuthAttemptDocument> =>
   db.collection<AuthAttemptDocument>(COLLECTIONS.authAttempts);
+
+/** Database-managed screen content (one document per screen, `_id` = screen slug). */
+export type ScreenDocument = {
+  _id: string;
+  /** Validated against the screen's zod schema on every read and write. */
+  content: unknown;
+  /** Optimistic-concurrency counter; incremented on every save. */
+  version: number;
+  updatedAt: Date;
+  updatedBy: string;
+};
+
+export const siteScreensCollection = (db: Db): Collection<ScreenDocument> =>
+  db.collection<ScreenDocument>(COLLECTIONS.siteScreens);

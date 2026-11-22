@@ -22,7 +22,7 @@ export const useParallax = <T extends HTMLElement>(ref: RefObject<T | null>, { s
 
   useGSAP(
     () => {
-      if (reducedMotion || !ref.current) {
+      if (reducedMotion || speed === 0 || !ref.current) {
         return;
       }
       gsap.to(ref.current, {

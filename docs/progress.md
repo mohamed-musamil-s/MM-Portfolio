@@ -81,7 +81,31 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] Checked both themes in the in-app browser on a temporary page, since removed. See ANIMATION_UI.md §13 for what was and wasn't verified.
 - Not built yet: the WebGL halftone canvas and kinetic typography, which wait for the public pages. None of the new components is mounted on a real page yet.
 
+## 2026-11-22: `/maintenance` screen
+
+- [x] Business spec at `docs/screens/MAINTENANCE_BUSINESS.md`.
+- [x] **All content is in the database:** the new `site_screens` collection holds the `maintenance` document, validated by a zod schema.
+  - It's seeded with `npm run seed:screens`.
+  - The admin API (`GET`/`PUT /api/studio/screens/:slug`) requires a session, and saves use a version check.
+  - The admin UI comes later.
+- [x] Page structure: the `(public)` route group with `PublicShell` (fonts, surface, MotionProvider with Lenis, grain).
+- [x] New reusable pieces:
+  - motion components: InkReveal, InkRule, ParallaxLayer, CalibrationRig, RegistrationMark, XMark, CropMarks;
+  - hooks: useCountdown, usePointerParallax;
+  - a new MagicIcon icon, `calibrate`.
+- [x] Image paths come from the database. Each file is checked on every request, with SVG or halftone fallbacks until it exists.
+- [x] Checked in the browser on a production build, at desktop 1440×900 and mobile 375×812:
+  - layout and motion;
+  - the countdown ticks, and its screen-reader label reads correctly;
+  - no horizontal overflow on mobile.
+- [x] Admin API checked: 401, 404, 200 (edit appears on the page), 409, 400 (with the failing fields), 403. The original content was restored afterwards.
+- Not verified: the reduced-motion behaviour (it couldn't be emulated in the test browser) and the copy with your real image files, which don't exist yet.
+
 ## Open items
+
+- [ ] Export the three maintenance images into `public/images/maintenance/` (file names are in the screen spec).
+- [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.
+- [ ] Trace the poster's "Musamil" lettering as an SVG wordmark. The page uses Permanent Marker until then.
 
 - [ ] Choose a longer `ADMIN_ACCESS_CODE` before deploying.
 - [ ] When deploying, set all `.env.example` variables in the host's environment, and confirm that the host sets `x-forwarded-for`.

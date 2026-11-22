@@ -1,4 +1,4 @@
-export const ICON_NAMES = ["arrow-up-right", "lock", "copy", "menu", "sync", "status"] as const;
+export const ICON_NAMES = ["arrow-up-right", "lock", "copy", "menu", "sync", "status", "calibrate"] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];
 

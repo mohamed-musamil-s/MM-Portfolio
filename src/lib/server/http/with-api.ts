@@ -11,15 +11,16 @@ export type ApiContext = {
   log: Logger;
 };
 
-type ApiHandler = (request: NextRequest, context: ApiContext) => Promise<Response>;
+type ApiHandler<Route> = (request: NextRequest, context: ApiContext, route: Route) => Promise<Response>;
 
 /**
  * Wraps every route handler: assigns a request id, logs the request and the
  * response (status + duration), and turns any thrown error into a logged 500.
+ * `Route` is Next's second handler argument (e.g. RouteContext<"/api/x/[id]">).
  */
 export const withApi =
-  (handler: ApiHandler) =>
-  async (request: NextRequest): Promise<Response> => {
+  <Route = unknown>(handler: ApiHandler<Route>) =>
+  async (request: NextRequest, route: Route): Promise<Response> => {
     const requestId = getRequestId(request);
     const log = baseLog.child({ requestId });
     const startedAt = performance.now();
@@ -30,7 +31,7 @@ export const withApi =
 
     let response: Response;
     try {
-      response = await handler(request, { requestId, log });
+      response = await handler(request, { requestId, log }, route);
     } catch (err) {
       log.error({ err, method, path }, "api handler threw");
       response = serverError(requestId);

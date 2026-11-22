@@ -16,15 +16,15 @@ const SCREENS = {
   maintenance: {
     meta: {
       title: "System upgrade in progress",
-      description: "MM-Portfolio is undergoing a scheduled system upgrade. The next release is on its way.",
+      description: "This portfolio is undergoing a scheduled system upgrade. The next release is on its way.",
     },
-    brand: { label: "MM / PORTFOLIO", wordmark: "Musamil", established: "EST. 2000" },
+    brand: { label: "PORTFOLIO / STUDIO", wordmark: "Portfolio", established: "EST. 2026" },
     status: {
       kicker: "SYSTEM UPGRADE IN PROGRESS // CORE INFRASTRUCTURE & EDITORIAL ENGINE",
       label: "STATUS / LIVE UPGRADE",
     },
     headline: { lines: ["UPGRADING", "THE SYSTEM."] },
-    body: "MM-Portfolio is undergoing a scheduled system upgrade: hardening database and session security, refining the motion and UI systems, and preparing the next release.",
+    body: "This portfolio is undergoing a scheduled system upgrade: hardening database and session security, refining the motion and UI systems, and preparing the next release.",
     pillars: [
       {
         index: "01",
@@ -58,7 +58,7 @@ const SCREENS = {
       primary: ["MINDSET", "AMBITION", "FREEDOM"],
       secondary: ["FOCUS", "DISCIPLINE", "CONSISTENCY", "EXECUTION"],
     },
-    footer: { note: "© 2026 MOHAMED MUSAMIL. ALL RIGHTS RESERVED." },
+    footer: { note: "© 2026 ALL RIGHTS RESERVED." },
   },
 };
 

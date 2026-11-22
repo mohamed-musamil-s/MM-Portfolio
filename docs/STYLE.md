@@ -359,16 +359,22 @@ The navigation mirrors the poster's top-right label, `MINDSET / AMBITION / FREED
 
 The business rules, content model and motion layers are in [screens/MAINTENANCE_BUSINESS.md](screens/MAINTENANCE_BUSINESS.md). **Every string, date and image path comes from the database** (`site_screens`, `_id: "maintenance"`), never from code.
 
-As of 2026-11-22 this is a **single full-width typographic column**, with no image column:
+As of 2026-11-22 this is **exactly one viewport (`h-svh`), with no scrolling**, split in two:
 
-1. **Hero** (`min-h-svh`):
-   - registration frame, with the brand label top-left and the live status line top-right;
-   - the `EST.` line, then an oversized `text-display` headline with the second line indented (`md:pl-24 lg:pl-48`), leaning with scroll velocity;
-   - a half-width ink rule and the body copy, aligned to that indent;
-   - a full-bleed **ink ticker band** (`bg-ink text-paper`) scrolling the status kicker.
-2. **Countdown instrument:** four giant tabular cells split by hairlines (`text-h1`, `md:text-display`), above a full-width **calibration ruler** (day ticks, hatched elapsed part, bullseye needle, start and end dates).
-3. **Index:** the upgrade pillars as full-width rows (`index / TITLE / description / icon`). Hover floods a row with ink.
-4. **Footer:** the two motto groups and the small print, above an oversized brush wordmark cropped by the page bottom.
+- **Left, the content column** (`lg:col-span-7`, paper):
+  - brand label and `EST.` line;
+  - headline (`text-h1`, or `text-h2` on short screens) with the second line indented, then the partial rule and body copy;
+  - the compact countdown (hairline-split tabular cells) and the calibration ruler;
+  - the pillars as compact index rows, with an ink-flood hover;
+  - the motto footer;
+  - corner crosshairs only.
+- **Right, the ink panel** (`lg:col-span-5`, `bg-ink text-paper`). This is a deliberate inverted editorial moment:
+  - the animated "portfolio under reconstruction" SVG scene, live-status label and calibration rig;
+  - the vertical secondary mottos;
+  - the brush wordmark, sized to the panel with container-query units;
+  - a paper ticker band along the bottom.
+
+Below `lg`, the panel is a 24svh top band. The height-based rules are in the screen spec, §5.
 
 ### 6.5 404 screen
 

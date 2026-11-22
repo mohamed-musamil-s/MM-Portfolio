@@ -1,6 +1,6 @@
 # Screen: `/maintenance`, Business Spec
 
-Version 1.1, 2026-11-22. Layout revised the same day: a single full-width typographic column, with the image column removed. Public route. Look: [STYLE.md](../STYLE.md). Motion: [ANIMATION_UI.md](../ANIMATION_UI.md).
+Version 1.2, 2026-11-22. **Exactly one viewport (100svh), no scrolling.** Left: all content and the countdown. Right: an ink panel with an animated illustration. Default content is generic, with no personal details. Public route. Look: [STYLE.md](../STYLE.md). Motion: [ANIMATION_UI.md](../ANIMATION_UI.md).
 
 ---
 
@@ -29,7 +29,8 @@ The default content below is what the seed writes. All of it can be changed in t
 | --- | --- |
 | Status kicker (scrolls in the ink ticker band) | `SYSTEM UPGRADE IN PROGRESS // CORE INFRASTRUCTURE & EDITORIAL ENGINE` |
 | Headline | `UPGRADING THE SYSTEM.` |
-| Body | MM-Portfolio is undergoing a scheduled system upgrade: hardening database and session security, refining the motion and UI systems, and preparing the next release. |
+| Body | This portfolio is undergoing a scheduled system upgrade: hardening database and session security, refining the motion and UI systems, and preparing the next release. |
+| Brand label · `EST.` line · wordmark · footer | `PORTFOLIO / STUDIO` · `EST. 2026` · `Portfolio` · `© 2026 ALL RIGHTS RESERVED.` (generic on purpose: no personal names or dates) |
 | Pillar 01 | `CORE ENGINE`: database and session architecture calibration |
 | Pillar 02 | `MOTION & UI`: editorial kinetic typography, WebGL grain and SVG choreography |
 | Pillar 03 | `RELEASE PIPELINE`: staging verification and studio readiness |
@@ -58,13 +59,13 @@ No user-facing text, date or asset path is hardcoded in the page or its componen
 | Field | Type | Rules |
 | --- | --- | --- |
 | `meta.title`, `meta.description` | text | ≤ 70 and ≤ 160 characters. Used for `<title>` and the meta description. |
-| `brand.label`, `brand.wordmark`, `brand.established` | text | Top-left label, the bleeding brush wordmark in the footer, and the `EST.` line above the headline. |
-| `status.kicker`, `status.label` | text | The ticker band text (announced once to screen readers); the short live-status label top-right. |
-| `headline.lines` | 1 to 3 lines | Each line reveals separately. From `md` up the second line is indented. |
+| `brand.label`, `brand.wordmark`, `brand.established` | text | Top-left label and `EST.` line in the content column; the brush wordmark sits in the ink panel, sized to the panel width (container query), so any length fits. |
+| `status.kicker`, `status.label` | text | The ticker band along the bottom of the ink panel (announced once to screen readers); the live-status label at the top-right of the panel. |
+| `headline.lines` | 1 to 3 lines | Each line reveals separately; the second line is indented. |
 | `body` | text | ≤ 600 characters. |
 | `pillars[]` | 1 to 4 items | `{ index, title, description, icon }`. `icon` must be a MagicIcon name. |
 | `timeline` | object | `label`, `windowStart`, `targetAt` (dates; `targetAt` must be after `windowStart`), `countdownLabel`, `srRemaining` (screen-reader template with `{days}`, `{hours}` and `{minutes}`), `units { days, hours, minutes, seconds }`, `overdue { title, detail }`. |
-| `mottos.primary[]`, `mottos.secondary[]` | 1 to 5 words each | Rendered as slash labels. |
+| `mottos.primary[]`, `mottos.secondary[]` | 1 to 5 words each | Primary: footer of the content column. Secondary: vertical label on the right edge of the ink panel (desktop only). |
 | `footer.note` | text | Small print. |
 
 ### Saving changes (for the admin panel)
@@ -94,23 +95,34 @@ No user-facing text, date or asset path is hardcoded in the page or its componen
 
 ---
 
-## 5. Motion and asset requirements
+## 5. Layout, motion and asset requirements
+
+### Layout: one screen, no scrolling
+
+| Viewport | Arrangement |
+| --- | --- |
+| `lg` and up | 12 columns. **Left (7):** brand label and `EST.` line, headline, rule, body, countdown, ruler, pillar rows, motto footer. **Right (5):** the ink panel. |
+| Below `lg` | The ink panel is a top band (24svh), with the content column below. |
+| Height ≤ 820px (laptops) | The headline and numerals step down from `text-h1` to `text-h2`, and the gaps and padding tighten. |
+| Phones ≤ 720px tall | The body paragraph is hidden, so the countdown and pillars stay visible. |
+
+Verified with zero overflow at 1440×900, 1280×720, 1024×768, 375×812, 390×667 and 360×640.
+
+### Motion
 
 The motion direction is "200%": high-energy, layered and kinetic, within the STYLE.md §7 guardrails. That means no bounce, no animated colour, a static CSS grain, and everything off under `prefers-reduced-motion`.
 
 | Layer | Motion | Built with |
 | --- | --- | --- |
-| Frame | Registration crosshairs at the corners and edge midpoints spin in, then breathe | `PosterFrame`, `RegistrationMark` |
-| Headline | Ink-mask line reveals (staggered). The block **leans with scroll velocity** (skew clamped to ±4°). | `InkReveal`, `VelocitySkew` |
-| Rule and body | The rule draws in from the left, then the body copy reveals | `InkRule`, `InkReveal` |
-| Ticker band | Full-bleed ink band: the status kicker scrolls infinitely, **speeds up with scroll speed and reverses when you scroll back up** | `Marquee` |
-| Countdown | Per-digit slide inside a fixed 1em mask | `Countdown` |
-| Calibration ruler | Ticks draw in left to right; the hatch and needle spring to "now" | `WindowRuler` (anime.js draw + motion) |
-| Index rows | Rows rise in on view. Hover floods the row with ink and inverts the text (difference blend); the row's MagicIcon reacts. | `PillarRow`, `MagicIcon` |
-| Wordmark | Oversized brush wordmark, cropped by the page bottom, on its own scroll parallax layer | `ParallaxLayer`, `InkReveal` |
-| Scroll | Lenis inertial scroll | `MotionProvider theme="portfolio"` |
+| Frame | Corner registration crosshairs spin in, then breathe | `PosterFrame edges={false}` |
+| Headline, rule, body | Ink-mask line reveals; the rule draws in from the left | `InkReveal`, `InkRule` |
+| Countdown | Per-digit slide inside a fixed 1em mask, cells split by hairlines | `Countdown` |
+| Calibration ruler | Day ticks draw in left to right; the hatched elapsed part and the capped needle spring to "now" | `WindowRuler` |
+| Pillar rows | Slide in staggered. Hover floods the row with ink and inverts the text; the row's MagicIcon reacts. | `PillarRow` |
+| **Ink panel scene** | "Portfolio under reconstruction", looping every 6s: the page wireframe and dimension lines draw in; copy lines type in and clear; a crosshair cursor travels card to card and each card fills with hatching as it lands (with a burst ring); a scanline sweeps the page; two meshed gears counter-rotate; the whole scene leans toward the pointer. | `BuildScene` (anime.js draw + motion loops) |
+| Panel extras | Calibration rig turning in the corner, halftone dot field, brush wordmark reveal, paper ticker band reacting to scroll velocity | `CalibrationRig`, `InkReveal`, `Marquee` |
 
-**Image assets:** none. The revised layout has no image column, so the portrait, grid-plate and stamp images, and their content fields, were removed from the screen and from the database document (migration on 2026-11-22: `$unset content.images, content.stamp`, version 4 → 5).
+**Image assets:** none. Every visual is inline SVG or CSS. (The image fields were removed on 2026-11-22: `$unset content.images, content.stamp`.)
 
 ## 6. Reuse and scope boundaries
 
@@ -121,7 +133,8 @@ These are reusable by any future page.
 | Module | Reused for |
 | --- | --- |
 | `PublicShell`, `PosterFrame`, `SlashLabel` | Every public page: surface tokens, fonts, MotionProvider, grain, frame, labels |
-| `InkReveal`, `InkRule`, `VelocitySkew`, `Marquee`, `ParallaxLayer`, `RegistrationMark`, `XMark` (`src/components/motion/`) | Any editorial section |
+| `InkReveal`, `InkRule`, `Marquee`, `CalibrationRig`, `RegistrationMark` (`src/components/motion/`) | Any editorial section |
+| `BuildScene`, `WindowRuler` (`src/components/maintenance/`) | Promote to shared modules if another screen needs them |
 | `useCountdown`, `useScrollVelocity`, `useParallax` (`src/hooks/`) | Any timed or scroll-reactive UI |
 | `MagicIcon` (new `calibrate` icon), `ActionButton` | App-wide |
 | `getScreenContent` and the `site_screens` collection | Every future configurable screen (add a schema to the registry) |

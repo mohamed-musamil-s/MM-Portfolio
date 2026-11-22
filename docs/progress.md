@@ -117,10 +117,23 @@ Verified with a production build (`next start`) connected to Atlas:
   - the screen-reader texts are correct (headline, ticker announced once, timer label);
   - the row hover inverts the row.
 
+## 2026-11-22: `/maintenance` as a single viewport + generic content
+
+- [x] One screen, no scrolling: the content column on the left, an ink panel with the animated `BuildScene` on the right. On phones the panel is a top band.
+- [x] Height-aware sizing (≤820px laptops, ≤720px phones). Zero overflow verified at 1440×900, 1280×720, 1024×768, 375×812, 390×667 and 360×640.
+- [x] **Personal details removed** from all visible content:
+  - in the database: brand label, wordmark, `EST.` line, body, meta description and footer note (version 5 → 6, targeted `$set`);
+  - in the seed defaults;
+  - in the root `<title>` and description.
+
+  The internal identifiers (database name `mm-portfolio`, token issuer, log app name) were left alone: visitors never see them, and renaming the database would disconnect the existing data.
+- [x] Fixed: the short-screen Tailwind classes were built from a template string, so Tailwind never generated them; they're now written out in full.
+- Note: the in-app browser throttles animation frames while it's unfocused, so screenshots sometimes catch the wireframe before it has drawn in. It draws normally in a visible tab.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.
-- [ ] Trace the poster's "Musamil" lettering as an SVG wordmark. The page uses Permanent Marker until then.
+- [ ] Optional: a custom brush wordmark SVG. The page uses Permanent Marker with the generic wordmark from the database.
 
 - [ ] Choose a longer `ADMIN_ACCESS_CODE` before deploying.
 - [ ] When deploying, set all `.env.example` variables in the host's environment, and confirm that the host sets `x-forwarded-for`.

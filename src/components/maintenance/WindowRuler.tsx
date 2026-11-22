@@ -3,7 +3,6 @@
 import { animate, createDrawable, set, type JSAnimation } from "animejs";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
-import { RegistrationMark } from "@/components/motion/RegistrationMark";
 import { useMotionTheme } from "@/hooks/useMotionTheme";
 import { secondsToMs, toAnimeEase } from "@/lib/motion/anime";
 
@@ -37,7 +36,7 @@ const rulerTicks = (days: number): string => {
 /**
  * Calibration ruler for the upgrade window: one tick per day (weekly ticks on
  * long windows), drawn in left to right (anime.js), an elapsed hatch, and a
- * registration-mark needle at "now" (motion).
+ * capped needle at "now" (motion).
  */
 export const WindowRuler = ({ windowStart, targetAt, progress, startLabel, endLabel }: WindowRulerProps) => {
   const { tokens, reducedMotion } = useMotionTheme();
@@ -92,7 +91,7 @@ export const WindowRuler = ({ windowStart, targetAt, progress, startLabel, endLa
             transition={{ type: "spring", ...tokens.spring }}
           >
             <span className="absolute -top-2 bottom-0 left-0 w-0.5 -translate-x-1/2 bg-ink" />
-            <RegistrationMark variant="bullseye" className="absolute -top-8 left-0 -translate-x-1/2 text-ink sm:-top-9" />
+            <span className="absolute -top-3 left-0 size-2 -translate-x-1/2 bg-ink" />
           </motion.div>
         ) : null}
       </div>

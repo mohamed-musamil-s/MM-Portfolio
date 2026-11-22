@@ -51,23 +51,23 @@ const Digit = ({ char }: { char: string }) => {
   );
 };
 
-/** Full-width instrument: giant tabular readout split by hairlines, then the window ruler. */
+/** Compact instrument: tabular readout split by hairlines, then the window ruler. Sized to share one viewport. */
 export const Countdown = ({ timeline, startLabel, endLabel }: CountdownProps) => {
   const countdown = useCountdown(timeline.targetAt, timeline.windowStart);
   const overdue = countdown?.overdue ?? false;
 
   return (
-    <div className="flex flex-col gap-10 md:gap-14">
-      <div className="flex flex-wrap items-baseline justify-between gap-2 border-t border-rule pt-4 font-technical text-micro text-graphite uppercase">
+    <div className="flex flex-col gap-3 lg:gap-5 [@media(max-height:820px)]:lg:gap-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-2 border-t border-rule pt-3 font-technical text-micro text-graphite uppercase">
         <span>{timeline.label}</span>
         <span>{timeline.countdownLabel}</span>
       </div>
 
       {overdue ? (
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:gap-8" role="status">
-          <MagicIcon name="sync" state="loading" size={56} />
+        <div className="flex items-center gap-4" role="status">
+          <MagicIcon name="sync" state="loading" size={40} />
           <div>
-            <p className="text-h1 font-extrabold uppercase md:text-display">{timeline.overdue.title}</p>
+            <p className="text-h2 font-extrabold uppercase">{timeline.overdue.title}</p>
             <p className="font-technical text-micro text-graphite uppercase">{timeline.overdue.detail}</p>
           </div>
         </div>
@@ -81,8 +81,8 @@ export const Countdown = ({ timeline, startLabel, endLabel }: CountdownProps) =>
             {UNIT_KEYS.map((unit) => {
               const value = countdown ? pad(countdown.parts[unit]) : PLACEHOLDER;
               return (
-                <div key={unit} className="flex flex-col gap-3 border-l border-rule pl-3 first:border-l-0 first:pl-0 md:pl-6">
-                  <span className="text-h1 leading-none font-extrabold tabular-nums md:text-display">
+                <div key={unit} className="flex flex-col gap-2 border-l border-rule pl-3 first:border-l-0 first:pl-0 md:pl-5">
+                  <span className="text-h2 leading-none font-extrabold tabular-nums lg:text-h1 [@media(max-height:820px)]:lg:text-h2">
                     {value.split("").map((char, position) => (
                       <Digit key={`${unit}-${value.length - position}`} char={char} />
                     ))}

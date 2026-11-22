@@ -8,7 +8,7 @@ import { cn } from "@/lib/shared/cn";
 type InkRevealProps = {
   as?: "h1" | "h2" | "h3" | "p" | "div";
   /** One masked line per entry. Omit to reveal `children` as a single block. */
-  lines?: readonly string[];
+  lines?: readonly ReactNode[];
   children?: ReactNode;
   className?: string;
   /** Applied to each line's mask (e.g. bottom padding so descenders are not clipped). */

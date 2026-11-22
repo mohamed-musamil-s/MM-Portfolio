@@ -1,6 +1,6 @@
 # Screen: `/maintenance`, Business Spec
 
-Version 1.2, 2026-11-22. **Exactly one viewport (100svh), no scrolling.** Left: all content and the countdown. Right: an ink panel with an animated illustration. Default content is generic, with no personal details. Public route. Look: [STYLE.md](../STYLE.md). Motion: [ANIMATION_UI.md](../ANIMATION_UI.md).
+Version 1.3, 2026-11-22. **One viewport (100svh), no scrolling, on a clean ivory canvas, with signal orange as the single accent.** Left: content and countdown. Right: an animated line illustration. Default content is generic, with no personal details. Public route. Look: [STYLE.md](../STYLE.md). Motion: [ANIMATION_UI.md](../ANIMATION_UI.md).
 
 ---
 
@@ -59,13 +59,13 @@ No user-facing text, date or asset path is hardcoded in the page or its componen
 | Field | Type | Rules |
 | --- | --- | --- |
 | `meta.title`, `meta.description` | text | ≤ 70 and ≤ 160 characters. Used for `<title>` and the meta description. |
-| `brand.label`, `brand.wordmark`, `brand.established` | text | Top-left label and `EST.` line in the content column; the brush wordmark sits in the ink panel, sized to the panel width (container query), so any length fits. |
-| `status.kicker`, `status.label` | text | The ticker band along the bottom of the ink panel (announced once to screen readers); the live-status label at the top-right of the panel. |
-| `headline.lines` | 1 to 3 lines | Each line reveals separately; the second line is indented. |
+| `brand.label`, `brand.wordmark`, `brand.established` | text | Header label; the wordmark's first letter is the logo tile; the `EST.` line is in the footer. |
+| `status.kicker`, `status.label` | text | The kicker above the headline; the live-status label next to the orange beacon. |
+| `headline.lines` | 1 to 3 lines | Each line reveals separately. A trailing `.` on the last line renders in signal orange. |
 | `body` | text | ≤ 600 characters. |
 | `pillars[]` | 1 to 4 items | `{ index, title, description, icon }`. `icon` must be a MagicIcon name. |
 | `timeline` | object | `label`, `windowStart`, `targetAt` (dates; `targetAt` must be after `windowStart`), `countdownLabel`, `srRemaining` (screen-reader template with `{days}`, `{hours}` and `{minutes}`), `units { days, hours, minutes, seconds }`, `overdue { title, detail }`. |
-| `mottos.primary[]`, `mottos.secondary[]` | 1 to 5 words each | Primary: footer of the content column. Secondary: vertical label on the right edge of the ink panel (desktop only). |
+| `mottos.primary[]`, `mottos.secondary[]` | 1 to 5 words each | Primary: footer. Secondary: caption under the illustration (`lg` and up). |
 | `footer.note` | text | Small print. |
 
 ### Saving changes (for the admin panel)
@@ -99,30 +99,50 @@ No user-facing text, date or asset path is hardcoded in the page or its componen
 
 ### Layout: one screen, no scrolling
 
-| Viewport | Arrangement |
+| Row | Content |
 | --- | --- |
-| `lg` and up | 12 columns. **Left (7):** brand label and `EST.` line, headline, rule, body, countdown, ruler, pillar rows, motto footer. **Right (5):** the ink panel. |
-| Below `lg` | The ink panel is a top band (24svh), with the content column below. |
-| Height ≤ 820px (laptops) | The headline and numerals step down from `text-h1` to `text-h2`, and the gaps and padding tighten. |
-| Phones ≤ 720px tall | The body paragraph is hidden, so the countdown and pillars stay visible. |
+| Header | Logo tile (first letter of `brand.wordmark`, with an orange square) and `brand.label` (from `sm`). On the right, the orange `StatusDot` and `status.label`. |
+| Middle, left (7 columns) | `status.kicker`, `headline.lines` (final full stop in orange), `body`, then the countdown (`countdownLabel · label`, `DD : HH : MM : SS`). |
+| Middle, right (5 columns, `lg` and up) | `BuildScene` line illustration, with `mottos.secondary` as its caption. |
+| Ruler | Full-width window timeline: day ticks, orange elapsed line and now dot, start and end dates. |
+| Pillars | Three columns (stacked on phones). The description is hidden on phones and on screens ≤ 820px tall. |
+| Footer | `mottos.primary`, `brand.established` and `footer.note`. |
 
-Verified with zero overflow at 1440×900, 1280×720, 1024×768, 375×812, 390×667 and 360×640.
+| Constraint | Rule |
+| --- | --- |
+| Height ≤ 820px (laptops) | The headline steps down to `text-h2`, the vertical padding tightens, and the pillar descriptions are hidden. |
+| Phones ≤ 720px tall | The body paragraph is hidden. |
+| Below `lg` | The illustration is hidden, so the content column has the full width. |
+
+Verified with zero overflow (page and every row) at 1440×900, 1280×720, 1024×768, 375×812, 390×667 and 360×640.
+
+### Colour
+
+The canvas is ivory and the type is ink, plus **one accent, signal orange `#E8480F`**, used only for:
+- the status beacon;
+- the logo-tile square;
+- the headline's full stop;
+- the ruler's elapsed line and now dot;
+- the illustration's cursor and landing rings;
+- the pillar hover rule;
+- one blurred background glow.
+
+It's never used for small text (it's 3.5:1 on ivory, which passes for graphics and large type only). See STYLE.md §2.5.
 
 ### Motion
 
-The motion direction is "200%": high-energy, layered and kinetic, within the STYLE.md §7 guardrails. That means no bounce, no animated colour, a static CSS grain, and everything off under `prefers-reduced-motion`.
+The motion direction is "200%", within the STYLE.md §7 guardrails, and everything is off under `prefers-reduced-motion`.
 
 | Layer | Motion | Built with |
 | --- | --- | --- |
-| Frame | Corner registration crosshairs spin in, then breathe | `PosterFrame edges={false}` |
-| Headline, rule, body | Ink-mask line reveals; the rule draws in from the left | `InkReveal`, `InkRule` |
-| Countdown | Per-digit slide inside a fixed 1em mask, cells split by hairlines | `Countdown` |
-| Calibration ruler | Day ticks draw in left to right; the hatched elapsed part and the capped needle spring to "now" | `WindowRuler` |
-| Pillar rows | Slide in staggered. Hover floods the row with ink and inverts the text; the row's MagicIcon reacts. | `PillarRow` |
-| **Ink panel scene** | "Portfolio under reconstruction", looping every 6s: the page wireframe and dimension lines draw in; copy lines type in and clear; a crosshair cursor travels card to card and each card fills with hatching as it lands (with a burst ring); a scanline sweeps the page; two meshed gears counter-rotate; the whole scene leans toward the pointer. | `BuildScene` (anime.js draw + motion loops) |
-| Panel extras | Calibration rig turning in the corner, halftone dot field, brush wordmark reveal, paper ticker band reacting to scroll velocity | `CalibrationRig`, `InkReveal`, `Marquee` |
+| Status | Orange beacon with an expanding pulse ring | `StatusDot` |
+| Kicker, headline, body | Ink-mask line reveals, staggered | `InkReveal` |
+| Countdown | Per-digit slide inside a fixed 1em mask | `Countdown` |
+| Ruler | Ticks draw in left to right; the orange line and dot ease to "now" | `WindowRuler` |
+| Pillars | Rise in, staggered. Hover draws the orange rule and wakes the MagicIcon. | `PillarColumn` |
+| Illustration | "Portfolio under reconstruction", looping every 6s: the wireframe and dimension lines draw in; copy lines type; an orange cursor travels card to card, filling each with hatching; a scanline sweeps the page; meshed gears turn; the scene leans toward the pointer. | `BuildScene` |
 
-**Image assets:** none. Every visual is inline SVG or CSS. (The image fields were removed on 2026-11-22: `$unset content.images, content.stamp`.)
+**Image assets:** none. Everything is inline SVG or CSS.
 
 ## 6. Reuse and scope boundaries
 
@@ -133,8 +153,8 @@ These are reusable by any future page.
 | Module | Reused for |
 | --- | --- |
 | `PublicShell`, `PosterFrame`, `SlashLabel` | Every public page: surface tokens, fonts, MotionProvider, grain, frame, labels |
-| `InkReveal`, `InkRule`, `Marquee`, `CalibrationRig`, `RegistrationMark` (`src/components/motion/`) | Any editorial section |
-| `BuildScene`, `WindowRuler` (`src/components/maintenance/`) | Promote to shared modules if another screen needs them |
+| `InkReveal`, `StatusDot` (`src/components/motion/`) | Any editorial section or status display |
+| `BuildScene`, `WindowRuler`, `PillarColumn` (`src/components/maintenance/`) | Promote to shared modules if another screen needs them |
 | `useCountdown`, `useScrollVelocity`, `useParallax` (`src/hooks/`) | Any timed or scroll-reactive UI |
 | `MagicIcon` (new `calibrate` icon), `ActionButton` | App-wide |
 | `getScreenContent` and the `site_screens` collection | Every future configurable screen (add a schema to the registry) |

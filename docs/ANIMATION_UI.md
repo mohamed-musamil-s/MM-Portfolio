@@ -79,6 +79,7 @@ src/components/motion/   # reusable editorial motion pieces
   ParallaxLayer.tsx   # scroll (GSAP, outer) + pointer (motion, inner) depth layer
   CalibrationRig.tsx  # counter-rotating rings, vernier draw-in, lock-on reticle, scroll turn
   RegistrationMark.tsx# breathing print crosshair (open / bullseye)
+  StatusDot.tsx       # signal-orange live beacon with pulse ring
   XMark.tsx           # hand-drawn X drawn in on view
   CropMarks.tsx       # static L crop marks
 src/hooks/
@@ -359,7 +360,7 @@ Each layer gets its own `useParallax` speed:
 | Surface attribute | `data-surface="public"` | `data-surface="studio"` |
 | Motion provider | `<MotionProvider theme="portfolio">` | `<MotionProvider theme="studio">` |
 | Button variant | `editorial-ink` | `studio-action` |
-| Colours used by components | `paper`, `newsprint`, `ink`, `graphite`, `rule` | `canvas`, `panel`, `fg`, `fg-muted`, `line`, `accent`, `on-accent`, `glow`, `danger`, `success` |
+| Colours used by components | `paper`, `newsprint`, `ink`, `graphite`, `rule`, and `signal` (accent marks only, STYLE.md §2.5) | `canvas`, `panel`, `fg`, `fg-muted`, `line`, `accent`, `on-accent`, `glow`, `danger`, `success` |
 | Icon error colour (`--icon-error`) | `currentColor` (no colour) | `--studio-danger` |
 | Fonts | `font-grotesk`, `font-technical` | system sans, `font-mono` (until ADMIN_STYLE defines fonts) |
 

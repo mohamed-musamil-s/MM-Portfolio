@@ -47,7 +47,7 @@ src/
   components/ui/            # shared across surfaces: MotionProvider, MagicIcon, ActionButton
   components/motion/        # reusable editorial motion pieces (InkReveal, Marquee, VelocitySkew, ParallaxLayer, CalibrationRig ...)
   components/public/        # PublicShell, PosterFrame, SlashLabel
-  components/maintenance/   # /maintenance: screen composition, Countdown, WindowRuler, PillarRow, BuildScene (animated panel)
+  components/maintenance/   # /maintenance: screen composition, Countdown, WindowRuler, PillarColumn, BuildScene (animated illustration)
   hooks/                    # shared hooks: useMotionTheme, useActionRunner, useMagnetic, useParallax
   lib/
     shared/routes.ts        # route constants, safe redirect helper (client-safe)

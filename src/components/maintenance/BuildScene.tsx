@@ -14,7 +14,7 @@ import { cn } from "@/lib/shared/cn";
  *
  *   wireframe + dimension lines  draw themselves in on mount   (anime.js)
  *   copy lines                   type in and clear, staggered   (motion, loop)
- *   cursor                       travels card to card; each card fills
+ *   cursor (signal orange)       travels card to card; each card fills
  *                                with hatch as it lands          (motion, shared loop clock)
  *   scanline                     sweeps down the page           (motion, loop)
  *   gears                        meshed, counter-rotating       (motion, loop)
@@ -183,6 +183,7 @@ export const BuildScene = ({ className }: { className?: string }) => {
           return (
             <motion.circle
               key={card.x}
+              className="text-signal"
               cx={center.x}
               cy={center.y}
               r={22}
@@ -207,6 +208,7 @@ export const BuildScene = ({ className }: { className?: string }) => {
 
         {/* Cursor: registration crosshair travelling card to card */}
         <motion.g
+          className="text-signal"
           initial={{ x: CURSOR_HOME.x, y: CURSOR_HOME.y, opacity: moving ? 0 : 1 }}
           animate={moving ? { x: CURSOR_X, y: CURSOR_Y, opacity: 1 } : undefined}
           transition={{

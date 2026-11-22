@@ -7,7 +7,7 @@ Status key: **Done**, **Placeholder** (route exists, shows "Coming soon", functi
 | Feature | Route | Status |
 | --- | --- | --- |
 | Root redirect | `/` -> 302 `/maintenance` | Done |
-| Maintenance page | `/maintenance` | Done: one viewport, no scrolling. Content and countdown on the left, animated ink panel on the right, database-driven generic content ([spec](screens/MAINTENANCE_BUSINESS.md)) |
+| Maintenance page | `/maintenance` | Done: one viewport, no scrolling, clean ivory layout with signal-orange accents. Content and countdown on the left, animated line illustration on the right, database-driven generic content ([spec](screens/MAINTENANCE_BUSINESS.md)) |
 | Custom 404 | `/404`, unknown routes 302 here | Placeholder |
 | Public portfolio | TBD | Planned (not started) |
 

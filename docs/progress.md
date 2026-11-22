@@ -130,6 +130,20 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] Fixed: the short-screen Tailwind classes were built from a template string, so Tailwind never generated them; they're now written out in full.
 - Note: the in-app browser throttles animation frames while it's unfocused, so screenshots sometimes catch the wireframe before it has drawn in. It draws normally in a visible tab.
 
+## 2026-11-22: Clean layout with one signal colour
+
+- [x] **Signal orange `#E8480F`** is the single accent: token `--signal`, Tailwind `signal`. Its contrast is 3.5:1 on ivory, so it's for graphics and large type only. STYLE.md §2.5 lists exactly where it may appear.
+- [x] `/maintenance` restyled to match the clean reference:
+  - ivory canvas, faint column rules and a soft orange glow;
+  - logo tile and status beacon;
+  - headline with an orange full stop, and a clean countdown;
+  - full-width ruler with an orange elapsed line and now dot;
+  - three pillar columns with an orange hover rule;
+  - a light line illustration on the right with an orange cursor.
+- [x] Removed from this screen: the ink panel, ticker band, crosshair frame, corner calibration rig and big brush wordmark. The components are kept for reuse.
+- [x] Still generic content, with no personal details. The reference's email address was deliberately not added.
+- [x] Zero overflow verified at 1440×900, 1280×720, 1024×768, 375×812, 390×667 and 360×640.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

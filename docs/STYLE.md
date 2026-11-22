@@ -1,6 +1,6 @@
 # MM-Portfolio Public Design System
 
-Version 1.2, 2026-11-22. Source artwork: `docs/reference/Gemini_MM.png` (the "Musamil" editorial poster).
+Version 1.3, 2026-11-22. Source artwork: `docs/reference/Gemini_MM.png` (the "Musamil" editorial poster).
 
 **Styling is done with Tailwind CSS v4.** Every rule below names the utility classes that implement it. The token layer is `src/app/globals.css`.
 
@@ -53,7 +53,7 @@ Version 1.2, 2026-11-22. Source artwork: `docs/reference/Gemini_MM.png` (the "Mu
 
 ### 2.1 Tokens
 
-The palette is strictly monochrome: warm ivory paper and carbon ink. There are **no saturated accent colors**, including for links, focus, success or error states.
+The palette is warm ivory paper and carbon ink, plus **exactly one accent: signal orange** (added 2026-11-22). Orange is a *signal*, not a theme colour. It marks a few specific things (see 2.5); links, focus, success and error states stay ink.
 
 | CSS variable | Hex | Tailwind name | Role |
 | --- | --- | --- | --- |
@@ -62,10 +62,11 @@ The palette is strictly monochrome: warm ivory paper and carbon ink. There are *
 | `--text-primary` | `#0A0A0A` | `ink` | Screen-print carbon ink. All headings, body text, the wordmark, primary buttons. |
 | `--text-secondary` | `#2E2E2E` | `graphite` | Charcoal graphite. Microtext, metadata, captions, secondary labels. |
 | `--border-ink` | `#141414` | `rule` | Hairline rules, frames, registration marks, crosshairs. |
+| `--signal` | `#E8480F` | `signal` | **The single accent.** Non-text marks only (see 2.5). |
 
 Each name works with every color utility: `bg-paper`, `text-ink`, `border-rule`, `outline-ink`, `fill-ink`, `stroke-rule`, `decoration-ink`.
 
-These are the only five color values allowed. Every other tone is one of them with opacity applied (see 2.4).
+These are the only six color values allowed. Every other tone is one of them with opacity applied (see 2.4).
 
 Measured from the poster, the paper is `#F7F5E9` and the ink is pure black. The tokens deliberately pull the paper slightly away from yellow and lift the ink off `#000`, which keeps large ivory areas from looking tinted on screens and softens the black-on-ivory glare in long text.
 
@@ -79,13 +80,30 @@ Measured from the poster, the paper is `#F7F5E9` and the ink is pure black. The 
 | `rule` `#141414` | 16.6 : 1 | 15.0 : 1 | Rules and marks; text too if needed. |
 | `text-graphite` `#2E2E2E` | 12.2 : 1 | 11.1 : 1 | Any text size (AAA). |
 | `text-paper` on `bg-ink` (inverted) | 17.8 : 1 | | Inverted blocks and buttons. |
+| `signal` `#E8480F` | 3.5 : 1 | 3.2 : 1 | Graphics and large type only (WCAG 1.4.11 needs ≥ 3 : 1). **Never body or label text.** |
 
 ### 2.3 Contrast rules
 
 1. Text is always ink on paper or paper on ink. Never place `text-graphite` on a `bg-ink` block; use `text-paper` there.
 2. Opacity variants (2.4) are **never** used for text that carries meaning, because they drop below 4.5 : 1.
 3. Text placed over imagery sits on a solid `bg-paper` or `bg-ink` plate, never directly on the photo.
-4. State is never shown by color alone, because there is no color. Errors, success and the current page use words, icons, rules or weight.
+4. State is never shown by colour alone. Errors, success and the current page use words, icons, rules or weight. Orange may reinforce a state; it never carries it alone.
+
+### 2.5 Signal orange: where it may appear
+
+Use it sparingly: at most about six marks per screen, and never as a large fill behind text.
+
+| Allowed | Example (maintenance screen) |
+| --- | --- |
+| Live or status beacons | Pulsing status dot (`StatusDot`) |
+| A single typographic accent | The headline's final full stop |
+| Progress and "now" indicators | The ruler's elapsed line and now dot |
+| One accent inside an illustration | The cursor and landing rings in `BuildScene` |
+| Hover affordances | The 2px rule drawn across a pillar on hover |
+| Brand tile detail | The small square on the logo tile |
+| Ambient light | One blurred background glow at 9% opacity |
+
+**Never** use it for text smaller than `text-h2`, links, focus rings, buttons' base fill, error states, or more than one element competing in the same area.
 
 ### 2.4 Derived tones
 
@@ -98,7 +116,7 @@ Derived tones are opacity applied to the base tokens, using Tailwind's `/` modif
 | Construction lines | `stroke-ink/60` |
 | Paper grain overlay (range 3% to 5%) | `opacity-4` |
 
-### 2.5 Dark mode
+### 2.6 Dark mode
 
 The public site has **no dark mode**: the ivory paper is the brand.
 
@@ -228,7 +246,7 @@ These are measured from the poster and expressed as fractions of the viewport.
 ### 4.4 Shape rules
 
 - **No radius.** Never use `rounded-*` in public components. The default is square; write `rounded-none` only when overriding a primitive.
-  - The **only** curves in the system are the crosshair circles (`rounded-full` inside the mark component), the bullseye mark and the brush lettering.
+  - The **only** curves in the system are the crosshair circles (`rounded-full` inside the mark component), the bullseye mark, the brush lettering, **status dots** and the **blurred background glow**.
 - **No shadows.** Never use `shadow-*` or `drop-shadow-*`. Depth comes from overlap and rules, as in print.
 - **Borders:** always `border border-rule` (1px). The heavy rule is 2px (`border-b-2 border-ink` or `h-0.5 bg-ink`), used only for headline underlines and the active nav item.
 
@@ -359,22 +377,18 @@ The navigation mirrors the poster's top-right label, `MINDSET / AMBITION / FREED
 
 The business rules, content model and motion layers are in [screens/MAINTENANCE_BUSINESS.md](screens/MAINTENANCE_BUSINESS.md). **Every string, date and image path comes from the database** (`site_screens`, `_id: "maintenance"`), never from code.
 
-As of 2026-11-22 this is **exactly one viewport (`h-svh`), with no scrolling**, split in two:
+As of 2026-11-22 (v1.3) this is **one viewport (`h-svh`) with no scrolling**, on a **clean ivory canvas**:
 
-- **Left, the content column** (`lg:col-span-7`, paper):
-  - brand label and `EST.` line;
-  - headline (`text-h1`, or `text-h2` on short screens) with the second line indented, then the partial rule and body copy;
-  - the compact countdown (hairline-split tabular cells) and the calibration ruler;
-  - the pillars as compact index rows, with an ink-flood hover;
-  - the motto footer;
-  - corner crosshairs only.
-- **Right, the ink panel** (`lg:col-span-5`, `bg-ink text-paper`). This is a deliberate inverted editorial moment:
-  - the animated "portfolio under reconstruction" SVG scene, live-status label and calibration rig;
-  - the vertical secondary mottos;
-  - the brush wordmark, sized to the panel with container-query units;
-  - a paper ticker band along the bottom.
-
-Below `lg`, the panel is a 24svh top band. The height-based rules are in the screen spec, §5.
+- **Background:** faint 12-column rules at about 4.5% opacity, plus one soft signal glow bottom-right. There's no ink panel, ticker or crosshairs on this screen.
+- **Header:**
+  - left: an ink logo tile (the first letter of the wordmark) with a small orange square, then the brand label from `sm` up;
+  - right: the orange `StatusDot` beacon and the status label.
+- **Middle** (12-column grid):
+  - left (7 columns): kicker, headline (`text-h1`, its final full stop in signal orange), body (`text-lead`), and the clean countdown (`DD : HH : MM : SS`, faint colons);
+  - right (5 columns, `lg` up only): the `BuildScene` line illustration in ink with an orange cursor, and the secondary mottos as its caption.
+- **Ruler:** a full-width timeline with faint day ticks, the orange elapsed line, the orange "now" dot, and the dates at both ends.
+- **Pillars:** three columns on hairlines. On hover an orange 2px rule draws across the top.
+- **Footer:** primary mottos, the `EST.` line and the note, all in mono micro.
 
 ### 6.5 404 screen
 
@@ -444,7 +458,7 @@ The source of truth is `src/app/globals.css`.
 
 | Group | Utilities | Variable on `[data-surface="public"]` |
 | --- | --- | --- |
-| Color | `paper`, `newsprint`, `ink`, `graphite`, `rule` | `--bg-primary`, `--bg-surface`, `--text-primary`, `--text-secondary`, `--border-ink` |
+| Color | `paper`, `newsprint`, `ink`, `graphite`, `rule`, `signal` | `--bg-primary`, `--bg-surface`, `--text-primary`, `--text-secondary`, `--border-ink`, `--signal` |
 | Font family | `font-grotesk`, `font-technical`, `font-brush` | `--public-font-grotesk`, `--public-font-technical`, `--public-font-brush` |
 | Type size | `text-wordmark`, `text-display`, `text-h1`, `text-h2`, `text-h3`, `text-lead`, `text-body`, `text-label`, `text-micro`, `text-micro-deco` | `--fs-*` |
 | Spacing | `*-frame`, `*-page` (padding, margin, inset, gap) | `--frame-inset`, `--page-margin` |
@@ -471,6 +485,7 @@ Never put a raw hex value in a component.
 
 - [ ] Styled with Tailwind utilities only: no inline styles, no CSS modules, no `@apply`.
 - [ ] Colors come only from the token utilities, with no `dark:` variants.
+- [ ] Signal orange appears only in the places listed in 2.5, never as text below `text-h2`.
 - [ ] Components with variants use `tv()`, and conditional classes use `cn()`.
 - [ ] Classes sorted by `npm run format`.
 

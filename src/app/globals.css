@@ -28,6 +28,8 @@
   --color-ink: var(--text-primary);
   --color-graphite: var(--text-secondary);
   --color-rule: var(--border-ink);
+  /* The single accent: non-text marks only (dots, needles, hover rules), never body text. */
+  --color-signal: var(--signal);
 
   /* Font families */
   --font-grotesk: var(--public-font-grotesk);
@@ -121,6 +123,7 @@
     --text-primary: #0a0a0a;
     --text-secondary: #2e2e2e;
     --border-ink: #141414;
+    --signal: #e8480f;
 
     /* Fonts: --font-inter-tight etc. are set by next/font on the PublicShell */
     --public-font-grotesk: var(--font-inter-tight), "Helvetica Neue", Arial, sans-serif;

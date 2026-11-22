@@ -40,7 +40,7 @@ const timelineSchema = z
 
 export const maintenanceContentSchema = z.object({
   meta: z.object({ title: text(70), description: text(160) }),
-  brand: z.object({ label: text(40), wordmark: text(24) }),
+  brand: z.object({ label: text(40) }),
   /** Kept short on purpose: one small line above the headline. */
   status: z.object({ kicker: text(40), label: text(40) }),
   headline: z.object({ lines: z.array(text(40)).min(1).max(3) }),
@@ -51,6 +51,10 @@ export const maintenanceContentSchema = z.object({
     lastCheckedLabel: text(24),
     nextCheckLabel: text(24),
     checkAgainLabel: text(24),
+    /** Shown on the button while a check is in flight, e.g. "CHECKING STATUS...". */
+    checkingLabel: text(24),
+    /** Shown briefly when a check finds maintenance still on, e.g. "STILL UPGRADING". */
+    checkedLabel: text(24),
     hint: text(120),
   }),
   illustration: illustrationSchema,

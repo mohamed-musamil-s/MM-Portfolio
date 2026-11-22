@@ -8,7 +8,9 @@ Status key: **Done**, **Placeholder** (route exists, shows "Coming soon", functi
 | --- | --- | --- |
 | Root redirect | `/` -> 302 `/maintenance` | Done |
 | Maintenance page | `/maintenance` | Done: one viewport, essential content only, signal-orange accents, live check every minute driven by the admin maintenance flag ([spec](screens/MAINTENANCE_BUSINESS.md)) |
-| Custom 404 | `/404`, unknown routes 302 here | Placeholder |
+| Custom 404 | `/404`, unknown routes 302 here | Done: Error 404 display, Page Not Found, return button, 10s auto-redirect to `/` with pause ([spec](screens/NOT_FOUND_BUSINESS.md)) |
+| Custom cursor | all public pages | Done: signal dot + spring ring, reticle over interactive elements, fine pointers only |
+| "MM." monogram | header of public screens, `public/brand/*.svg` | Done ([brand/LOGO.md](brand/LOGO.md)) |
 | Public portfolio | TBD | Planned (not started) |
 
 ## Studio (admin)

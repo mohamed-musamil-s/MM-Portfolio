@@ -1,4 +1,5 @@
-import { tv, type VariantProps } from "tailwind-variants";
+import type { VariantProps } from "tailwind-variants";
+import { tv } from "@/lib/shared/tv";
 
 /**
  * One recipe, two visual languages. Behaviour is identical; only these

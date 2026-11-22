@@ -180,10 +180,21 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] Fixed: square line caps painted a dot on undrawn paths, so the film now uses butt caps.
 - [x] Zero overflow at 1440×900, 1280×720 and 1024×768. The phone layout is unchanged (the film is desktop-only).
 
+## 2026-11-23: Hero Check again, 3D stage, 404, cursor and monogram
+
+- [x] **CHECK AGAIN is now a hero action** (`HeroActionButton`): breathing halo, sheen, reticle brackets, magnetic hover with a two-layer orange wipe, press detent and shockwave, `CHECKING STATUS...` with a comet ring, `STILL UPGRADING` with a check, ray burst and settle. Labels from the DB (`liveCheck.checkingLabel`, `checkedLabel`; version 9 → 10). Verified idle → loading → success → idle by sampling.
+- [x] **3D-look right side** (`DepthStage`): the film now plays on an extruded CSS 3D slab with a cube, gear, orb and version chip at different depths. Leans to the pointer, drifts, and runs a lift + scan + pulse sequence on every status check.
+- [x] **404 screen** (`site_screens/not-found`, new): Error 404 display, Page Not Found, return button, 10s countdown ring with pause, progress line, auto-redirect to `/`. `/abc` → 302 → `/404` (status 404, title from the DB). Pause holds the count; the redirect lands on `/maintenance` while the flag is on.
+- [x] **Custom cursor** in signal orange on all public pages (fine pointers only).
+- [x] **"MM." monogram**: shared geometry, `<Monogram />`, four SVG files (`npm run brand:assets`) and [brand/LOGO.md](brand/LOGO.md) with generation prompts. Replaces the letter tile in the header (`brand.wordmark` removed; version 10 → 11).
+- [x] Fixed: tailwind-merge dropped custom font sizes (`text-h3`) next to text colours (`text-paper`). `cn()` and `tv()` now use a merger that knows the type scale.
+- [x] Zero overflow for `/maintenance` and `/404` at 1440×900, 1280×720, 1024×768, 390×667, 375×812 and 360×640.
+- [ ] Not verified: reduced-motion behaviour (can't be emulated in the test browser).
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.
-- [ ] Optional: a custom brush wordmark SVG. The page uses Permanent Marker with the generic wordmark from the database.
+- [ ] Optional: use the monogram as the favicon (`app/icon.svg`).
 
 - [ ] Choose a longer `ADMIN_ACCESS_CODE` before deploying.
 - [ ] When deploying, set all `.env.example` variables in the host's environment, and confirm that the host sets `x-forwarded-for`.

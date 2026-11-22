@@ -14,6 +14,8 @@ export type LiveCheck = {
   secondsToNext: number;
   /** 0..1 through the current interval. */
   progress: number;
+  /** True while a request to /api/status is in flight (automatic or manual). */
+  checking: boolean;
   /** Check right now (e.g. a "Check again" button). Restarts the interval. Rejects on failure. */
   checkNow: () => Promise<void>;
 };
@@ -25,6 +27,7 @@ export type LiveCheck = {
  */
 export const useLiveCheck = (intervalSeconds: number): LiveCheck => {
   const [lastCheckedAt, setLastCheckedAt] = useState<number | null>(null);
+  const [checking, setChecking] = useState(false);
   const now = useSecondClock();
   const checkRef = useRef<() => Promise<void>>(() => Promise.resolve());
 
@@ -34,6 +37,7 @@ export const useLiveCheck = (intervalSeconds: number): LiveCheck => {
 
     const check = async () => {
       clearTimeout(timer);
+      setChecking(true);
       try {
         const response = await fetch(ROUTES.api.status, { cache: "no-store" });
         if (!response.ok) {
@@ -50,6 +54,7 @@ export const useLiveCheck = (intervalSeconds: number): LiveCheck => {
         setLastCheckedAt(Date.now());
       } finally {
         if (!cancelled) {
+          setChecking(false);
           timer = setTimeout(() => void check().catch(() => undefined), intervalSeconds * 1000);
         }
       }
@@ -68,5 +73,5 @@ export const useLiveCheck = (intervalSeconds: number): LiveCheck => {
   const elapsedSeconds = lastCheckedAt !== null && now !== null ? Math.max(0, (now - lastCheckedAt) / 1000) : 0;
   const secondsToNext = Math.max(0, Math.ceil(intervalSeconds - elapsedSeconds));
 
-  return { lastCheckedAt, secondsToNext, progress: Math.min(1, elapsedSeconds / intervalSeconds), checkNow };
+  return { lastCheckedAt, checking, secondsToNext, progress: Math.min(1, elapsedSeconds / intervalSeconds), checkNow };
 };

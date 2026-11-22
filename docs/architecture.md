@@ -26,11 +26,12 @@ src/
   app/
     layout.tsx              # root layout: imports globals.css, no theme of its own
     globals.css             # Tailwind entry + design tokens (names in @theme, values per data-surface)
-    not-found.tsx           # 404 placeholder
+    not-found.tsx           # last-resort fallback (unknown URLs never reach it: they 302 to /404)
     error.tsx               # 500 boundary
     global-error.tsx        # root-layout failure boundary
     [...slug]/route.ts      # unknown URL: 302 to /404 (JSON 404 under /api)
-    404/page.tsx            # calls notFound(), so /404 returns status 404
+    (public)/404/           # page.tsx calls notFound(); not-found.tsx renders the 404 screen (status 404);
+                            # layout.tsx supplies the DB title/description
     (public)/               # route group: every public page renders inside PublicShell
       layout.tsx
       maintenance/page.tsx  # reads site_screens/maintenance, renders MaintenanceScreen
@@ -44,10 +45,12 @@ src/
         layout.tsx          # studio nav + sign out
         dashboard|release|content|resume|chat|analytics/page.tsx
   components/studio/        # client components (login form, logout button, placeholders)
-  components/ui/            # shared across surfaces: MotionProvider, MagicIcon, ActionButton
+  components/ui/            # shared across surfaces: MotionProvider, MagicIcon, ActionButton, HeroActionButton, CustomCursor
+  components/brand/         # Monogram ("MM." mark; geometry in lib/shared/brand/monogram.ts)
+  components/not-found/     # 404: NotFoundScreen, ErrorCode, Redirect{Provider,Countdown,Line}
   components/motion/        # reusable editorial motion pieces (InkReveal, Marquee, VelocitySkew, ParallaxLayer, CalibrationRig ...)
   components/public/        # PublicShell, PosterFrame, SlashLabel
-  components/maintenance/   # /maintenance: screen composition, MaintenanceIllustration (GSAP film), Countdown, WindowRuler, LiveCheck{Provider,Footer}, CheckAgain
+  components/maintenance/   # /maintenance: screen composition, MaintenanceIllustration (GSAP film), Countdown, WindowRuler, LiveCheck{Provider,Footer}, CheckAgain, DepthStage (CSS 3D)
   hooks/                    # shared hooks: useMotionTheme, useActionRunner, useMagnetic, useParallax
   lib/
     shared/routes.ts        # route constants, safe redirect helper (client-safe)
@@ -101,9 +104,9 @@ Browser
 
 | Path | Access | Behaviour |
 | --- | --- | --- |
-| `/` | public | 302 to `/maintenance` while the maintenance flag is ON. When it's OFF: the home page (not built yet, so it shows the 404 placeholder). |
+| `/` | public | 302 to `/maintenance` while the maintenance flag is ON. When it's OFF: the home page (not built yet, so it shows the 404 screen). |
 | `/maintenance` | public | System-upgrade screen from database content, 200 (see [screens/MAINTENANCE_BUSINESS.md](screens/MAINTENANCE_BUSINESS.md)) |
-| `/404` | public | placeholder, 404 |
+| `/404` | public | 404 screen from the DB (`site_screens/not-found`), status 404, auto-redirect to `/` after 10s |
 | any unknown path | public | 302 to `/404` |
 | `/studio` | protected | 302 to `/studio/dashboard` (or to login) |
 | `/studio/login` | public | login form; already signed in: redirect to dashboard |

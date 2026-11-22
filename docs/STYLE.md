@@ -1,6 +1,6 @@
 # MM-Portfolio Public Design System
 
-Version 1.5, 2026-11-22. Source artwork: `docs/reference/Gemini_MM.png` (the "Musamil" editorial poster).
+Version 1.6, 2026-11-23 (hero action, custom cursor, monogram, 404 screen). Source artwork: `docs/reference/Gemini_MM.png` (the "Musamil" editorial poster).
 
 **Styling is done with Tailwind CSS v4.** Every rule below names the utility classes that implement it. The token layer is `src/app/globals.css`.
 
@@ -350,10 +350,15 @@ All public buttons are `<ActionButton variant="editorial-ink">`. That's the defa
   - on error the button shakes and shows a mono badge (for example `401`) in ink. **No red.**
 - **Disabled:** `opacity-40`, plus `aria-disabled` on links.
 - **Text link style:** for inline text links use the link rules in 6.2, not a button.
-- **Solid tone** (`tone="solid"`): the single primary action on a screen (e.g. CHECK AGAIN):
-  - an ink-filled pill (`rounded-full bg-ink text-paper min-h-12 px-7`) with no ink wipe and no corner marks;
-  - hover only dims it slightly (`bg-ink/88`). **No magnetic pull or other hover movement**; it keeps the press scale;
-  - status icons show inside the pill.
+- **Solid tone** (`tone="solid"`): an ink-filled pill (`rounded-full bg-ink text-paper min-h-12 px-7`) with no ink wipe and no corner marks. Hover only dims it slightly (`bg-ink/88`); no magnetic pull. Used for secondary primaries such as **RETURN TO MAIN PAGE** on the 404 page.
+- **Hero action** (`<HeroActionButton>`): the one oversized call to action on a screen (e.g. **CHECK AGAIN**). Added 2026-11-23.
+  - Look: ink pill, `min-h-22 px-11 text-h3 font-extrabold uppercase` (`min-h-16 px-8` at heights ≤ 820px), with four signal reticle brackets framing it and a signal halo.
+  - Idle: the halo breathes, a signal sheen sweeps the surface every few seconds, the icon turns slowly.
+  - Hover: magnetic pull, a signal wipe plus a deeper second layer, brackets open outward, the icon primes.
+  - Press: detent (scale 0.96, 2px drop) and a signal shockwave.
+  - Loading: the busy label (`CHECKING STATUS...`), a comet orbits the pill, brackets lock on.
+  - Success: the done label (`STILL UPGRADING`), an orange check, a burst of rays and a second shockwave, then it settles back.
+  - Labels share one grid cell, so the pill never changes width. Spec: [ANIMATION_UI.md](ANIMATION_UI.md) §8b.
 
 ### 6.2 Links
 
@@ -381,24 +386,26 @@ The navigation mirrors the poster's top-right label, `MINDSET / AMBITION / FREED
 
 The business rules, content model and motion layers are in [screens/MAINTENANCE_BUSINESS.md](screens/MAINTENANCE_BUSINESS.md). **Every string, date and image path comes from the database** (`site_screens`, `_id: "maintenance"`), never from code.
 
-As of 2026-11-22 (v1.5) this is **one viewport (`h-svh`) with no scrolling**, on a **clean ivory canvas**, with only the essential content:
+As of 2026-11-23 (v1.7) this is **one viewport (`h-svh`) with no scrolling**, on a **clean ivory canvas**, with only the essential content:
 
 - **Background:** faint 12-column rules and one soft signal glow bottom-right.
-- **Header:** logo tile with an orange square and the brand label; on the right, the orange `StatusDot` and status label.
+- **Header:** the **"MM." monogram** (signal full stop) and the brand label; on the right, the orange `StatusDot` and status label.
 - **Middle:**
-  - left (6 columns): kicker, headline (orange full stop), body, the **CHECK AGAIN** solid pill with its hint beside it, then the countdown (`ETA`);
-  - right (columns 8 to 12, `lg` and up): the **maintenance film**, one continuous animated line-art shot (manage → construct → content → redesign → upgrade) with an orange cursor and film-style subtitles.
+  - left (6 columns): kicker, headline (orange full stop), body, the **CHECK AGAIN hero action** with its hint below it, then the countdown (`ETA`);
+  - right (columns 8 to 12, `lg` and up): the **3D-look stage**. The maintenance film plays on the screen of an extruded slab, with a cube, an extruded gear, an orb and a version chip floating at different depths. It leans to the pointer and reacts to every status check.
 - **Ruler:** a full-width timeline with an orange elapsed line, a now dot, and dates at both ends.
 - **Footer:** three spaced columns on hairlines: LAST CHECKED, NEXT CHECK (orange progress, every minute) and the note.
 
 ### 6.5 404 screen
 
-- Use the same poster frame as maintenance, so the two read as one family.
-- The `404` numerals use `text-display font-extrabold`, set in the empty left field. Beneath them is `ERROR / PAGE NOT FOUND` in `font-technical text-micro uppercase`.
-- Add 1 or 2 X marks near the numerals. This is the only screen where the X motif sits next to a heading.
-- Add one primary button, `BACK TO HOME`. It points to `/` (which currently lands on `/maintenance`).
-- Don't show the portrait here. The empty paper itself signals "nothing here".
-- The response keeps HTTP status 404. Don't add a meta refresh or an automatic redirect.
+Spec: [screens/NOT_FOUND_BUSINESS.md](screens/NOT_FOUND_BUSINESS.md). Same frame and family as maintenance. All copy comes from the database (`site_screens`, `_id: "not-found"`).
+
+- **Header:** monogram + brand label; `● ERROR 404` on the right.
+- **Error display:** a mono `ERROR` label with a short signal rule, over oversized `404` digits (`font-extrabold`, tracking -0.06em) and a **signal full stop** that echoes the monogram. Right column on `lg`, above the heading on phones.
+- **Heading:** `PAGE NOT FOUND.` with an orange full stop, then one short paragraph.
+- **Actions:** `RETURN TO MAIN PAGE` (`ActionButton` navigate, solid tone) and a **signal countdown ring** (10s by default) with `REDIRECTING IN` and a `PAUSE` / `RESUME` text button.
+- **Footer:** a full-width hairline that fills in signal orange over the countdown, led by a dot.
+- The response keeps HTTP status 404. The redirect is client-side and can be paused; it never runs while the tab is hidden.
 
 ### 6.6 Image treatment
 
@@ -430,6 +437,22 @@ As of 2026-11-22 (v1.5) this is **one viewport (`h-svh`) with no scrolling**, on
 
 ---
 
+### 6.9 Custom cursor
+
+`<CustomCursor />`, mounted once in `PublicShell`. Fine pointers only; touch and coarse pointers keep the native cursor.
+
+- A 6px **signal dot** exactly on the pointer, plus a 36px **signal ring** that trails on a spring.
+- Over anything interactive (`a`, `button`, `[role="button"]`, inputs, `[data-cursor="interactive"]`) the ring grows 1.55× and turns into four reticle brackets.
+- Press: the ring compresses to 0.78×, the dot swells, and a pulse ring expands from the click point.
+- The native cursor is hidden only while the custom one is mounted (`:root[data-custom-cursor="on"]`).
+- Reduced motion: the ring follows without lag and there's no pulse.
+
+### 6.10 Monogram
+
+The "MM." mark (`<Monogram />`) is specified in [brand/LOGO.md](brand/LOGO.md). On the site it uses `currentColor` for the letters and signal for the full stop.
+
+---
+
 ## 7. Motion
 
 The full motion system lives in [ANIMATION_UI.md](ANIMATION_UI.md): the stack, tokens, MagicIcon, ActionButton and the flagship pipelines. The public theme is `portfolio`: **editorial, kinetic, tactile, gallery-grade.**
@@ -445,7 +468,7 @@ These rules still apply on top:
 
 | Rule | Detail |
 | --- | --- |
-| Easing | `ease-print` (`cubic-bezier(0.2, 0, 0, 1)`) for tweens. Springs are damped with no visible overshoot. Never bounce or elastic easing. |
+| Easing | `ease-print` (`cubic-bezier(0.2, 0, 0, 1)`) for tweens. Springs are damped with no visible overshoot. Never elastic easing. **Exception (2026-11-23):** one small settle overshoot is allowed for drop-ins (the 404 full stop, film blocks) and the hero action's brackets. |
 | Durations | 0.24s fast, 0.48s base, 0.9s slow (`MOTION_THEMES.portfolio`). |
 | Properties | Only `transform`, `opacity` and `clip-path`. SVG `d` and stroke dash are allowed inside icons. Never `transition-all`. |
 | Colour | Colour is never animated. Inversion uses `mix-blend-difference` or a layer wipe, not a colour tween. |

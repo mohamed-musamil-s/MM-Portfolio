@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
+import { Monogram } from "@/components/brand/Monogram";
 import { InkReveal } from "@/components/motion/InkReveal";
 import { StatusDot } from "@/components/motion/StatusDot";
+import { withSignalStop } from "@/components/public/signal-stop";
 import type { MaintenanceContent } from "@/lib/shared/content/maintenance-schema";
 import { CheckAgain } from "./CheckAgain";
 import { Countdown } from "./Countdown";
@@ -19,24 +21,15 @@ type MaintenanceScreenProps = {
 const HEADLINE_DELAY = 0.2;
 const LINE_STAGGER = 0.14;
 
-/** A trailing full stop on the last headline line becomes the signal-orange accent (presentation only). */
-const withSignalStop = (lines: readonly string[]): ReactNode[] =>
-  lines.map((line, index) =>
-    index === lines.length - 1 && line.endsWith(".") ? (
-      <>
-        {line.slice(0, -1)}
-        <span className="text-signal">.</span>
-      </>
-    ) : (
-      line
-    ),
-  );
+/** The last headline line's trailing full stop becomes the signal-orange accent. */
+const headlineLines = (lines: readonly string[]): ReactNode[] =>
+  lines.map((line, index) => (index === lines.length - 1 ? withSignalStop(line) : line));
 
 /**
  * /maintenance (docs/screens/MAINTENANCE_BUSINESS.md): one viewport, no
  * scrolling, clean ivory canvas, signal orange as the single accent.
  *
- *   header   brand tile + label · live status (orange beacon)
+ *   header   MM. monogram + brand label · live status (orange beacon)
  *   middle   kicker, headline, short text, check-again, countdown | maintenance storyboard
  *   ruler    window timeline (orange elapsed line + now dot)
  *   footer   last checked · next check (polls every minute) · note
@@ -57,14 +50,8 @@ export const MaintenanceScreen = ({ content, windowStartText, targetText }: Main
         </div>
 
         <header className="flex items-center justify-between py-6 lg:py-10 [@media(max-height:820px)]:lg:py-6">
-          <div className="flex items-center gap-3">
-            <span
-              aria-hidden
-              className="relative grid size-9 place-items-center bg-ink text-label font-extrabold text-paper uppercase"
-            >
-              {brand.wordmark.charAt(0)}
-              <span className="absolute right-1.5 bottom-1.5 size-1.5 bg-signal" />
-            </span>
+          <div className="flex items-center gap-4">
+            <Monogram className="h-6 w-auto" />
             <span className="hidden text-label font-bold whitespace-nowrap uppercase sm:inline">{brand.label}</span>
           </div>
           <span className="flex items-center gap-3 font-technical text-micro whitespace-nowrap uppercase">
@@ -80,7 +67,7 @@ export const MaintenanceScreen = ({ content, windowStartText, targetText }: Main
             </InkReveal>
             <InkReveal
               as="h1"
-              lines={withSignalStop(headline.lines)}
+              lines={headlineLines(headline.lines)}
               delay={HEADLINE_DELAY}
               stagger={LINE_STAGGER}
               className="text-h2 font-extrabold uppercase sm:text-h1 [@media(max-height:820px)]:lg:text-h2"
@@ -94,16 +81,15 @@ export const MaintenanceScreen = ({ content, windowStartText, targetText }: Main
             >
               {content.body}
             </InkReveal>
-            <InkReveal delay={afterHeadline + 0.1}>
-              <CheckAgain label={content.liveCheck.checkAgainLabel} hint={content.liveCheck.hint} />
-            </InkReveal>
+            {/* Not inside an InkReveal mask: its halo, brackets and shockwaves draw outside the pill. */}
+            <CheckAgain labels={content.liveCheck} revealDelay={afterHeadline + 0.1} />
             <InkReveal className="pt-2 [@media(max-height:820px)]:pt-0" delay={afterHeadline + 0.2}>
               <Countdown timeline={timeline} />
             </InkReveal>
           </div>
 
           <div className="relative hidden h-full max-h-[34rem] min-h-0 flex-col justify-center lg:col-span-5 lg:col-start-8 lg:flex">
-            <MaintenanceIllustration illustration={content.illustration} className="min-h-0" />
+            <MaintenanceIllustration illustration={content.illustration} className="min-h-0 flex-1" />
           </div>
         </div>
 

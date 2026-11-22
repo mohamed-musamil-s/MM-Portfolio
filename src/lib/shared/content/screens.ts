@@ -1,16 +1,26 @@
 import type { z } from "zod";
-import { maintenanceContentSchema } from "./maintenance-schema";
+import { maintenanceContentSchema, type MaintenanceContent } from "./maintenance-schema";
+import { notFoundContentSchema, type NotFoundContent } from "./not-found-schema";
+
+/** Content type of every database-managed screen, by slug (`site_screens._id`). */
+type ScreenContentMap = {
+  maintenance: MaintenanceContent;
+  "not-found": NotFoundContent;
+};
+
+export type ScreenSlug = keyof ScreenContentMap;
+
+export type ScreenContent<S extends ScreenSlug> = ScreenContentMap[S];
 
 /**
  * Registry of database-managed screens. Adding a configurable screen means
- * adding its schema here; the reader, the admin API and the seed pick it up.
+ * adding its schema here (and its type above); the reader, the admin API and
+ * the seed pick it up. The mapped type keeps `SCREEN_SCHEMAS[slug]` precise
+ * for a generic slug.
  */
-export const SCREEN_SCHEMAS = {
+export const SCREEN_SCHEMAS: { [S in ScreenSlug]: z.ZodType<ScreenContentMap[S]> } = {
   maintenance: maintenanceContentSchema,
-} as const;
-
-export type ScreenSlug = keyof typeof SCREEN_SCHEMAS;
-
-export type ScreenContent<S extends ScreenSlug> = z.infer<(typeof SCREEN_SCHEMAS)[S]>;
+  "not-found": notFoundContentSchema,
+};
 
 export const isScreenSlug = (value: string): value is ScreenSlug => Object.hasOwn(SCREEN_SCHEMAS, value);

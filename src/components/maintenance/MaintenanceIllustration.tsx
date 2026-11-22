@@ -1,17 +1,18 @@
 "use client";
 
-import { motion } from "motion/react";
 import { useRef } from "react";
-import { usePointerParallax } from "@/hooks/usePointerParallax";
 import { useMotionTheme } from "@/hooks/useMotionTheme";
 import { gsap, useGSAP } from "@/lib/motion/gsap";
 import { cn } from "@/lib/shared/cn";
 import type { IllustrationScene, MaintenanceContent } from "@/lib/shared/content/maintenance-schema";
+import { DepthStage } from "./DepthStage";
+import { useSharedLiveCheck } from "./LiveCheckProvider";
 
 /*
  * Maintenance "film": one continuous shot on a single browser canvas, driven
- * by one GSAP timeline (GSAP owns every element inside the SVG; motion only
- * leans the wrapper toward the pointer). No cuts, no carousel:
+ * by one GSAP timeline (GSAP owns every element inside the SVG). It plays on
+ * the screen of a 3D-look slab (DepthStage) that leans to the pointer and
+ * reacts to every status check. No cuts, no carousel:
  *
  *    0.0  camera starts close, dollies out while the browser frame draws in
  *    1.0  MANAGE     settings panel slides in, cursor flips toggles, gears spin
@@ -83,7 +84,7 @@ export const MaintenanceIllustration = ({
 }) => {
   const { reducedMotion } = useMotionTheme();
   const scopeRef = useRef<HTMLElement>(null);
-  const lean = usePointerParallax(6);
+  const { checking } = useSharedLiveCheck();
   const captionFor = (scene: IllustrationScene) => illustration.steps.find((step) => step.scene === scene)?.label;
 
   useGSAP(
@@ -223,152 +224,157 @@ export const MaintenanceIllustration = ({
 
   return (
     <figure ref={scopeRef} aria-hidden className={cn("flex flex-col gap-5", className)}>
-      <motion.svg
-        viewBox={`0 0 ${VIEW.width} ${VIEW.height}`}
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="butt"
-        className="min-h-0 w-full flex-1 overflow-hidden text-ink"
-        style={{ x: lean.x, y: lean.y }}
-      >
-        <g data-camera>
-          {/* Browser frame */}
-          <g data-frame strokeWidth={1.25}>
-            <path data-draw pathLength={1} d={rect(40, 20, 400, 300)} />
-            <path data-draw pathLength={1} d="M40 52H440" />
-            <path data-draw pathLength={1} d={`${rect(54, 32, 8, 8)}${rect(68, 32, 8, 8)}${rect(82, 32, 8, 8)}`} />
-            <path data-draw pathLength={1} d={rect(150, 30, 180, 12)} opacity={0.5} />
-          </g>
+      <DepthStage checking={checking} chipLabel={illustration.versionTo} className="min-h-0 flex-1">
+        <svg
+          viewBox={`0 0 ${VIEW.width} ${VIEW.height}`}
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="butt"
+          className="block size-full text-ink"
+        >
+          <g data-camera>
+            {/* Browser frame */}
+            <g data-frame strokeWidth={1.25}>
+              <path data-draw pathLength={1} d={rect(40, 20, 400, 300)} />
+              <path data-draw pathLength={1} d="M40 52H440" />
+              <path data-draw pathLength={1} d={`${rect(54, 32, 8, 8)}${rect(68, 32, 8, 8)}${rect(82, 32, 8, 8)}`} />
+              <path data-draw pathLength={1} d={rect(150, 30, 180, 12)} opacity={0.5} />
+            </g>
 
-          {/* Page being built */}
-          <g data-page>
-            {BLOCK_ORDER.map((key) => {
-              const [x, y, w, h] = BLOCKS[key];
-              return <path key={`slot-${key}`} data-slot d={rect(x, y, w, h)} strokeDasharray="4 5" />;
-            })}
-            {BLOCK_ORDER.filter((key) => key !== "hero" && key !== "image").map((key) => {
-              const [x, y, w, h] = BLOCKS[key];
-              return (
+            {/* Page being built */}
+            <g data-page>
+              {BLOCK_ORDER.map((key) => {
+                const [x, y, w, h] = BLOCKS[key];
+                return <path key={`slot-${key}`} data-slot d={rect(x, y, w, h)} strokeDasharray="4 5" />;
+              })}
+              {BLOCK_ORDER.filter((key) => key !== "hero" && key !== "image").map((key) => {
+                const [x, y, w, h] = BLOCKS[key];
+                return (
+                  <path
+                    key={key}
+                    data-block={key}
+                    d={rect(x, y, w, h)}
+                    fill="currentColor"
+                    fillOpacity={0.07}
+                    strokeWidth={1.25}
+                  />
+                );
+              })}
+              <g data-image>
                 <path
-                  key={key}
-                  data-block={key}
-                  d={rect(x, y, w, h)}
+                  data-block="image"
+                  d={rect(...BLOCKS.image)}
                   fill="currentColor"
                   fillOpacity={0.07}
                   strokeWidth={1.25}
                 />
-              );
-            })}
-            <g data-image>
-              <path
-                data-block="image"
-                d={rect(...BLOCKS.image)}
-                fill="currentColor"
-                fillOpacity={0.07}
-                strokeWidth={1.25}
-              />
+              </g>
+              <g data-hero>
+                <path
+                  data-block="hero"
+                  d={rect(...BLOCKS.hero)}
+                  fill="currentColor"
+                  fillOpacity={0.07}
+                  strokeWidth={1.25}
+                />
+                {COPY_LINES.map((line, i) => (
+                  <path key={line.y} data-line={i} d={`M80 ${line.y}H${80 + line.w}`} strokeWidth={line.width} />
+                ))}
+              </g>
+              {/* Redesign pen curve */}
+              <g data-curve strokeWidth={2}>
+                <path data-draw pathLength={1} d={CURVE} />
+              </g>
+              <path data-anchor className="text-signal" fill="currentColor" d={rect(72, 280, 8, 8)} />
+              <path data-anchor className="text-signal" fill="currentColor" d={rect(400, 228, 8, 8)} />
             </g>
-            <g data-hero>
-              <path
-                data-block="hero"
-                d={rect(...BLOCKS.hero)}
-                fill="currentColor"
-                fillOpacity={0.07}
-                strokeWidth={1.25}
-              />
-              {COPY_LINES.map((line, i) => (
-                <path key={line.y} data-line={i} d={`M80 ${line.y}H${80 + line.w}`} strokeWidth={line.width} />
+
+            {/* Manage: settings panel + gears */}
+            <g data-panel strokeWidth={1.25}>
+              <path d={rect(56, 84, 160, 196)} fill="var(--bg-primary)" />
+              {TOGGLES_Y.map((y, i) => (
+                <g key={y}>
+                  <path d={`M74 ${y}H134`} strokeWidth={2} />
+                  <path d={rect(164, y - 8, 34, 16)} />
+                  <circle
+                    data-knob={i}
+                    cx={172}
+                    cy={y}
+                    r={5}
+                    fill="currentColor"
+                    stroke="none"
+                    className={i === 1 ? "text-signal" : undefined}
+                  />
+                </g>
+              ))}
+              {SLIDERS_Y.map((y, i) => (
+                <g key={y}>
+                  <path d={`M74 ${y}H198`} opacity={0.4} />
+                  <circle data-slider-knob={i} cx={84} cy={y} r={6} fill="var(--bg-primary)" />
+                </g>
               ))}
             </g>
-            {/* Redesign pen curve */}
-            <g data-curve strokeWidth={2}>
-              <path data-draw pathLength={1} d={CURVE} />
+            <g data-gears strokeWidth={1.25}>
+              <path data-gear d={gearPath(330, 170, 12, 40, 52)} fill="var(--bg-primary)" />
+              <circle cx={330} cy={170} r={12} />
+              <path data-gear className="text-signal" d={gearPath(400, 240, 8, 22, 34)} fill="var(--bg-primary)" />
             </g>
-            <path data-anchor className="text-signal" fill="currentColor" d={rect(72, 280, 8, 8)} />
-            <path data-anchor className="text-signal" fill="currentColor" d={rect(400, 228, 8, 8)} />
-          </g>
 
-          {/* Manage: settings panel + gears */}
-          <g data-panel strokeWidth={1.25}>
-            <path d={rect(56, 84, 160, 196)} fill="var(--bg-primary)" />
-            {TOGGLES_Y.map((y, i) => (
-              <g key={y}>
-                <path d={`M74 ${y}H134`} strokeWidth={2} />
-                <path d={rect(164, y - 8, 34, 16)} />
-                <circle
-                  data-knob={i}
-                  cx={172}
-                  cy={y}
-                  r={5}
-                  fill="currentColor"
-                  stroke="none"
-                  className={i === 1 ? "text-signal" : undefined}
-                />
-              </g>
-            ))}
-            {SLIDERS_Y.map((y, i) => (
-              <g key={y}>
-                <path d={`M74 ${y}H198`} opacity={0.4} />
-                <circle data-slider-knob={i} cx={84} cy={y} r={6} fill="var(--bg-primary)" />
-              </g>
-            ))}
-          </g>
-          <g data-gears strokeWidth={1.25}>
-            <path data-gear d={gearPath(330, 170, 12, 40, 52)} fill="var(--bg-primary)" />
-            <circle cx={330} cy={170} r={12} />
-            <path data-gear className="text-signal" d={gearPath(400, 240, 8, 22, 34)} fill="var(--bg-primary)" />
-          </g>
+            {/* Content: the idea */}
+            <g data-bulb strokeWidth={1.5}>
+              <path data-draw pathLength={1} d="M372 142a26 26 0 1 0 -26 0v14h26z M352 166h14 M354 174h10" />
+              <path data-draw pathLength={1} className="text-signal" d="M354 132l5 -10l5 10" />
+              <path data-draw pathLength={1} d="M359 82V70M392 96l9 -8M326 96l-9 -8M402 124h12M316 124h-12" />
+            </g>
 
-          {/* Content: the idea */}
-          <g data-bulb strokeWidth={1.5}>
-            <path data-draw pathLength={1} d="M372 142a26 26 0 1 0 -26 0v14h26z M352 166h14 M354 174h10" />
-            <path data-draw pathLength={1} className="text-signal" d="M354 132l5 -10l5 10" />
-            <path data-draw pathLength={1} d="M359 82V70M392 96l9 -8M326 96l-9 -8M402 124h12M316 124h-12" />
-          </g>
+            {/* Upgrade: version tag, progress, done */}
+            <g data-tag strokeWidth={1.5}>
+              <path data-draw pathLength={1} d={rect(176, 112, 128, 52)} fill="var(--bg-primary)" />
+              <path data-draw pathLength={1} d="M240 104V84M230 94l10 -10l10 10" />
+              <text
+                data-version-from
+                x={240}
+                y={145}
+                textAnchor="middle"
+                fill="currentColor"
+                stroke="none"
+                fontSize={22}
+                className="font-technical"
+              >
+                {illustration.versionFrom}
+              </text>
+              <text
+                data-version-to
+                x={240}
+                y={145}
+                textAnchor="middle"
+                fill="currentColor"
+                stroke="none"
+                fontSize={22}
+                className="font-technical text-signal"
+              >
+                {illustration.versionTo}
+              </text>
+              <path d="M100 210H380" strokeWidth={6} opacity={0.12} />
+              <path data-bar className="text-signal" d="M100 210H380" strokeWidth={6} />
+            </g>
+            <g data-check strokeWidth={1.75}>
+              <path
+                data-draw
+                pathLength={1}
+                d="M240 262m-20 0a20 20 0 1 0 40 0a20 20 0 1 0 -40 0 M231 263l6 6l13 -14"
+              />
+            </g>
 
-          {/* Upgrade: version tag, progress, done */}
-          <g data-tag strokeWidth={1.5}>
-            <path data-draw pathLength={1} d={rect(176, 112, 128, 52)} fill="var(--bg-primary)" />
-            <path data-draw pathLength={1} d="M240 104V84M230 94l10 -10l10 10" />
-            <text
-              data-version-from
-              x={240}
-              y={145}
-              textAnchor="middle"
-              fill="currentColor"
-              stroke="none"
-              fontSize={22}
-              className="font-technical"
-            >
-              {illustration.versionFrom}
-            </text>
-            <text
-              data-version-to
-              x={240}
-              y={145}
-              textAnchor="middle"
-              fill="currentColor"
-              stroke="none"
-              fontSize={22}
-              className="font-technical text-signal"
-            >
-              {illustration.versionTo}
-            </text>
-            <path d="M100 210H380" strokeWidth={6} opacity={0.12} />
-            <path data-bar className="text-signal" d="M100 210H380" strokeWidth={6} />
+            {/* The actor: signal-orange cursor */}
+            <g data-cursor className="text-signal" strokeWidth={1.4}>
+              <circle cx={0} cy={0} r={7} />
+              <path d="M0 -13V13M-13 0H13" />
+              <circle cx={0} cy={0} r={2} fill="currentColor" stroke="none" />
+            </g>
           </g>
-          <g data-check strokeWidth={1.75}>
-            <path data-draw pathLength={1} d="M240 262m-20 0a20 20 0 1 0 40 0a20 20 0 1 0 -40 0 M231 263l6 6l13 -14" />
-          </g>
-
-          {/* The actor: signal-orange cursor */}
-          <g data-cursor className="text-signal" strokeWidth={1.4}>
-            <circle cx={0} cy={0} r={7} />
-            <path d="M0 -13V13M-13 0H13" />
-            <circle cx={0} cy={0} r={2} fill="currentColor" stroke="none" />
-          </g>
-        </g>
-      </motion.svg>
+        </svg>
+      </DepthStage>
 
       {/* Film subtitles */}
       <figcaption className="relative h-4 text-center font-technical text-micro tracking-[0.3em] text-graphite uppercase">

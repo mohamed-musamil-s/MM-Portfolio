@@ -158,3 +158,15 @@
     }
   }
 }
+
+/*
+ * Custom cursor (src/components/ui/CustomCursor.tsx). The native cursor is
+ * hidden only while the custom one is mounted, and only on fine pointers.
+ * Unlayered on purpose, so it wins over `cursor-*` utilities.
+ */
+@media (pointer: fine) {
+  :root[data-custom-cursor="on"],
+  :root[data-custom-cursor="on"] * {
+    cursor: none;
+  }
+}

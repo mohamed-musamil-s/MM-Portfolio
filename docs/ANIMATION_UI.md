@@ -1,6 +1,6 @@
 # Animation and Interactive UI
 
-Version 1.0, 2026-11-22. This document covers the motion system, the `<MagicIcon />` engine, the `<ActionButton />` architecture, and the shared hooks behind them. It also specifies the portfolio's flagship motion pipelines.
+Version 1.1, 2026-11-23 (hero action, custom cursor, depth stage). This document covers the motion system, the `<MagicIcon />` engine, the `<ActionButton />` architecture, and the shared hooks behind them. It also specifies the portfolio's flagship motion pipelines.
 
 Related documents:
 
@@ -91,12 +91,22 @@ src/hooks/
   useActionRunner.ts  # runs an async action through the state machine
   useMagnetic.ts      # magnetic cursor pull (portfolio only)
   useParallax.ts      # GSAP ScrollTrigger parallax layer
+  useMediaQuery.ts    # live CSS media query (useSyncExternalStore), false on the server
+  useRedirectCountdown.ts # frame-driven countdown with pause; skips hidden-tab time
 src/components/ui/
   MotionProvider.tsx  # MotionConfig + theme context + Lenis
   MagicIcon.tsx       # public icon component
   magic-icon/         # types, InkPath primitive, icon definitions, orbit hook
   ActionButton.tsx    # public button component
   action-button/      # types, tv() styles, behaviour hook, hold-to-confirm
+  HeroActionButton.tsx# the one oversized CTA per screen (§8b); reuses useActionButton
+  hero-action/        # tv() slots for the hero action layers
+  CustomCursor.tsx    # signal dot + spring ring / reticle (§8c)
+src/components/maintenance/
+  DepthStage.tsx      # CSS 3D slab + floating props around the film (§8d)
+src/lib/shared/
+  tw-merge.ts         # tailwind-merge that knows the type scale (text-h3 vs text-paper)
+  tv.ts               # tv() bound to that merger; recipes import tv from here
 ```
 
 ---
@@ -292,6 +302,47 @@ Leave out `onAction` and drive `status` from the form's pending state. The butto
 
 ---
 
+## 8b. `<HeroActionButton />`
+
+The single oversized call to action on a screen. It reuses ActionButton's behaviour engine (`useActionButton`: state machine, double-submit lock, auto reset after `statusHoldMs`) with its own choreography. Today it backs **CHECK AGAIN** on `/maintenance`.
+
+```tsx
+<HeroActionButton
+  labels={{ idle: "CHECK AGAIN", loading: "CHECKING STATUS...", success: "STILL UPGRADING" }}
+  onAction={checkNow}
+/>
+```
+
+| State | Choreography |
+| --- | --- |
+| Idle | Signal halo breathes (scale 1 → 1.09, fades, 2.4s loop). A signal sheen sweeps the ink surface (1.3s, every ~4s). Four reticle brackets frame the pill. The sync icon turns slowly (24°/s). |
+| Hover / focus | Magnetic pull (portfolio tokens). Two-layer wipe: signal from the left (0.42s), then a deeper ink gradient (0.5s, 0.12s later). Brackets open from 8px to 14px. The icon primes. |
+| Press | Detent: scale 0.96 and a 2px drop on a stiff spring. A signal shockwave leaves the pill. |
+| Loading | The label slides to the busy label. A comet (22% of the perimeter) orbits a ring 7px outside the pill. Brackets lock in and rotate. The icon orbits. |
+| Success | The label slides to the done label. The icon becomes an orange check. A burst of 12 rays and a second shockwave, then it settles back to idle. |
+| Error | Shake (`SHAKE_KEYFRAMES`) and an X icon. |
+
+- All labels sit in one grid cell, so the pill keeps the width of the longest label.
+- Effects draw outside the pill: don't put it inside an overflow mask (e.g. `InkReveal`). CheckAgain fades it in on its own.
+- `CheckAgain` holds the busy state for at least 900ms so it can be read even when the API answers instantly.
+- Reduced motion: every state change stays; loops, waves, rays and the magnetic pull are dropped.
+
+## 8c. `<CustomCursor />`
+
+Signal dot (exact) and a trailing ring (spring: stiffness 520, damping 38). Interactive targets turn the ring into a reticle (×1.55); a press compresses it (×0.78) and sends a pulse from the click point. Mounted once in `PublicShell`; renders nothing on coarse pointers (`useMediaQuery("(pointer: fine)")`). The native cursor is hidden by an unlayered rule on `:root[data-custom-cursor="on"]`, so it beats `cursor-*` utilities. Mark extra targets with `data-cursor="interactive"`.
+
+## 8d. `<DepthStage />` (3D-look maintenance stage)
+
+Pure CSS 3D (`perspective` + `preserve-3d`), no WebGL. The film SVG is the front face of a slab extruded 34px (top face newsprint, right face graphite with a signal edge strip). Around it, at different depths: a cube with a signal top (z 110, spins), an extruded six-layer signal gear (z 70, spins), a lit orb (z 140) and a version chip (z 90). A blurred floor shadow drifts against the lean.
+
+| Layer | Owner | Motion |
+| --- | --- | --- |
+| tilt | motion springs | Rests at a three-quarter view (rotateX -10°, rotateY -19°), leans up to 9° with the pointer. |
+| sway | GSAP | Slow idle drift (±4°, 6s yoyo). |
+| lift | GSAP | On every status check (manual or the minute poll): rises 46px toward the camera and turns frontal, a signal scan beam sweeps the screen, the outline pulses, props hop, spins speed up ×6, then everything settles. |
+
+Reduced motion: a still three-quarter view; no loops or check sequence.
+
 ## 9. Shared hooks
 
 | Hook | Purpose |
@@ -302,6 +353,8 @@ Leave out `onAction` and drive `status` from the form's pending state. The butto
 | `useParallax(ref, { speed })` | Scrubbed ScrollTrigger drift. Cleanup comes from `useGSAP` context revert. Off under reduced motion. |
 | `useScrollVelocity()` | Smoothed, signed window scroll velocity (px/s) as a motion value. It drives `Marquee` and `VelocitySkew`. |
 | `usePointerParallax(depth)` | `x`/`y` springs that move up to `depth` px with the cursor (negative depth moves against it). Fine pointers only. |
+| `useMediaQuery(query)` | Live boolean for a CSS media query, `false` on the server. |
+| `useRedirectCountdown(seconds, onDone)` | `{ secondsLeft, progress, paused, togglePaused }`. Frame-driven; never counts time while the tab is hidden. Drives the 404 redirect. |
 | `useCountdown(targetAt, windowStart)` | `{ parts, overdue, progress }`, or `null` during SSR. Ticks on the second boundary and pauses while the tab is hidden. |
 
 ---

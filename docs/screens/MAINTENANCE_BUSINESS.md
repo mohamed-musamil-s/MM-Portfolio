@@ -1,6 +1,6 @@
 # Screen: `/maintenance`, Business Spec
 
-Version 1.6, 2026-11-22. **One viewport (100svh), no scrolling, on a clean ivory canvas, with signal orange as the single accent.** Content is trimmed to the essentials. The page re-checks the **maintenance flag** (set from the admin panel) every minute and sends visitors to the site once it's off. Screenshots: [desktop](maintenance/desktop-1440x900.jpg), [mobile](maintenance/mobile-375x812.jpg). Public route. Look: [STYLE.md](../STYLE.md). Motion: [ANIMATION_UI.md](../ANIMATION_UI.md).
+Version 1.7, 2026-11-23. **One viewport (100svh), no scrolling, on a clean ivory canvas, with signal orange as the single accent.** Content is trimmed to the essentials. The page re-checks the **maintenance flag** (set from the admin panel) every minute and sends visitors to the site once it's off. Screenshots: [desktop](maintenance/desktop-1440x900.jpg), [mobile](maintenance/mobile-375x812.jpg). Public route. Look: [STYLE.md](../STYLE.md). Motion: [ANIMATION_UI.md](../ANIMATION_UI.md).
 
 ---
 
@@ -32,9 +32,9 @@ The defaults the seed writes are generic, with no personal details. All of them 
 | Body | We're shipping a new version of the site. It'll be back shortly, a little sharper than before. (≤ 200 characters) |
 | Countdown label | `ETA` (≤ 24 characters) |
 | Live-check labels | `LAST CHECKED` · `NEXT CHECK` |
-| Check-again button and hint | `CHECK AGAIN` · "This page checks by itself every minute, so there's no need to keep refreshing." |
+| Check-again button and hint | `CHECK AGAIN` → `CHECKING STATUS...` → `STILL UPGRADING` · "This page checks by itself every minute, so there's no need to keep refreshing." |
 | Status | `STATUS / LIVE UPGRADE` |
-| Brand | `PORTFOLIO / STUDIO`; the logo tile shows the first letter of the wordmark `Portfolio` |
+| Brand | `PORTFOLIO / STUDIO`, next to the "MM." monogram ([brand/LOGO.md](../brand/LOGO.md)) |
 | Footer note | `© 2026 ALL RIGHTS RESERVED.` |
 
 Removed on 2026-11-22 to keep the screen focused: the upgrade pillars, both motto lists, the `EST.` line and the long kicker. The database was migrated with `$unset` (version 6 → 7).
@@ -58,12 +58,12 @@ No user-facing text, date or asset path is hardcoded in the page or its componen
 | Field | Type | Rules |
 | --- | --- | --- |
 | `meta.title`, `meta.description` | text | ≤ 70 and ≤ 160 characters. Used for `<title>` and the meta description. |
-| `brand.label`, `brand.wordmark` | text | The header label; the wordmark's first letter is the logo tile. |
+| `brand.label` | text | The header label next to the monogram. (`brand.wordmark` was removed on 2026-11-23, version 10 → 11.) |
 | `status.kicker`, `status.label` | text, ≤ 40 each | The small kicker above the headline; the label next to the orange beacon. |
 | `headline.lines` | 1 to 3 lines, ≤ 40 each | Each line reveals separately. A trailing `.` on the last line renders in signal orange. |
 | `body` | text, ≤ 200 | One or two sentences. |
 | `timeline` | object | `label` (≤ 24, e.g. `ETA`), `windowStart`, `targetAt` (dates; `targetAt` must be after `windowStart`), `srRemaining` (screen-reader template with `{days}`, `{hours}` and `{minutes}`), `units`, `overdue { title, detail }`. |
-| `liveCheck` | object | `lastCheckedLabel`, `nextCheckLabel`, `checkAgainLabel` (≤ 24 each), `hint` (≤ 120). |
+| `liveCheck` | object | `lastCheckedLabel`, `nextCheckLabel`, `checkAgainLabel`, `checkingLabel`, `checkedLabel` (≤ 24 each), `hint` (≤ 120). The last two were added on 2026-11-23 (version 9 → 10). |
 | `illustration` | object | `steps[]` (1 to 5 items of `{ scene, label ≤ 32 }`, where scene is one of `manage`, `construct`, `content`, `redesign`, `upgrade`): the subtitle shown during that part of the film. `versionFrom` and `versionTo` (≤ 8 each): the tags in the upgrade sequence. The film always plays in the same order; a scene with no step plays without a subtitle. |
 | `footer.note` | text | Small print, footer right. |
 
@@ -127,9 +127,9 @@ Verified on 2026-11-22: 401 without a session, 400 for a bad body, 403 cross-ori
 
 | Row | Content |
 | --- | --- |
-| Header | Logo tile with an orange square, and `brand.label` (from `sm`). On the right, the orange `StatusDot` and `status.label`. |
-| Middle, left (6 columns) | Kicker, headline, body, the **CHECK AGAIN** solid pill with its hint beside it, then the countdown (`ETA`, `DD : HH : MM : SS`). |
-| Middle, right (columns 8 to 12, `lg` and up) | **Maintenance film**: one continuous animated SVG shot, with subtitles |
+| Header | The "MM." monogram, and `brand.label` (from `sm`). On the right, the orange `StatusDot` and `status.label`. |
+| Middle, left (6 columns) | Kicker, headline, body, the **CHECK AGAIN hero action** with its hint below it, then the countdown (`ETA`, `DD : HH : MM : SS`). |
+| Middle, right (columns 8 to 12, `lg` and up) | **3D-look stage**: the maintenance film plays on the screen of an extruded slab, with floating depth props and film subtitles below |
 | Ruler | Window timeline: day ticks, orange elapsed line and now dot, dates at both ends |
 | Footer | Three spaced columns divided by hairlines: **LAST CHECKED**, **NEXT CHECK** (orange progress), and the note on the right (from `sm`) |
 
@@ -145,7 +145,10 @@ Verified with zero overflow at 1440×900, 1280×720, 1024×768, 375×812, 390×6
 
 The canvas is ivory and the type is ink, plus **one accent, signal orange `#E8480F`**, used only for:
 - the status beacon;
-- the logo-tile square;
+- the monogram's full stop;
+- the CHECK AGAIN halo, brackets, hover wipe, progress comet, shockwaves and success burst;
+- the 3D stage: the cube's top face, the gear, the orb, the version chip, the slab's edge strip, the scan beam and the check pulse;
+- the custom cursor;
 - the headline's full stop;
 - the ruler's elapsed line and now dot;
 - the film's cursor, the active toggle and the small gear, the light-bulb filament, the pen anchors, and the `V2.0` tag with its progress bar;
@@ -165,8 +168,10 @@ The motion direction is "200%", within the STYLE.md §7 guardrails, and everythi
 | Countdown | Per-digit slide inside a fixed 1em mask | `Countdown` |
 | Ruler | Ticks draw in left to right; the orange line and dot ease to "now" | `WindowRuler` |
 | Footer | NEXT CHECK progress line fills over the minute, then resets | `LiveCheckFooter` |
-| Check again | The pill's sync icon orbits while checking, then locks with a check mark. **No hover movement** (no magnetic pull on solid pills). | `ActionButton tone="solid"`, `MagicIcon` |
-| **Maintenance film** | **One continuous shot, not a carousel**: a single GSAP timeline on one browser canvas, about 15.6s, looping. The camera dollies out as the frame draws in.<br>**MANAGE:** a settings panel slides in, the cursor flips toggles and moves sliders, gears turn, then the panel slides away.<br>**CONSTRUCT:** dashed slots appear and the cursor guides each block into place.<br>**CONTENT:** the camera pushes in, copy types into the hero block, and a light bulb lights.<br>**REDESIGN:** the hero and image blocks swap places while a pen draws a curve.<br>**UPGRADE:** the page dims, a version tag drops in, the bar fills, `V1.0` becomes `V2.0`, and a check mark draws.<br>Then everything dissolves and the camera returns. The orange cursor is the one actor throughout. Subtitles (the DB step labels) fade like film captions, never two at once. Reduced motion: paused on a finished frame. It replaced the halftone sphere and the earlier step carousel on 2026-11-22. | `MaintenanceIllustration` (GSAP timeline) |
+| Check again | **Hero action** (2026-11-23): breathing halo, sheen sweep and reticle brackets at idle; magnetic pull, two-layer orange wipe and opening brackets on hover; press detent and shockwave; `CHECKING STATUS...` with an orbiting comet ring; `STILL UPGRADING` with an orange check, a ray burst and a second shockwave; then it settles. Busy state shows for at least 0.9s. | `HeroActionButton`, `MagicIcon` |
+| 3D stage | The film sits on an extruded slab in a three-quarter view that leans to the pointer and drifts. A cube, an extruded gear, an orb and a `V2.0` chip float at different depths and bob. On every status check (button or the minute poll) the slab lifts toward the camera, a scan beam sweeps the screen, the outline pulses and the props hop. | `DepthStage` (motion springs + GSAP) |
+| Cursor | Orange dot and trailing ring; reticle over interactive elements; press pulse. Fine pointers only. | `CustomCursor` |
+| **Maintenance film** | **One continuous shot, not a carousel**: a single GSAP timeline on one browser canvas, about 15.6s, looping. The camera dollies out as the frame draws in.<br>**MANAGE:** a settings panel slides in, the cursor flips toggles and moves sliders, gears turn, then the panel slides away.<br>**CONSTRUCT:** dashed slots appear and the cursor guides each block into place.<br>**CONTENT:** the camera pushes in, copy types into the hero block, and a light bulb lights.<br>**REDESIGN:** the hero and image blocks swap places while a pen draws a curve.<br>**UPGRADE:** the page dims, a version tag drops in, the bar fills, `V1.0` becomes `V2.0`, and a check mark draws.<br>Then everything dissolves and the camera returns. The orange cursor is the one actor throughout. Subtitles (the DB step labels) fade like film captions, never two at once. Reduced motion: paused on a finished frame. It replaced the halftone sphere and the earlier step carousel on 2026-11-22. | `MaintenanceIllustration` (GSAP timeline) inside `DepthStage` |
 
 **Image assets:** none. Everything is inline SVG or CSS.
 

@@ -37,5 +37,5 @@ Status key: **Done**, **Placeholder** (route exists, shows "Coming soon", functi
 | Security headers | Done |
 | Login brute-force lockout | Done |
 | Public design system spec ([STYLE.md](STYLE.md)) | Done (documented, not yet implemented in code) |
-| Admin design system spec (`ADMIN_STYLE.md`) | Planned |
+| Admin design system spec ([ADMIN_STYLE.md](ADMIN_STYLE.md)) | Placeholder (file created, contents to be defined) |
 | UI styling in code | Not started (intentionally) |

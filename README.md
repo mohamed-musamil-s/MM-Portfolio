@@ -28,4 +28,5 @@ Generate `SESSION_SECRET` with `openssl rand -base64 48`.
 - [Logging and errors](docs/logging.md)
 - [Features](docs/features.md)
 - [Progress](docs/progress.md)
-- [Public design system](docs/STYLE.md) (public portfolio only; the studio gets `docs/ADMIN_STYLE.md`)
+- [Public design system](docs/STYLE.md) (public portfolio only)
+- [Studio design system](docs/ADMIN_STYLE.md) (placeholder, to be defined)

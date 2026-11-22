@@ -1,6 +1,6 @@
 # Screen: `/studio/login`, Business Spec
 
-Version 1.1, 2026-11-23 (split-screen redesign). Two-step sign-in for the admin studio: **email → Continue → access code → Authenticate**. Studio surface ([ADMIN_STYLE.md](../ADMIN_STYLE.md)), shadcn/ui components. Screenshots: [light desktop](studio-login/desktop-light-1440x900.jpg), [dark, code step](studio-login/desktop-dark-code-1440x900.jpg), [mobile](studio-login/mobile-375x667.jpg).
+Version 1.2, 2026-11-23 (light-only, gradient brand panel with a 3D workspace illustration). Two-step sign-in for the admin studio: **email → Continue → access code → Authenticate**. Studio surface ([ADMIN_STYLE.md](../ADMIN_STYLE.md)), shadcn/ui components. Screenshots: [light desktop](studio-login/desktop-light-1440x900.jpg), [code step](studio-login/desktop-code-1024x768.jpg), [mobile](studio-login/mobile-375x667.jpg).
 
 ## 1. Purpose
 
@@ -27,7 +27,7 @@ Every visible string, including validation and error messages, comes from `site_
 | `meta.title` | `Studio sign in` |
 | `brand.name` | `Studio` (next to the monogram) |
 | `steps` | `Email` · `Access code` (the two step pills) |
-| `showcase` | status `All systems online` · headline `Operate the studio.` (last word in the gradient) · body · modules `Release, Content, Resume, Chat, Analytics` · card `Current release` / `v2.0` / `Ready to ship` · footer `© 2026 Studio` |
+| `showcase` | status `All systems online` · headline `Operate the studio.` · body · workspace `Workspace` · modules (the floating pills, up to 5) `Releases and feature flags`, `Portfolio content`, `Website analytics`, `Expenses and budget` · footer `© 2026 Studio`. The window title in the illustration is `brand.name`. |
 | `emailStep` | `Welcome back` · "Sign in with your authorized email address to continue." · `Email address` · `name@example.com` · `Continue` · `Checking…` |
 | `codeStep` | `Enter your access code` · "Type your access code to finish signing in." · `Access code` · `Authenticate` · `Verifying…` · `Change email` · `Signed in. Opening the studio…` · `Show access code` / `Hide access code` |
 | `errors` | `Couldn't sign in` (alert title); email required / invalid; code required / too short; invalid credentials; locked (`{minutes}`); challenge expired; network; generic |
@@ -44,11 +44,12 @@ The same limits are enforced again on the server (`src/lib/shared/auth/login-inp
 
 ## 5. Layout and motion
 
-- **Split screen** from `lg`: left, an inset always-dark brand panel (aurora light drifting behind a faint grid; status pill; headline; module chips; a glass "current release" card with a filling progress bar and activity bars); right, the form in a 400px column with the brand name top-right and the security note at the bottom.
-- Below `lg`: a compact aurora band (monogram, status, headline) above the form.
+- **Split screen** from `lg`, **light only** (pinned with `data-studio-theme="light"`, so it stays light when the OS is dark).
+- Left: a light gradient brand panel (periwinkle, lavender and sky shades drifting) with the monogram and status pill on top, a tilted 3D workspace illustration in the middle (glass window, chart card, line chart, gauge, module pills floating out), and the headline, body and footer at the bottom. Right: the form in a 400px column with the brand name top-right and the security note at the bottom.
+- Below `lg`: a compact gradient band (monogram, status, headline) above the form.
 - Step pills show progress; steps fade and slide 24px (0.28s); alerts expand and collapse; the button shows a spinner while busy and a check on success.
 - **Code boxes.** When `ADMIN_ACCESS_CODE` is 4–8 digits, the page renders one box per digit (the count comes from the server). This shows the code's length, which the lockout makes an acceptable trade for faster entry. Any other code format gets a single masked field instead.
-- The form follows the OS light/dark setting; the brand panel stays dark. No scroll at 1440×900, 1280×720, 1024×768 or 375×667 (the panel tightens at heights ≤ 800px).
+- No scroll at 1440×900, 1280×720, 1024×768 or 375×667 (the panel tightens at heights ≤ 800px).
 
 ## 6. Acceptance criteria (verified 2026-11-23)
 

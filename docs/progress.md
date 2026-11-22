@@ -218,6 +218,13 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] The shadcn CLI installed the unrelated `cn` package again; removed, and `components.json` now points `utils` at `@/lib/utils` (re-export) so it won't recur.
 - [x] Verified light and dark: wrong code auto-submits, alerts, clears, refocuses the first box; correct code → `/studio/dashboard`. No scroll at 1440×900, 1280×720, 1024×768 and 375×667.
 
+## 2026-11-23: Studio login, light gradient panel + 3D workspace illustration
+
+- [x] Left panel now follows the supplied reference: a light gradient shade (periwinkle / lavender / sky) and a tilted CSS 3D "Studio workspace" illustration (glass window, chart card, line chart, toggle, gauge, floating module pills, shelf and ruler), animated and pointer-leaning.
+- [x] The login is **light only** (`data-studio-theme="light"`; the `dark:` variant skips pinned subtrees). Verified with the OS in dark mode: page, inputs and code boxes stay light.
+- [x] Content: `showcase.workspace` added, modules now `Releases and feature flags`, `Portfolio content`, `Website analytics`, `Expenses and budget`; the release card was removed (DB version 5).
+- [x] Sign-in verified again; no scroll at 1440×900, 1280×720, 1024×768 and 375×667.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

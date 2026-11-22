@@ -51,8 +51,11 @@ export default async function StudioLoginPage({ searchParams }: PageProps<"/stud
   const content = await getScreenContent("studio-login");
 
   return (
-    <main className="grid min-h-svh bg-background lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-      <LoginShowcase showcase={content.showcase} />
+    <main
+      data-studio-theme="light"
+      className="grid min-h-svh bg-background lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]"
+    >
+      <LoginShowcase showcase={content.showcase} brandName={content.brand.name} />
       <div className="flex min-h-svh flex-col lg:min-h-0">
         <LoginShowcaseBand showcase={content.showcase} />
         <LoginFlow content={content} redirectTo={redirectTo} codeLength={codeBoxes()} />

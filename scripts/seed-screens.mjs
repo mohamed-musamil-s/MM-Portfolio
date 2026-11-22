@@ -78,9 +78,9 @@ const SCREENS = {
     showcase: {
       status: "All systems online",
       headline: "Operate the studio.",
-      body: "Releases, content, resume, chat and analytics, managed from one quiet, precise workspace.",
-      modules: ["Release", "Content", "Resume", "Chat", "Analytics"],
-      card: { label: "Current release", title: "v2.0", status: "Ready to ship" },
+      body: "Releases, content, analytics and budget, managed from one quiet, precise workspace.",
+      workspace: "Workspace",
+      modules: ["Releases and feature flags", "Portfolio content", "Website analytics", "Expenses and budget"],
       footer: "© 2026 Studio",
     },
     emailStep: {

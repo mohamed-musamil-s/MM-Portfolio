@@ -5,27 +5,27 @@ import { useMotionTheme } from "@/hooks/useMotionTheme";
 import { cn } from "@/lib/shared/cn";
 
 /*
- * Aurora for the login brand panel: three blurred light fields (blue, cyan,
- * indigo) drifting slowly behind a faint grid. Purely decorative; still under
- * reduced motion.
+ * Light gradient shade for the login brand panel: a mist base with soft
+ * periwinkle, lavender and ice fields drifting slowly, plus two faint
+ * diagonal light streaks. Purely decorative; still under reduced motion.
  */
 
-type Blob = { className: string; drift: TargetAndTransition; seconds: number };
+type Field = { className: string; drift: TargetAndTransition; seconds: number };
 
-const BLOBS: Blob[] = [
+const FIELDS: Field[] = [
   {
-    className: "-top-1/4 -left-1/4 size-[70%] bg-aurora-blue",
-    drift: { x: ["0%", "18%", "-6%", "0%"], y: ["0%", "12%", "22%", "0%"], scale: [1, 1.15, 0.95, 1] },
-    seconds: 22,
+    className: "-top-1/4 -left-1/4 size-[80%] bg-aurora-periwinkle",
+    drift: { x: ["0%", "10%", "-4%", "0%"], y: ["0%", "8%", "14%", "0%"], scale: [1, 1.08, 0.96, 1] },
+    seconds: 24,
   },
   {
-    className: "top-1/4 -right-1/4 size-[60%] bg-aurora-cyan opacity-70",
-    drift: { x: ["0%", "-20%", "-8%", "0%"], y: ["0%", "-10%", "14%", "0%"], scale: [1, 0.9, 1.1, 1] },
-    seconds: 26,
+    className: "-top-1/5 left-1/3 size-[60%] bg-aurora-lavender opacity-90",
+    drift: { x: ["0%", "-12%", "6%", "0%"], y: ["0%", "10%", "-6%", "0%"], scale: [1, 0.94, 1.06, 1] },
+    seconds: 28,
   },
   {
-    className: "-bottom-1/3 left-1/5 size-[65%] bg-aurora-indigo opacity-80",
-    drift: { x: ["0%", "12%", "-14%", "0%"], y: ["0%", "-16%", "-4%", "0%"], scale: [1, 1.1, 1.05, 1] },
+    className: "-bottom-1/4 -left-1/5 size-[65%] bg-aurora-sky opacity-45",
+    drift: { x: ["0%", "14%", "4%", "0%"], y: ["0%", "-10%", "-16%", "0%"], scale: [1, 1.1, 1, 1] },
     seconds: 30,
   },
 ];
@@ -33,19 +33,23 @@ const BLOBS: Blob[] = [
 export const AuroraBackdrop = ({ className }: { className?: string }) => {
   const { reducedMotion } = useMotionTheme();
   return (
-    <div aria-hidden className={cn("pointer-events-none absolute inset-0 -z-10 overflow-hidden", className)}>
-      {BLOBS.map(({ className: blob, drift, seconds }) => (
+    <div
+      aria-hidden
+      className={cn("pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-aurora-mist", className)}
+    >
+      {FIELDS.map(({ className: field, drift, seconds }) => (
         <motion.div
-          key={blob}
-          className={cn("absolute rounded-full mix-blend-screen blur-3xl", blob)}
+          key={field}
+          className={cn("absolute rounded-full blur-3xl", field)}
           animate={reducedMotion ? undefined : drift}
           transition={{ duration: seconds, ease: "easeInOut", repeat: Infinity }}
         />
       ))}
-      {/* Grid, fading out toward the edges */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--studio-hero-foreground)_1px,transparent_1px),linear-gradient(to_bottom,var(--studio-hero-foreground)_1px,transparent_1px)] mask-radial-from-20% mask-radial-to-75% bg-size-[48px_48px] opacity-[0.06]" />
-      {/* Darken the bottom so text stays readable over the light */}
-      <div className="absolute inset-0 bg-linear-to-b from-hero/10 via-hero/30 to-hero/85" />
+      {/* Wash toward white at the bottom right, like light falling across the panel */}
+      <div className="absolute inset-0 bg-linear-to-br from-transparent via-card/20 to-card/75" />
+      {/* Faint diagonal light streaks */}
+      <div className="absolute top-[22%] -left-1/4 h-px w-[150%] rotate-[14deg] bg-linear-to-r from-transparent via-card to-transparent opacity-70" />
+      <div className="absolute top-[78%] -left-1/4 h-px w-[150%] rotate-[24deg] bg-linear-to-r from-transparent via-card to-transparent opacity-60" />
     </div>
   );
 };

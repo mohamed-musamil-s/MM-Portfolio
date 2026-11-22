@@ -13,6 +13,18 @@
  * keeps the poster theme from leaking into /studio.
  */
 
+/*
+ * `dark:` follows the OS, except inside a subtree pinned to light
+ * ([data-studio-theme="light"], e.g. the studio login).
+ */
+@custom-variant dark {
+  @media (prefers-color-scheme: dark) {
+    &:not(:where([data-studio-theme="light"], [data-studio-theme="light"] *)) {
+      @slot;
+    }
+  }
+}
+
 /* Only project tokens exist: no default palette, so raw colors like bg-red-500 cannot be used. */
 @theme {
   --color-*: initial;
@@ -103,14 +115,16 @@
   --font-ui: var(--studio-font-ui);
   --font-code: var(--studio-font-code);
 
-  /* Brand panel of the studio login: always dark, whatever the OS theme. */
-  --color-hero: var(--studio-hero);
-  --color-hero-foreground: var(--studio-hero-foreground);
-  --color-hero-muted: var(--studio-hero-muted);
-  --color-hero-success: var(--studio-hero-success);
+  /* Login illustration palette (decorative only, never UI states). */
   --color-aurora-blue: var(--studio-aurora-blue);
-  --color-aurora-cyan: var(--studio-aurora-cyan);
   --color-aurora-indigo: var(--studio-aurora-indigo);
+  --color-aurora-violet: var(--studio-aurora-violet);
+  --color-aurora-cyan: var(--studio-aurora-cyan);
+  --color-aurora-sky: var(--studio-aurora-sky);
+  --color-aurora-periwinkle: var(--studio-aurora-periwinkle);
+  --color-aurora-lavender: var(--studio-aurora-lavender);
+  --color-aurora-mist: var(--studio-aurora-mist);
+  --color-aurora-ice: var(--studio-aurora-ice);
 
   /* shadcn input-otp caret */
   --animate-caret-blink: caret-blink 1.1s ease-out infinite;
@@ -128,7 +142,12 @@
 }
 
 @layer base {
-  [data-surface="studio"] {
+  /*
+   * Light colour set. Also applied by [data-studio-theme="light"], which pins a
+   * subtree (the login) to light even when the OS is dark.
+   */
+  [data-surface="studio"],
+  [data-studio-theme="light"] {
     color-scheme: light;
 
     /* Slate neutrals + one blue accent (docs/ADMIN_STYLE.md §2). Contrast on card. */
@@ -150,14 +169,22 @@
     --studio-border: #e2e8f0; /* decorative hairlines */
     --studio-input: #7b8ba3; /* field boundary, 3.5:1 (WCAG 1.4.11) */
     --studio-ring: #2563eb;
+  }
 
-    --studio-hero: #070b16;
-    --studio-hero-foreground: #f8fafc; /* 19:1 */
-    --studio-hero-muted: #94a3b8; /* 7.6:1 */
-    --studio-hero-success: #4ade80; /* 11:1 */
+  [data-studio-theme="light"] {
+    color: var(--studio-foreground);
+  }
+
+  [data-surface="studio"] {
     --studio-aurora-blue: #2563eb;
-    --studio-aurora-cyan: #06b6d4;
-    --studio-aurora-indigo: #6366f1;
+    --studio-aurora-indigo: #4f46e5;
+    --studio-aurora-violet: #6366f1;
+    --studio-aurora-cyan: #38bdf8;
+    --studio-aurora-sky: #7dd3fc;
+    --studio-aurora-periwinkle: #a5b4fc;
+    --studio-aurora-lavender: #c7d2fe;
+    --studio-aurora-mist: #eef2ff;
+    --studio-aurora-ice: #cffafe;
 
     --studio-font-ui: var(--font-studio-inter), ui-sans-serif, system-ui, sans-serif;
     --studio-font-code: ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -203,7 +230,6 @@
   [data-surface="public"] {
     /* No colour on the public site: errors keep the current ink colour. */
     --icon-error: currentColor;
-
 
     color-scheme: light;
 

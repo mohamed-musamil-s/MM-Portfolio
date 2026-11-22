@@ -18,8 +18,10 @@ export const studioLoginContentSchema = z.object({
     status: text(40),
     headline: text(60),
     body: text(200),
-    modules: z.array(text(24)).min(1).max(6),
-    card: z.object({ label: text(32), title: text(16), status: text(32) }),
+    /** Label under the app name in the illustration window. */
+    workspace: text(24),
+    /** Floating pills in the illustration (up to 5). */
+    modules: z.array(text(32)).min(1).max(5),
     footer: text(60),
   }),
   emailStep: z.object({

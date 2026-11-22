@@ -91,8 +91,8 @@ Browser
 - A failed connect clears the cached promise, so the next request tries again.
 - Indexes are created on first use (`db/indexes.ts`):
   - `sessions.tokenHash` (unique)
-  - `sessions.expiresAt` (TTL)
-  - `auth_attempts.expiresAt` (TTL)
+  - `sessions.expiresAt` (TTL, named `session_ttl`)
+  - `auth_attempts.expiresAt` (TTL, named `attempt_ttl`)
 
 ## Environment
 

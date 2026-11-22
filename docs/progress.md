@@ -31,9 +31,31 @@ Verified against a production build (`next start`), without a database:
 | cross-origin login | 403 |
 | login and health with no `MONGODB_URI` | logged 500 with `requestId` |
 
+## 2026-11-22: Verified against MongoDB Atlas
+
+The Atlas database already had `sessions` and `auth_attempts` collections. Their TTL indexes are named `session_ttl` and `attempt_ttl`, so `db/indexes.ts` now uses those names; a different name for the same index makes MongoDB raise `IndexOptionsConflict`. No existing data or indexes were changed. The `users` and `user` collections are not used by this app.
+
+Verified with a production build (`next start`) connected to Atlas:
+
+| Check | Result |
+| --- | --- |
+| `GET /api/health` | 200, database up |
+| Boot logs | connecting, connected, server state changes, indexes ensured |
+| Wrong code, wrong email | 401 |
+| Empty body | 400 |
+| 5 failures from one IP | locked; correct credentials then get 429 with `Retry-After: 900` |
+| Correct login | 200; cookie is `Secure; HttpOnly; SameSite=strict`, expires in 12 h |
+| Session row in `sessions` | stores only the token hash |
+| All 6 studio pages with the session | 200 |
+| `/studio` | 302 to `/studio/dashboard` |
+| `/studio/login` while signed in | redirect to dashboard |
+| Logout | 200; cookie cleared, row deleted |
+| Old cookie after logout | rejected by the server guard, redirect to login |
+| Browser: login form, then `?next=` target, then sign out | works |
+| Server errors during the run | none |
+
 ## Open items
 
-- [ ] Put the real Atlas connection string in `MONGODB_URI` in `.env.local`, then check the end-to-end login, session and logout flow against Atlas.
 - [ ] Choose a longer `ADMIN_ACCESS_CODE` before deploying.
 - [ ] When deploying, set all `.env.example` variables in the host's environment, and confirm that the host sets `x-forwarded-for`.
 

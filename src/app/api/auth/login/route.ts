@@ -1,29 +1,12 @@
 import { verifyAdminCredentials } from "@/lib/server/auth/credentials";
+import { clearLoginChallenge, hasValidLoginChallenge } from "@/lib/server/auth/login-challenge";
 import { clearFailedLogins, getLockStatus, recordFailedLogin } from "@/lib/server/auth/rate-limit";
 import { createSession } from "@/lib/server/auth/session";
 import { getClientIp, isSameOrigin } from "@/lib/server/http/request";
 import { HTTP_STATUS, fail, ok } from "@/lib/server/http/responses";
 import { withApi } from "@/lib/server/http/with-api";
+import { loginSchema } from "@/lib/shared/auth/login-input";
 import { ROUTES } from "@/lib/shared/routes";
-
-const MAX_EMAIL_LENGTH = 254;
-const MAX_CODE_LENGTH = 64;
-
-type LoginInput = { email: string; accessCode: string };
-
-const parseLoginInput = (body: unknown): LoginInput | null => {
-  if (typeof body !== "object" || body === null) {
-    return null;
-  }
-  const { email, accessCode } = body as Record<string, unknown>;
-  if (typeof email !== "string" || typeof accessCode !== "string") {
-    return null;
-  }
-  if (!email.trim() || !accessCode.trim() || email.length > MAX_EMAIL_LENGTH || accessCode.length > MAX_CODE_LENGTH) {
-    return null;
-  }
-  return { email, accessCode };
-};
 
 export const POST = withApi(async (request, { log }) => {
   if (!isSameOrigin(request)) {
@@ -31,9 +14,16 @@ export const POST = withApi(async (request, { log }) => {
     return fail(HTTP_STATUS.forbidden, "forbidden", "Cross-origin request rejected.");
   }
 
-  const input = parseLoginInput(await request.json().catch(() => null));
-  if (!input) {
+  const parsed = loginSchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) {
     return fail(HTTP_STATUS.badRequest, "invalid_input", "Email and access code are required.");
+  }
+  const input = parsed.data;
+
+  // Step 2 is only reachable through step 1 (/api/auth/initiate-login) for this same email.
+  if (!(await hasValidLoginChallenge(input.email))) {
+    log.warn("login rejected: missing or expired login challenge");
+    return fail(HTTP_STATUS.badRequest, "challenge_expired", "Your sign-in session expired. Enter your email again.");
   }
 
   const ip = getClientIp(request);
@@ -52,6 +42,7 @@ export const POST = withApi(async (request, { log }) => {
   }
 
   await clearFailedLogins(ip);
+  await clearLoginChallenge();
   await createSession({
     email: input.email.trim().toLowerCase(),
     ip,

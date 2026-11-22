@@ -5,19 +5,29 @@ The studio has a single admin. Credentials come from the environment and never a
 - `ADMIN_EMAIL`
 - `ADMIN_ACCESS_CODE`, a static access code (not an expiring OTP)
 
-## Login
+## Login (two steps, since 2026-11-23)
 
-`POST /api/auth/login` with JSON `{ "email": "...", "accessCode": "..." }`.
+The screen is specified in [screens/STUDIO_LOGIN_BUSINESS.md](screens/STUDIO_LOGIN_BUSINESS.md).
+
+### Step 1: `POST /api/auth/initiate-login` with `{ "email": "..." }`
+
+1. Origin check (403), then zod validation: a well-formed email of at most 254 characters (400).
+2. Lockout check (429 with `Retry-After`), so a locked-out admin learns it before typing the code.
+3. Issues `mm_login_challenge`: an HS256 JWT (audience `mm-portfolio:login-challenge`, 10 minutes) holding only the **SHA-256 of the lowercased email**. Cookie: `HttpOnly`, `Secure` (except `next dev`), `SameSite=Strict`, `Path=/api/auth`.
+4. Answers **200 for every well-formed email**. Whether the email is the admin's is never revealed at this step (no account enumeration).
+
+### Step 2: `POST /api/auth/login` with `{ "email": "...", "accessCode": "..." }`
 
 1. **Origin check.** If the request has an `Origin` header that doesn't match the host, it gets a 403.
-2. **Input validation.** Both fields must be non-empty strings, email at most 254 characters, code at most 64. Otherwise 400.
-3. **Lockout check.** If the IP or the global counter is locked, it gets a 429 with `Retry-After`.
+2. **Input validation** (shared zod schema, `src/lib/shared/auth/login-input.ts`): email as above, code 4–64 characters. Otherwise 400.
+3. **Challenge check.** The challenge cookie must be valid, unexpired and for this same email; otherwise 400 `challenge_expired` (not counted as a failed attempt). The code endpoint can't be used without step 1.
+4. **Lockout check.** If the IP or the global counter is locked, it gets a 429 with `Retry-After`.
 4. **Credential check** (`auth/credentials.ts`):
    - The email is trimmed and lowercased.
    - Each submitted value and its expected value are SHA-256 hashed, then compared with `crypto.timingSafeEqual`. Hashing first makes the buffers the same length, so the comparison never throws and doesn't leak how long the expected value is.
    - Both comparisons always run, so a wrong email takes as long as a wrong code.
 5. **On failure:** the failure is recorded and the response is 401 `invalid_credentials`. The message doesn't say which field was wrong.
-6. **On success:** the failure counters are cleared, a session is created, and the response is 200 `{ ok: true, data: { redirectTo } }`.
+6. **On success:** the failure counters and the challenge cookie are cleared, a session is created, and the response is 200 `{ ok: true, data: { redirectTo } }`.
 
 The client then navigates to the validated `?next=` path, or `/studio/dashboard` if there isn't one. `safeStudioRedirect` only accepts `/studio/...` paths, which prevents open redirects.
 
@@ -96,7 +106,7 @@ The database stores only a hash of the session id. If the database leaks, its ro
 | --- | --- |
 | 200 | login or logout succeeded |
 | 302 | proxy and guard redirects |
-| 400 | invalid input |
+| 400 | invalid input, or `challenge_expired` (step 2 without a valid step 1) |
 | 401 | invalid credentials |
 | 403 | cross-origin request |
 | 429 | locked out |

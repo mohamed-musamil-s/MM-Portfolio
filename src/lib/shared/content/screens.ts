@@ -1,11 +1,13 @@
 import type { z } from "zod";
 import { maintenanceContentSchema, type MaintenanceContent } from "./maintenance-schema";
 import { notFoundContentSchema, type NotFoundContent } from "./not-found-schema";
+import { studioLoginContentSchema, type StudioLoginContent } from "./studio-login-schema";
 
 /** Content type of every database-managed screen, by slug (`site_screens._id`). */
 type ScreenContentMap = {
   maintenance: MaintenanceContent;
   "not-found": NotFoundContent;
+  "studio-login": StudioLoginContent;
 };
 
 export type ScreenSlug = keyof ScreenContentMap;
@@ -21,6 +23,7 @@ export type ScreenContent<S extends ScreenSlug> = ScreenContentMap[S];
 export const SCREEN_SCHEMAS: { [S in ScreenSlug]: z.ZodType<ScreenContentMap[S]> } = {
   maintenance: maintenanceContentSchema,
   "not-found": notFoundContentSchema,
+  "studio-login": studioLoginContentSchema,
 };
 
 export const isScreenSlug = (value: string): value is ScreenSlug => Object.hasOwn(SCREEN_SCHEMAS, value);

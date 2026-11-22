@@ -74,40 +74,99 @@
 }
 
 /* ----------------------------------------------------------------------------
- * Studio tokens: docs/ADMIN_STYLE.md. PROVISIONAL, used by the shared UI
- * components until the admin design system is defined.
+ * Studio tokens: docs/ADMIN_STYLE.md. Names follow the shadcn/ui convention
+ * (background, card, primary, muted, border, input, ring ...) so the studio's
+ * shadcn components work unmodified. Values live on [data-surface="studio"].
  * ------------------------------------------------------------------------- */
 @theme inline {
-  --color-canvas: var(--studio-canvas);
-  --color-panel: var(--studio-panel);
-  --color-fg: var(--studio-fg);
-  --color-fg-muted: var(--studio-fg-muted);
-  --color-line: var(--studio-line);
+  --color-background: var(--studio-background);
+  --color-foreground: var(--studio-foreground);
+  --color-card: var(--studio-card);
+  --color-card-foreground: var(--studio-card-foreground);
+  --color-popover: var(--studio-card);
+  --color-popover-foreground: var(--studio-card-foreground);
+  --color-primary: var(--studio-primary);
+  --color-primary-foreground: var(--studio-primary-foreground);
+  --color-secondary: var(--studio-secondary);
+  --color-secondary-foreground: var(--studio-secondary-foreground);
+  --color-muted: var(--studio-muted);
+  --color-muted-foreground: var(--studio-muted-foreground);
   --color-accent: var(--studio-accent);
-  --color-on-accent: var(--studio-on-accent);
-  --color-glow: var(--studio-glow);
-  --color-danger: var(--studio-danger);
+  --color-accent-foreground: var(--studio-accent-foreground);
+  --color-destructive: var(--studio-destructive);
+  --color-destructive-surface: var(--studio-destructive-surface);
   --color-success: var(--studio-success);
+  --color-border: var(--studio-border);
+  --color-input: var(--studio-input);
+  --color-ring: var(--studio-ring);
+
+  --font-ui: var(--studio-font-ui);
+  --font-code: var(--studio-font-code);
 }
 
 @layer base {
   [data-surface="studio"] {
-    --studio-canvas: #f7f7f8;
-    --studio-panel: #ffffff;
-    --studio-fg: #111113;
-    --studio-fg-muted: #5d5d66;
-    --studio-line: #dcdce1;
-    --studio-accent: #1f4fff;
-    --studio-on-accent: #ffffff;
-    --studio-glow: rgb(31 79 255 / 0.22);
-    --studio-danger: #d92d20;
-    --studio-success: #0e8a5f;
+    color-scheme: light;
+
+    /* Slate neutrals + one blue accent (docs/ADMIN_STYLE.md §2). Contrast on card. */
+    --studio-background: #f8fafc;
+    --studio-foreground: #1e293b; /* 14.6:1 */
+    --studio-card: #ffffff;
+    --studio-card-foreground: #1e293b;
+    --studio-primary: #2563eb; /* 5.2:1, white text 5.2:1 */
+    --studio-primary-foreground: #ffffff;
+    --studio-secondary: #f1f5f9;
+    --studio-secondary-foreground: #1e293b;
+    --studio-muted: #f1f5f9;
+    --studio-muted-foreground: #475569; /* 7.6:1 */
+    --studio-accent: #eff6ff; /* hover tint, not the brand accent */
+    --studio-accent-foreground: #1e3a8a;
+    --studio-destructive: #dc2626; /* 4.8:1 */
+    --studio-destructive-surface: #fef2f2;
+    --studio-success: #15803d; /* 5.0:1 */
+    --studio-border: #e2e8f0; /* decorative hairlines */
+    --studio-input: #7b8ba3; /* field boundary, 3.5:1 (WCAG 1.4.11) */
+    --studio-ring: #2563eb;
+
+    --studio-font-ui: var(--font-studio-inter), ui-sans-serif, system-ui, sans-serif;
+    --studio-font-code: ui-monospace, "SFMono-Regular", Menlo, monospace;
 
     /* MagicIcon error colour */
-    --icon-error: var(--studio-danger);
+    --icon-error: var(--studio-destructive);
 
-    background-color: var(--studio-canvas);
-    color: var(--studio-fg);
+    background-color: var(--studio-background);
+    color: var(--studio-foreground);
+    font-family: var(--studio-font-ui);
+
+    @media (prefers-color-scheme: dark) {
+      color-scheme: dark;
+      --studio-background: #0f172a;
+      --studio-foreground: #f1f5f9; /* 16.3:1 */
+      --studio-card: #1e293b;
+      --studio-card-foreground: #f1f5f9; /* 13.4:1 */
+      --studio-primary: #60a5fa; /* 5.8:1 on card */
+      --studio-primary-foreground: #0f172a; /* 7.0:1 */
+      --studio-secondary: #273449;
+      --studio-secondary-foreground: #f1f5f9;
+      --studio-muted: #273449;
+      --studio-muted-foreground: #94a3b8; /* 5.7:1 on card */
+      --studio-accent: #172554;
+      --studio-accent-foreground: #bfdbfe;
+      --studio-destructive: #f87171; /* 5.3:1 on card */
+      --studio-destructive-surface: #2a1215;
+      --studio-success: #4ade80;
+      --studio-border: #334155;
+      --studio-input: #64748b; /* 3.1:1 on card */
+      --studio-ring: #60a5fa;
+    }
+  }
+
+  /* shadcn/ui expects unset borders and outlines to use the studio hairline and ring colours. */
+  [data-surface="studio"] *,
+  [data-surface="studio"] ::before,
+  [data-surface="studio"] ::after {
+    border-color: var(--studio-border);
+    outline-color: color-mix(in oklab, var(--studio-ring) 50%, transparent);
   }
 
   [data-surface="public"] {

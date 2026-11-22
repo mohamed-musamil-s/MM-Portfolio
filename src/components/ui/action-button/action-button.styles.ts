@@ -35,9 +35,9 @@ export const actionButton = tv({
       },
       // Studio (docs/ADMIN_STYLE.md, provisional tokens): detent press, border illumination, state machine.
       "studio-action": {
-        root: "h-9 rounded-md border border-line bg-panel px-3.5 text-sm font-medium text-fg transition-[border-color,box-shadow,background-color] duration-150 hover:border-accent focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-glow disabled:opacity-50 aria-disabled:opacity-50 data-[pressed=true]:border-accent data-[pressed=true]:bg-accent data-[pressed=true]:text-on-accent data-[status=error]:border-danger data-[status=success]:border-success",
-        fill: "inset-x-0 bottom-0 h-0.5 bg-accent",
-        badge: "rounded-sm bg-danger/10 px-1.5 py-0.5 font-mono text-xs text-danger",
+        root: "h-9 rounded-md border border-input bg-card px-3.5 text-sm font-medium text-card-foreground transition-[border-color,box-shadow,background-color] duration-150 hover:border-primary focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-ring/30 disabled:opacity-50 aria-disabled:opacity-50 data-[pressed=true]:border-primary data-[pressed=true]:bg-primary data-[pressed=true]:text-primary-foreground data-[status=error]:border-destructive data-[status=success]:border-success",
+        fill: "inset-x-0 bottom-0 h-0.5 bg-primary",
+        badge: "rounded-sm bg-destructive/10 px-1.5 py-0.5 font-mono text-xs text-destructive",
         corner: "hidden",
         pulse: "rounded-md border-2 border-success",
       },
@@ -71,8 +71,8 @@ export const actionButton = tv({
       variant: "studio-action",
       method: "destructive",
       class: {
-        root: "text-danger hover:border-danger focus-visible:border-danger focus-visible:ring-danger/20",
-        fill: "inset-0 h-auto bg-danger/12",
+        root: "text-destructive hover:border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
+        fill: "inset-0 h-auto bg-destructive/12",
       },
     },
   ],

@@ -203,6 +203,14 @@ Verified with a production build (`next start`) connected to Atlas:
 
 - [x] The header monogram is larger (32px tall on phones, 40px from `sm`) and stands alone: `PORTFOLIO / STUDIO` is gone from both headers. `content.brand` was removed from both schemas, the seed and MongoDB (maintenance v12, not-found v2). Verified zero overflow at 1440×900, 1280×720 and 360×640.
 
+## 2026-11-23: Studio design system + two-step login
+
+- [x] **docs/ADMIN_STYLE.md v1.0**: slate neutrals + one blue accent, Inter, 4px grid, light/dark from the OS, shadcn/ui token names. Replaced the provisional studio tokens (`ActionButton studio-action` migrated).
+- [x] **shadcn/ui** set up (`components.json`; button, card, input, label, form, alert in `src/components/studio/ui`; recipes converted to the project `tv()`). Added react-hook-form, @hookform/resolvers, lucide-react. The CLI also installed an unrelated npm package called `cn` because of the utils alias; it was removed and the imports point to `@/lib/shared/cn`.
+- [x] **StudioShell** (`src/app/studio/layout.tsx`) wraps every studio route.
+- [x] **/studio/login** is a two-step flow: email (`POST /api/auth/initiate-login`, 10-minute challenge cookie, same answer for every valid email) → access code (`POST /api/auth/login`, now requires the challenge). Content from `site_screens/studio-login` (new).
+- [x] Verified in the browser (light and dark): field validation, step change, wrong code (alert, stays on step 2, field cleared and refocused), Change email (prefilled), correct code → `/studio/dashboard`, signed-in visit redirects. API: 400 / 403 / 200 + cookie / 400 `challenge_expired` by curl. No scroll at 375×667.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.
@@ -215,4 +223,4 @@ Verified with a production build (`next start`) connected to Atlas:
 
 - Public portfolio
 - All studio modules: dashboard, release, content, resume, chat, analytics
-- UI design and styling
+- UI design and styling for the studio modules (the login is done)

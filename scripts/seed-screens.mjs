@@ -70,6 +70,43 @@ const SCREENS = {
     },
     footer: { note: "© 2026 ALL RIGHTS RESERVED." },
   },
+  "studio-login": {
+    meta: { title: "Studio sign in" },
+    brand: { name: "Studio" },
+    stepIndicator: "Step {current} of {total}",
+    emailStep: {
+      title: "Admin Access",
+      description: "Please enter your authorized email address to proceed.",
+      label: "Email address",
+      placeholder: "name@example.com",
+      submit: "Continue",
+      pending: "Checking…",
+    },
+    codeStep: {
+      title: "Security Check",
+      description: "Enter the secure access code for {email}.",
+      label: "Access code",
+      submit: "Authenticate",
+      pending: "Verifying…",
+      back: "Change email",
+      success: "Signed in. Opening the studio…",
+      show: "Show access code",
+      hide: "Hide access code",
+    },
+    errors: {
+      title: "Couldn't sign in",
+      emailRequired: "Enter your email address.",
+      emailInvalid: "Enter a valid email address, like name@example.com.",
+      codeRequired: "Enter your access code.",
+      codeTooShort: "The access code is at least 4 characters.",
+      invalidCredentials: "The email or access code is incorrect.",
+      locked: "Too many failed attempts. Try again in {minutes} min.",
+      challengeExpired: "This sign-in step expired. Enter your email again.",
+      network: "Couldn't reach the server. Check your connection and try again.",
+      generic: "Something went wrong. Please try again.",
+    },
+    footer: { note: "Restricted area. Sign-in attempts are logged and rate limited." },
+  },
 };
 
 /** Site-wide switches. Seeded only when missing; never overwritten by --force. */

@@ -265,7 +265,7 @@ The props are a discriminated union on `method`, so each method only accepts its
 
 | | `editorial-ink` (portfolio default) | `studio-action` (studio default) |
 | --- | --- | --- |
-| Base | `border-ink bg-paper`, uppercase `text-label` grotesk, `min-h-11` | `rounded-md border-line bg-panel`, `text-sm`, `h-9` |
+| Base | `border-ink bg-paper`, uppercase `text-label` grotesk, `min-h-11` | `rounded-md border-input bg-card`, `text-sm`, `h-9` |
 | Hover | Liquid **ink wipe**: the fill layer scales in from the left; the label inverts through `mix-blend-difference`; four registration crosshairs slide in and **lock onto the corners** | Crisp **border illumination** (`border-accent`) |
 | Cursor | **Magnetic pull** (spring) within 72px | none |
 | Press | scale 0.98 | **Detent** scale 0.97 |
@@ -416,7 +416,7 @@ Each layer gets its own `useParallax` speed:
 | Surface attribute | `data-surface="public"` | `data-surface="studio"` |
 | Motion provider | `<MotionProvider theme="portfolio">` | `<MotionProvider theme="studio">` |
 | Button variant | `editorial-ink` | `studio-action` |
-| Colours used by components | `paper`, `newsprint`, `ink`, `graphite`, `rule`, and `signal` (accent marks only, STYLE.md §2.5) | `canvas`, `panel`, `fg`, `fg-muted`, `line`, `accent`, `on-accent`, `glow`, `danger`, `success` |
+| Colours used by components | `paper`, `newsprint`, `ink`, `graphite`, `rule`, and `signal` (accent marks only, STYLE.md §2.5) | shadcn-style names: `background`, `card`, `foreground`, `muted-foreground`, `border`, `input`, `primary`, `primary-foreground`, `ring`, `destructive`, `success` (ADMIN_STYLE.md §2) |
 | Icon error colour (`--icon-error`) | `currentColor` (no colour) | `--studio-danger` |
 | Fonts | `font-grotesk`, `font-technical` | system sans, `font-mono` (until ADMIN_STYLE defines fonts) |
 

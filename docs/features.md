@@ -17,7 +17,7 @@ Status key: **Done**, **Placeholder** (route exists, shows "Coming soon", functi
 
 | Feature | Route | Status |
 | --- | --- | --- |
-| Login | `/studio/login` | Done (functional form, unstyled) |
+| Login | `/studio/login` | Done: two-step sign-in (email → access code), shadcn/ui on the studio design system ([spec](screens/STUDIO_LOGIN_BUSINESS.md)) |
 | Session management | MongoDB `sessions` | Done |
 | Route protection | proxy + `requireSession()` | Done |
 | Sign out | nav button -> `POST /api/auth/logout` | Done |

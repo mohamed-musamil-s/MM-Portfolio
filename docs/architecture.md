@@ -36,15 +36,18 @@ src/
       layout.tsx
       maintenance/page.tsx  # reads site_screens/maintenance, renders MaintenanceScreen
     api/
-      auth/login/route.ts   # POST: verify credentials, create session
+      auth/initiate-login/route.ts # POST: step 1, validate email, issue the login challenge cookie
+      auth/login/route.ts   # POST: step 2, check challenge + credentials, create session
       auth/logout/route.ts  # POST: revoke session, clear cookie
       health/route.ts       # GET: MongoDB ping
     studio/
-      login/page.tsx        # public studio login
+      layout.tsx            # StudioShell: studio surface, Inter, studio motion theme
+      login/page.tsx        # two-step sign-in (content from site_screens/studio-login)
       (protected)/          # route group, does not appear in the URL
         layout.tsx          # studio nav + sign out
         dashboard|release|content|resume|chat|analytics/page.tsx
-  components/studio/        # client components (login form, logout button, placeholders)
+  components/studio/        # StudioShell, login/ (LoginFlow, EmailStep, CodeStep, FormAlert), logout button, placeholders
+  components/studio/ui/     # shadcn/ui components (button, card, input, label, form, alert) on studio tokens
   components/ui/            # shared across surfaces: MotionProvider, MagicIcon, ActionButton, StatusPillButton, CustomCursor
   components/brand/         # Monogram ("MM." mark; geometry in lib/shared/brand/monogram.ts)
   components/not-found/     # 404: NotFoundScreen, ErrorCode, Redirect{Provider,Countdown,Line}
@@ -78,7 +81,7 @@ src/
 - **Tailwind CSS v4 is the only styling method.** It's configured in CSS (`src/app/globals.css`); there is no `tailwind.config` file.
 - **Each design surface has its own tokens.**
   - Public pages are wrapped in `data-surface="public"` and follow [STYLE.md](STYLE.md).
-  - The studio will use `data-surface="studio"` and follow [ADMIN_STYLE.md](ADMIN_STYLE.md).
+  - The studio uses `data-surface="studio"` (StudioShell) and follows [ADMIN_STYLE.md](ADMIN_STYLE.md): slate + blue tokens named after shadcn/ui, light/dark from the OS.
   - Utilities reference the surface's variables inline, so one surface's tokens render as nothing on the other.
 - **Tailwind's default color palette is turned off.** Only the project's tokens exist, so a class like `bg-red-500` doesn't compile.
 - **Formatting:**
@@ -109,9 +112,10 @@ Browser
 | `/404` | public | 404 screen from the DB (`site_screens/not-found`), status 404, auto-redirect to `/` after 10s |
 | any unknown path | public | 302 to `/404` |
 | `/studio` | protected | 302 to `/studio/dashboard` (or to login) |
-| `/studio/login` | public | login form; already signed in: redirect to dashboard |
+| `/studio/login` | public | two-step sign-in (email → access code); already signed in: redirect to dashboard |
 | `/studio/{dashboard,release,content,resume,chat,analytics}` | protected | placeholders |
-| `POST /api/auth/login` | public | see [auth-security.md](auth-security.md) |
+| `POST /api/auth/initiate-login` | public, same-origin | step 1: issue the login challenge (same answer for any valid email) |
+| `POST /api/auth/login` | public, same-origin | step 2; see [auth-security.md](auth-security.md) |
 | `POST /api/auth/logout` | session | revokes the session |
 | `GET /api/health` | public | 200 when MongoDB answers a ping, else 500 |
 | `GET /api/studio/screens/:slug` | session | Screen content + version (backend for the admin panel) |

@@ -15,6 +15,7 @@ export const ROUTES = {
     analytics: "/studio/analytics",
   },
   api: {
+    initiateLogin: "/api/auth/initiate-login",
     login: "/api/auth/login",
     logout: "/api/auth/logout",
     health: "/api/health",

@@ -1,63 +1,114 @@
 # MM-Portfolio Studio Design System
 
-> **Status: placeholder.** This file reserves the admin design system. Its contents will be defined later.
+Version 1.0, 2026-11-23. The design system for the admin studio: every `/studio/...` route. Its aim is **operational efficiency, precision, clarity and craft**. First screen built on it: [`/studio/login`](screens/STUDIO_LOGIN_BUSINESS.md) (screenshots: [light desktop](screens/studio-login/desktop-light-1440x900.jpg), [mobile](screens/studio-login/mobile-375x667.jpg)).
 
-## Scope
+---
 
-This document will govern the **admin studio only**: every `/studio/...` route, including:
+## 1. Scope and separation
 
-- `/studio/login`
-- `/studio/dashboard`
-- `/studio/release`
-- `/studio/content`
-- `/studio/resume`
-- `/studio/chat`
-- `/studio/analytics`
+| | Public portfolio ([STYLE.md](STYLE.md)) | Studio (this document) |
+| --- | --- | --- |
+| Surface | `[data-surface="public"]`, `PublicShell` | `[data-surface="studio"]`, `StudioShell` (`src/app/studio/layout.tsx`) |
+| Feel | Editorial poster, monochrome ink, signal orange | Calm, neutral, precise operational UI |
+| Colour | Ivory, ink, orange | Slate neutrals + one **blue** accent |
+| Type | Inter Tight, JetBrains Mono, Permanent Marker | **Inter** (UI), system monospace (codes, emails, IDs) |
+| Components | `ActionButton editorial-ink`, motion pieces | **shadcn/ui** (`src/components/studio/ui`), `ActionButton studio-action` |
+| Motion | Kinetic, "200%" | Subtle, fast, purposeful (`studio` motion theme) |
+| Extras | Grain, print motifs, custom cursor | None. No orange, no grain, no custom cursor. |
 
-The public portfolio follows [STYLE.md](STYLE.md) instead. The two systems share nothing. In particular, the studio must not use:
+The two systems share only the toolchain (Tailwind v4, `tv()`, `cn()`) and the "MM." monogram, which the studio renders in its own text colour (`dot="letter"`, no orange).
 
-- the public tokens (`[data-surface="public"]`);
-- the public fonts;
-- the paper grain, the print motifs, or the grayscale image treatment.
+## 2. Colour
 
-## Already decided
+### 2.1 Tokens
 
-- **Styling is Tailwind CSS v4**, the same toolchain and conventions as the public site: utilities on the element, `tv()` for variants, `cn()` for conditional classes, no `@apply`, and no arbitrary values except for true one-offs.
-- **Tokens follow the same name/value split.**
-  - The values go on `[data-surface="studio"]` in `src/app/globals.css`.
-  - The studio's own names are mapped in a separate `@theme inline` block.
-  - The studio must not reuse the public names (`paper`, `ink`, `font-grotesk`, `text-display`, and so on). They resolve to nothing outside the public surface.
-- **No default palette.** Tailwind's default palette is turned off for the whole project, so every studio color needs a token too.
+Names follow the shadcn/ui convention, so shadcn components work without edits. Values live on `[data-surface="studio"]` in `src/app/globals.css` and flip for dark mode under `prefers-color-scheme: dark` in that one place (components never use `dark:` for colour).
 
-## Provisional tokens (in use by shared components)
+| Utility | Role | Light | Dark |
+| --- | --- | --- | --- |
+| `background` | App canvas | `#F8FAFC` | `#0F172A` |
+| `foreground` | Primary text | `#1E293B` | `#F1F5F9` |
+| `card` / `card-foreground` | Cards, popovers | `#FFFFFF` / `#1E293B` | `#1E293B` / `#F1F5F9` |
+| `primary` / `primary-foreground` | **The accent**: primary actions, focus, active and progress states | `#2563EB` / `#FFFFFF` | `#60A5FA` / `#0F172A` |
+| `secondary` / `secondary-foreground` | Secondary buttons | `#F1F5F9` / `#1E293B` | `#273449` / `#F1F5F9` |
+| `muted` / `muted-foreground` | Quiet surfaces / secondary text | `#F1F5F9` / `#475569` | `#273449` / `#94A3B8` |
+| `accent` / `accent-foreground` | Hover tint on ghost and outline controls (not the brand accent) | `#EFF6FF` / `#1E3A8A` | `#172554` / `#BFDBFE` |
+| `destructive` / `destructive-surface` | Errors, destructive actions / error alert fill | `#DC2626` / `#FEF2F2` | `#F87171` / `#2A1215` |
+| `success` | Success marks (non-text) | `#15803D` | `#4ADE80` |
+| `border` | Decorative hairlines (default border colour) | `#E2E8F0` | `#334155` |
+| `input` | Form-field boundaries | `#7B8BA3` | `#64748B` |
+| `ring` | Focus ring | `#2563EB` | `#60A5FA` |
 
-> **Provisional.** These values exist only so that the shared components (`ActionButton variant="studio-action"`, `MagicIcon` error colour) work on the studio surface. Treat them as placeholders: the real studio design replaces them.
+### 2.2 Contrast (WCAG 2.2)
 
-They are defined on `[data-surface="studio"]` in `src/app/globals.css` and mapped to Tailwind names in a separate `@theme inline` block.
+| Pair | Light | Dark |
+| --- | --- | --- |
+| `foreground` on `card` | 14.6:1 | 13.4:1 |
+| `muted-foreground` on `card` | 7.6:1 | 5.7:1 |
+| `primary` on `card` (links, icons) | 5.2:1 | 5.8:1 |
+| `primary-foreground` on `primary` (button text) | 5.2:1 | 7.0:1 |
+| `destructive` on `card` | 4.8:1 | 5.3:1 |
+| `input` boundary on `card` (1.4.11 non-text) | 3.5:1 | 3.1:1 |
 
-| Tailwind name | Variable | Value | Role | Contrast |
-| --- | --- | --- | --- | --- |
-| `canvas` | `--studio-canvas` | `#F7F7F8` | App background | n/a |
-| `panel` | `--studio-panel` | `#FFFFFF` | Cards, buttons, inputs | n/a |
-| `fg` | `--studio-fg` | `#111113` | Primary text | 18.9:1 on panel |
-| `fg-muted` | `--studio-fg-muted` | `#5D5D66` | Secondary text | 6.5:1 on panel |
-| `line` | `--studio-line` | `#DCDCE1` | Hairline borders (decorative) | 1.4:1 |
-| `accent` | `--studio-accent` | `#1F4FFF` | Focus, active border, progress, pressed toggle | 5.8:1 on panel |
-| `on-accent` | `--studio-on-accent` | `#FFFFFF` | Text on accent | 5.8:1 |
-| `glow` | `--studio-glow` | `rgb(31 79 255 / 0.22)` | Focus ring | n/a |
-| `danger` | `--studio-danger` | `#D92D20` | Errors, destructive actions, `--icon-error` | 4.8:1 on panel |
-| `success` | `--studio-success` | `#0E8A5F` | Success border and pulse (non-text only) | 4.4:1, so don't use it for small text |
+### 2.3 Rules
 
-**Motion:** the `studio` theme in `src/lib/motion/tokens.ts` sets fast, stiff springs, 0.12 to 0.28s durations, a 0.97 press detent, no magnetism and no smooth scroll. See [ANIMATION_UI.md](ANIMATION_UI.md) §4.
+- **Blue is used intentionally:** primary buttons, focus rings, the active step, progress, links. Never as a large background or decoration.
+- Hairlines (`border`) are decorative; anything a user must find (inputs, toggles) uses `input` or stronger.
+- Errors always pair colour with an icon and words; never colour alone.
+- No orange, no ink-on-ivory, no gradients on controls.
 
-## To be defined
+## 3. Typography
 
-- [ ] Visual direction and reference material
-- [ ] Color tokens, contrast rules, light and dark mode
-- [ ] Typography scale and font pairing
-- [ ] Layout: app shell, sidebar or top bar, content grid, spacing
-- [ ] Components: buttons, forms, tables, cards, navigation, modals, toasts
-- [ ] Login screen (`/studio/login`)
-- [ ] Data visualization rules (for analytics)
-- [ ] Motion and accessibility
-- [ ] Token reference and how the tokens are scoped in code
+- **UI:** Inter (next/font, `--font-studio-inter`), utility `font-ui`, set on the surface.
+- **Code:** system monospace, utility `font-code`, for access codes, emails shown as values, IDs and timestamps.
+- Scale (Tailwind defaults): `text-xs` 12px (meta, step indicator), `text-sm` 14px (body, labels, buttons), `text-base` 16px (inputs on phones, to stop iOS zoom), `text-xl` 20px semibold `tracking-tight` (card titles), `text-2xl` 24px (page titles).
+- Numbers that change use `tabular-nums`.
+
+## 4. Spacing, layout and shape
+
+- **4px base grid.** Use Tailwind steps: 1 (4px), 2 (8px), 3 (12px), 4 (16px), 6 (24px), 8 (32px), 12 (48px).
+- Cards: `rounded-xl`, 1px `border`, `shadow-sm`, internal padding 24px (`px-6`, `py-6`), 24px between groups.
+- Controls: `rounded-md`; inputs and buttons `h-10` in forms (`h-9` in dense tables later).
+- Focus: a 3px `ring/50` halo plus a `ring` border on every interactive element (`focus-visible`).
+- Centred auth layouts: `max-w-sm` (384px) column, 16px side gutter on phones.
+
+## 5. Components (shadcn/ui)
+
+Generated with the shadcn CLI (`components.json`, style `new-york`) into `src/components/studio/ui/`, then adapted to the project rules:
+
+| Component | Notes |
+| --- | --- |
+| `Button` | Variants `default` (primary), `secondary`, `outline`, `ghost`, `destructive`, `link`; sizes `xs`–`lg`, `icon*`. Recipes use the project `tv()` (not `cva`). |
+| `Card` | `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`, `CardAction`. |
+| `Input` | `border-input`, focus ring, `aria-invalid` turns it destructive. |
+| `Label` | Radix label. |
+| `Form` | react-hook-form + zod (`@hookform/resolvers`). `FormLabel`/`FormControl`/`FormMessage` wire `htmlFor`, `aria-invalid` and `aria-describedby`. |
+| `Alert` | `default` and `destructive` (tinted `destructive-surface` fill, `destructive/40` border). |
+
+Icons: `lucide-react`, 16px, `aria-hidden` when next to text.
+
+Shared components keep working on this surface: `ActionButton variant="studio-action"` now uses these token names (`border-input`, `bg-card`, `primary`, `destructive`).
+
+## 6. Motion
+
+Uses the `studio` theme in `src/lib/motion/tokens.ts`: 0.12 / 0.18 / 0.28s, `ease-print`, stiff springs, 0.97 press, no magnetism, no smooth scroll.
+
+- Step and view changes: fade + 16px slide, 0.28s, out then in.
+- Alerts: height + opacity in and out, 0.18s, so the layout never jumps.
+- Progress indicators: `scaleX` from the left.
+- Spinners only inside the control that is busy (`LoaderCircle` + `animate-spin`).
+- Reduced motion: slides become fades; nothing moves more than opacity.
+
+## 7. Accessibility
+
+- Every field has a visible label; placeholders are examples, never labels.
+- Errors are announced: field messages via `aria-describedby`, form-level alerts with `role="alert"`.
+- After a failed submit, focus returns to the field that needs attention.
+- Tap targets are at least 36px (`h-9`); primary actions 40px (`h-10`).
+
+## 8. To be defined (with the next modules)
+
+- [ ] App shell: sidebar / top bar, page header, breadcrumbs
+- [ ] Tables, filters, empty states, pagination
+- [ ] Dialogs, sheets, toasts, dropdowns
+- [ ] Data visualisation rules (analytics)

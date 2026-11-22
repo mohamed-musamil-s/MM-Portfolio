@@ -1,6 +1,6 @@
 # MM-Portfolio Public Design System
 
-Version 1.6, 2026-11-23 (hero action, custom cursor, monogram, 404 screen). Source artwork: `docs/reference/Gemini_MM.png` (the "Musamil" editorial poster).
+Version 1.6, 2026-11-23 (status pill, custom cursor, monogram, 404 screen). Source artwork: `docs/reference/Gemini_MM.png` (the "Musamil" editorial poster).
 
 **Styling is done with Tailwind CSS v4.** Every rule below names the utility classes that implement it. The token layer is `src/app/globals.css`.
 
@@ -351,14 +351,11 @@ All public buttons are `<ActionButton variant="editorial-ink">`. That's the defa
 - **Disabled:** `opacity-40`, plus `aria-disabled` on links.
 - **Text link style:** for inline text links use the link rules in 6.2, not a button.
 - **Solid tone** (`tone="solid"`): an ink-filled pill (`rounded-full bg-ink text-paper min-h-12 px-7`) with no ink wipe and no corner marks. Hover only dims it slightly (`bg-ink/88`); no magnetic pull. Used for secondary primaries such as **RETURN TO MAIN PAGE** on the 404 page.
-- **Hero action** (`<HeroActionButton>`): the one oversized call to action on a screen (e.g. **CHECK AGAIN**). Added 2026-11-23.
-  - Look: ink pill, `min-h-22 px-11 text-h3 font-extrabold uppercase` (`min-h-16 px-8` at heights ≤ 820px), with four signal reticle brackets framing it and a signal halo.
-  - Idle: the halo breathes, a signal sheen sweeps the surface every few seconds, the icon turns slowly.
-  - Hover: magnetic pull, a signal wipe plus a deeper second layer, brackets open outward, the icon primes.
-  - Press: detent (scale 0.96, 2px drop) and a signal shockwave.
-  - Loading: the busy label (`CHECKING STATUS...`), a comet orbits the pill, brackets lock on.
-  - Success: the done label (`STILL UPGRADING`), an orange check, a burst of rays and a second shockwave, then it settles back.
-  - Labels share one grid cell, so the pill never changes width. Spec: [ANIMATION_UI.md](ANIMATION_UI.md) §8b.
+- **Status pill** (`<StatusPillButton>`): the screen's primary action when its label follows the action's status (e.g. **CHECK AGAIN** → `CHECKING STATUS...` → `STILL UPGRADING`). Updated 2026-11-23 to a small, clean style:
+  - `min-h-12 rounded-full bg-ink px-6 text-label font-bold uppercase text-paper`, with a 16px icon;
+  - hover only dims the fill (`bg-ink/85`). **No hover movement, no magnetic pull, no corner brackets, no halo**;
+  - press scale 0.98; the icon orbits while loading and becomes an orange check on success; errors shake;
+  - labels share one grid cell, so the pill never changes width. Spec: [ANIMATION_UI.md](ANIMATION_UI.md) §8b.
 
 ### 6.2 Links
 
@@ -391,7 +388,7 @@ As of 2026-11-23 (v1.7) this is **one viewport (`h-svh`) with no scrolling**, on
 - **Background:** faint 12-column rules and one soft signal glow bottom-right.
 - **Header:** the **"MM." monogram** (signal full stop) and the brand label; on the right, the orange `StatusDot` and status label.
 - **Middle:**
-  - left (6 columns): kicker, headline (orange full stop), body, the **CHECK AGAIN hero action** with its hint below it, then the countdown (`ETA`);
+  - left (6 columns): kicker, headline (orange full stop), body, the small **CHECK AGAIN** status pill with its hint beside it, then the countdown (`ETA`);
   - right (columns 8 to 12, `lg` and up): the **3D-look stage**. The maintenance film plays on the screen of an extruded slab, with a cube, an extruded gear, an orb and a version chip floating at different depths. It leans to the pointer and reacts to every status check.
 - **Ruler:** a full-width timeline with an orange elapsed line, a now dot, and dates at both ends.
 - **Footer:** three spaced columns on hairlines: LAST CHECKED, NEXT CHECK (orange progress, every minute) and the note.
@@ -468,7 +465,7 @@ These rules still apply on top:
 
 | Rule | Detail |
 | --- | --- |
-| Easing | `ease-print` (`cubic-bezier(0.2, 0, 0, 1)`) for tweens. Springs are damped with no visible overshoot. Never elastic easing. **Exception (2026-11-23):** one small settle overshoot is allowed for drop-ins (the 404 full stop, film blocks) and the hero action's brackets. |
+| Easing | `ease-print` (`cubic-bezier(0.2, 0, 0, 1)`) for tweens. Springs are damped with no visible overshoot. Never elastic easing. **Exception (2026-11-23):** one small settle overshoot is allowed for drop-ins (the 404 full stop, film blocks) only. |
 | Durations | 0.24s fast, 0.48s base, 0.9s slow (`MOTION_THEMES.portfolio`). |
 | Properties | Only `transform`, `opacity` and `clip-path`. SVG `d` and stroke dash are allowed inside icons. Never `transition-all`. |
 | Colour | Colour is never animated. Inversion uses `mix-blend-difference` or a layer wipe, not a colour tween. |

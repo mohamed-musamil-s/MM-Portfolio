@@ -191,6 +191,10 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] Zero overflow for `/maintenance` and `/404` at 1440×900, 1280×720, 1024×768, 390×667, 375×812 and 360×640.
 - [ ] Not verified: reduced-motion behaviour (can't be emulated in the test browser).
 
+## 2026-11-23: Check again back to a small, clean pill
+
+- [x] Replaced the oversized hero button with `StatusPillButton`: a 48px ink pill with a label-size font. Hover only dims the fill; no hover movement, magnetic pull, orange corner brackets, halo, sheen or shockwaves. The status labels still change (`CHECKING STATUS...` → `STILL UPGRADING`). Verified: no transform on hover, label sequence by sampling, zero overflow at 1440×900, 1280×720 and 360×640.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

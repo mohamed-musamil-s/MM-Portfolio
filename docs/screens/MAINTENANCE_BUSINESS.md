@@ -128,7 +128,7 @@ Verified on 2026-11-22: 401 without a session, 400 for a bad body, 403 cross-ori
 | Row | Content |
 | --- | --- |
 | Header | The "MM." monogram, and `brand.label` (from `sm`). On the right, the orange `StatusDot` and `status.label`. |
-| Middle, left (6 columns) | Kicker, headline, body, the **CHECK AGAIN hero action** with its hint below it, then the countdown (`ETA`, `DD : HH : MM : SS`). |
+| Middle, left (6 columns) | Kicker, headline, body, the small **CHECK AGAIN** status pill with its hint beside it, then the countdown (`ETA`, `DD : HH : MM : SS`). |
 | Middle, right (columns 8 to 12, `lg` and up) | **3D-look stage**: the maintenance film plays on the screen of an extruded slab, with floating depth props and film subtitles below |
 | Ruler | Window timeline: day ticks, orange elapsed line and now dot, dates at both ends |
 | Footer | Three spaced columns divided by hairlines: **LAST CHECKED**, **NEXT CHECK** (orange progress), and the note on the right (from `sm`) |
@@ -146,7 +146,7 @@ Verified with zero overflow at 1440×900, 1280×720, 1024×768, 375×812, 390×6
 The canvas is ivory and the type is ink, plus **one accent, signal orange `#E8480F`**, used only for:
 - the status beacon;
 - the monogram's full stop;
-- the CHECK AGAIN halo, brackets, hover wipe, progress comet, shockwaves and success burst;
+- the CHECK AGAIN success check;
 - the 3D stage: the cube's top face, the gear, the orb, the version chip, the slab's edge strip, the scan beam and the check pulse;
 - the custom cursor;
 - the headline's full stop;
@@ -168,7 +168,7 @@ The motion direction is "200%", within the STYLE.md §7 guardrails, and everythi
 | Countdown | Per-digit slide inside a fixed 1em mask | `Countdown` |
 | Ruler | Ticks draw in left to right; the orange line and dot ease to "now" | `WindowRuler` |
 | Footer | NEXT CHECK progress line fills over the minute, then resets | `LiveCheckFooter` |
-| Check again | **Hero action** (2026-11-23): breathing halo, sheen sweep and reticle brackets at idle; magnetic pull, two-layer orange wipe and opening brackets on hover; press detent and shockwave; `CHECKING STATUS...` with an orbiting comet ring; `STILL UPGRADING` with an orange check, a ray burst and a second shockwave; then it settles. Busy state shows for at least 0.9s. | `HeroActionButton`, `MagicIcon` |
+| Check again | **Small clean pill** (2026-11-23): hover only dims the fill, with no movement, magnetic pull or orange brackets. The label slides `CHECK AGAIN` → `CHECKING STATUS...` (icon orbits) → `STILL UPGRADING` (orange check), then back. The busy state shows for at least 0.9s. | `StatusPillButton`, `MagicIcon` |
 | 3D stage | The film sits on an extruded slab in a three-quarter view that leans to the pointer and drifts. A cube, an extruded gear, an orb and a `V2.0` chip float at different depths and bob. On every status check (button or the minute poll) the slab lifts toward the camera, a scan beam sweeps the screen, the outline pulses and the props hop. | `DepthStage` (motion springs + GSAP) |
 | Cursor | Orange dot and trailing ring; reticle over interactive elements; press pulse. Fine pointers only. | `CustomCursor` |
 | **Maintenance film** | **One continuous shot, not a carousel**: a single GSAP timeline on one browser canvas, about 15.6s, looping. The camera dollies out as the frame draws in.<br>**MANAGE:** a settings panel slides in, the cursor flips toggles and moves sliders, gears turn, then the panel slides away.<br>**CONSTRUCT:** dashed slots appear and the cursor guides each block into place.<br>**CONTENT:** the camera pushes in, copy types into the hero block, and a light bulb lights.<br>**REDESIGN:** the hero and image blocks swap places while a pen draws a curve.<br>**UPGRADE:** the page dims, a version tag drops in, the bar fills, `V1.0` becomes `V2.0`, and a check mark draws.<br>Then everything dissolves and the camera returns. The orange cursor is the one actor throughout. Subtitles (the DB step labels) fade like film captions, never two at once. Reduced motion: paused on a finished frame. It replaced the halftone sphere and the earlier step carousel on 2026-11-22. | `MaintenanceIllustration` (GSAP timeline) inside `DepthStage` |

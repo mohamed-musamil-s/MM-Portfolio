@@ -81,7 +81,6 @@ export const MaintenanceScreen = ({ content, windowStartText, targetText }: Main
             >
               {content.body}
             </InkReveal>
-            {/* Not inside an InkReveal mask: its halo, brackets and shockwaves draw outside the pill. */}
             <CheckAgain labels={content.liveCheck} revealDelay={afterHeadline + 0.1} />
             <InkReveal className="pt-2 [@media(max-height:820px)]:pt-0" delay={afterHeadline + 0.2}>
               <Countdown timeline={timeline} />

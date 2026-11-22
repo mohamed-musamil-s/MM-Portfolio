@@ -1,6 +1,6 @@
 # Animation and Interactive UI
 
-Version 1.1, 2026-11-23 (hero action, custom cursor, depth stage). This document covers the motion system, the `<MagicIcon />` engine, the `<ActionButton />` architecture, and the shared hooks behind them. It also specifies the portfolio's flagship motion pipelines.
+Version 1.1, 2026-11-23 (status pill, custom cursor, depth stage). This document covers the motion system, the `<MagicIcon />` engine, the `<ActionButton />` architecture, and the shared hooks behind them. It also specifies the portfolio's flagship motion pipelines.
 
 Related documents:
 
@@ -99,8 +99,8 @@ src/components/ui/
   magic-icon/         # types, InkPath primitive, icon definitions, orbit hook
   ActionButton.tsx    # public button component
   action-button/      # types, tv() styles, behaviour hook, hold-to-confirm
-  HeroActionButton.tsx# the one oversized CTA per screen (§8b); reuses useActionButton
-  hero-action/        # tv() slots for the hero action layers
+  StatusPillButton.tsx# small primary pill whose label follows the status (§8b)
+  status-pill/        # tv() slots for the status pill
   CustomCursor.tsx    # signal dot + spring ring / reticle (§8c)
 src/components/maintenance/
   DepthStage.tsx      # CSS 3D slab + floating props around the film (§8d)
@@ -302,30 +302,28 @@ Leave out `onAction` and drive `status` from the form's pending state. The butto
 
 ---
 
-## 8b. `<HeroActionButton />`
+## 8b. `<StatusPillButton />`
 
-The single oversized call to action on a screen. It reuses ActionButton's behaviour engine (`useActionButton`: state machine, double-submit lock, auto reset after `statusHoldMs`) with its own choreography. Today it backs **CHECK AGAIN** on `/maintenance`.
+A small, clean primary pill whose label follows the action's status. It reuses ActionButton's behaviour engine (`useActionButton`: state machine, double-submit lock, auto reset after `statusHoldMs`). Today it backs **CHECK AGAIN** on `/maintenance`.
 
 ```tsx
-<HeroActionButton
+<StatusPillButton
   labels={{ idle: "CHECK AGAIN", loading: "CHECKING STATUS...", success: "STILL UPGRADING" }}
   onAction={checkNow}
 />
 ```
 
-| State | Choreography |
+| State | Behaviour |
 | --- | --- |
-| Idle | Signal halo breathes (scale 1 → 1.09, fades, 2.4s loop). A signal sheen sweeps the ink surface (1.3s, every ~4s). Four reticle brackets frame the pill. The sync icon turns slowly (24°/s). |
-| Hover / focus | Magnetic pull (portfolio tokens). Two-layer wipe: signal from the left (0.42s), then a deeper ink gradient (0.5s, 0.12s later). Brackets open from 8px to 14px. The icon primes. |
-| Press | Detent: scale 0.96 and a 2px drop on a stiff spring. A signal shockwave leaves the pill. |
-| Loading | The label slides to the busy label. A comet (22% of the perimeter) orbits a ring 7px outside the pill. Brackets lock in and rotate. The icon orbits. |
-| Success | The label slides to the done label. The icon becomes an orange check. A burst of 12 rays and a second shockwave, then it settles back to idle. |
+| Hover / focus | The fill dims (`bg-ink/85`). Nothing moves: no magnetic pull, brackets, halo or sheen. |
+| Press | Theme press scale (0.98). |
+| Loading | The label slides to the busy label; the sync icon orbits. |
+| Success | The label slides to the done label; the icon becomes an orange check; it settles back after `statusHoldMs`. |
 | Error | Shake (`SHAKE_KEYFRAMES`) and an X icon. |
 
 - All labels sit in one grid cell, so the pill keeps the width of the longest label.
-- Effects draw outside the pill: don't put it inside an overflow mask (e.g. `InkReveal`). CheckAgain fades it in on its own.
 - `CheckAgain` holds the busy state for at least 900ms so it can be read even when the API answers instantly.
-- Reduced motion: every state change stays; loops, waves, rays and the magnetic pull are dropped.
+- It replaced the oversized hero version (halo, brackets, magnetic wipe, shockwaves) on 2026-11-23 at the user's request.
 
 ## 8c. `<CustomCursor />`
 

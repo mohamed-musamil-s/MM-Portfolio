@@ -45,7 +45,7 @@ src/
         layout.tsx          # studio nav + sign out
         dashboard|release|content|resume|chat|analytics/page.tsx
   components/studio/        # client components (login form, logout button, placeholders)
-  components/ui/            # shared across surfaces: MotionProvider, MagicIcon, ActionButton, HeroActionButton, CustomCursor
+  components/ui/            # shared across surfaces: MotionProvider, MagicIcon, ActionButton, StatusPillButton, CustomCursor
   components/brand/         # Monogram ("MM." mark; geometry in lib/shared/brand/monogram.ts)
   components/not-found/     # 404: NotFoundScreen, ErrorCode, Redirect{Provider,Countdown,Line}
   components/motion/        # reusable editorial motion pieces (InkReveal, Marquee, VelocitySkew, ParallaxLayer, CalibrationRig ...)

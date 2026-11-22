@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { HeroActionButton } from "@/components/ui/HeroActionButton";
+import { StatusPillButton } from "@/components/ui/StatusPillButton";
 import type { MaintenanceContent } from "@/lib/shared/content/maintenance-schema";
 import { useSharedLiveCheck } from "./LiveCheckProvider";
 
@@ -24,18 +24,18 @@ export const CheckAgain = ({ labels, revealDelay = 0 }: CheckAgainProps) => {
   const { checkNow } = useSharedLiveCheck();
   return (
     <motion.div
-      className="flex flex-col items-start gap-5 [@media(max-height:820px)]:gap-3"
+      className="flex flex-wrap items-center gap-x-6 gap-y-3"
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, ease: [0.2, 0, 0, 1], delay: revealDelay }}
     >
-      <HeroActionButton
+      <StatusPillButton
         labels={{ idle: labels.checkAgainLabel, loading: labels.checkingLabel, success: labels.checkedLabel }}
         onAction={async () => {
           await Promise.all([checkNow(), wait(MIN_CHECK_MS)]);
         }}
       />
-      <p className="max-w-[44ch] text-label leading-snug text-graphite max-lg:[@media(max-height:720px)]:hidden">
+      <p className="max-w-[34ch] min-w-0 flex-1 basis-56 text-label leading-snug text-graphite max-lg:[@media(max-height:720px)]:hidden">
         {labels.hint}
       </p>
     </motion.div>

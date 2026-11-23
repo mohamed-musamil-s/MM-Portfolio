@@ -12,11 +12,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function MaintenancePage() {
-  const content = await getScreenContent("maintenance");
+  const [content, shared] = await Promise.all([getScreenContent("maintenance"), getScreenContent("shared")]);
 
   return (
     <MaintenanceScreen
       content={content}
+      shared={shared}
       windowStartText={formatDateUtc(content.timeline.windowStart)}
       targetText={formatDateUtc(content.timeline.targetAt)}
     />

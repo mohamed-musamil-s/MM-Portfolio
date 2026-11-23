@@ -3,6 +3,7 @@ import { InkReveal } from "@/components/motion/InkReveal";
 import { withSignalStop } from "@/components/public/signal-stop";
 import { ActionButton } from "@/components/ui/ActionButton";
 import type { NotFoundContent } from "@/lib/shared/content/not-found-schema";
+import type { SharedContent } from "@/lib/shared/content/shared-schema";
 import { ROUTES } from "@/lib/shared/routes";
 import { ErrorCode } from "./ErrorCode";
 import { RedirectCountdown } from "./RedirectCountdown";
@@ -18,7 +19,7 @@ import { RedirectProvider } from "./RedirectProvider";
  *
  * Every string and the countdown length come from `content` (MongoDB).
  */
-export const NotFoundScreen = ({ content }: { content: NotFoundContent }) => (
+export const NotFoundScreen = ({ content, shared }: { content: NotFoundContent; shared: SharedContent }) => (
   <RedirectProvider seconds={content.redirect.seconds}>
     <main className="relative isolate grid h-svh grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden px-6 sm:px-10 lg:px-16">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
@@ -72,7 +73,7 @@ export const NotFoundScreen = ({ content }: { content: NotFoundContent }) => (
 
       <footer className="flex flex-col gap-5 pt-8 pb-6 lg:pb-8 [@media(max-height:820px)]:lg:pt-5">
         <RedirectLine />
-        <p className="font-technical text-micro text-graphite uppercase">{content.footer.note}</p>
+        <p className="font-technical text-micro text-graphite uppercase">{shared.footer.note}</p>
       </footer>
     </main>
   </RedirectProvider>

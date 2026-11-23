@@ -1,6 +1,6 @@
 # Module: Content Forge (Content Management), Business Spec
 
-Version 1.1, 2026-11-23 (modern field tiles). Route `/studio/content`, inside the studio shell. Design system: [ADMIN_STYLE.md](../ADMIN_STYLE.md).
+Version 1.2, 2026-11-23 (shared content). Route `/studio/content`, inside the studio shell. Design system: [ADMIN_STYLE.md](../ADMIN_STYLE.md).
 
 Content Forge edits the text of the **public portfolio site**. Every string, date and setting on those pages lives in MongoDB (`site_screens`), and this page is where the owner changes it without touching code.
 
@@ -8,7 +8,9 @@ Content Forge edits the text of the **public portfolio site**. Every string, dat
 
 | Listed | Not listed |
 | --- | --- |
-| Portfolio screens (`PORTFOLIO_SCREENS` in `src/lib/shared/content/screens.ts`): `maintenance` (Maintenance page), `not-found` (404 page) | Studio screens (`studio-login`, `studio-shell`). Their copy stays in the database and the admin API, but they are not edited here |
+| Portfolio screens (`PORTFOLIO_SCREENS` in `src/lib/shared/content/screens.ts`): `shared` (Shared content), `maintenance` (Maintenance page), `not-found` (404 page) | Studio screens (`studio-login`, `studio-shell`). Their copy stays in the database and the admin API, but they are not edited here |
+
+**One value, one field.** Text that appears on more than one page is stored once in `shared` (schema `shared-schema.ts`) and each page reads it next to its own content. Today that is `footer.note`. When a new page repeats text another page already has, move it into `shared` instead of copying it.
 
 New portfolio sections are added to `PORTFOLIO_SCREENS` once their schema exists; the editor builds their form automatically.
 

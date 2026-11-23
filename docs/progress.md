@@ -289,6 +289,11 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] Content Forge fields redesigned: filled tiles with type icons, accent focus ring, inline errors with an icon, per-field `Edited` marker with undo, numbered list rows, section headers with field counts. New copy in `editor` (DB version 11).
 - [x] App icons from the monogram (`npm run brand:icons`): favicon.ico (16/32/48), icon.svg, apple-icon.png, manifest icons 192/512 and a maskable 512; `src/app/manifest.ts`. Verified the `<link>` tags and that the manifest and icons are served.
 
+## 2026-11-23: Shared content (one field for repeated text)
+
+- [x] Checked all portfolio content for repeated values: only the footer note ("© 2026 ALL RIGHTS RESERVED.") was stored twice (maintenance and 404). It now lives once in a new `shared` record (`site_screens/shared`, `shared-schema.ts`); both pages read it. Removed `footer` from the maintenance and 404 records (DB versions 18 and 3).
+- [x] Content Forge lists "Shared content" first. Verified: one save changed the footer on /maintenance and /404; value restored.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

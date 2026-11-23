@@ -15,6 +15,10 @@ import { MongoClient } from "mongodb";
 const SEED_AUTHOR = "seed";
 
 const SCREENS = {
+  // Text used on more than one portfolio page, stored once.
+  shared: {
+    footer: { note: "© 2026 ALL RIGHTS RESERVED." },
+  },
   maintenance: {
     meta: {
       title: "System upgrade in progress",
@@ -50,7 +54,6 @@ const SCREENS = {
       versionFrom: "V1.0",
       versionTo: "V2.0",
     },
-    footer: { note: "© 2026 ALL RIGHTS RESERVED." },
   },
   "not-found": {
     meta: {
@@ -69,7 +72,6 @@ const SCREENS = {
       resumeLabel: "RESUME",
       srAnnouncement: "Taking you to the main page in {seconds} seconds.",
     },
-    footer: { note: "© 2026 ALL RIGHTS RESERVED." },
   },
   "studio-login": {
     meta: { title: "Studio sign in" },
@@ -202,6 +204,10 @@ const SCREENS = {
         updated: "Site mode updated.",
       },
       screens: {
+        shared: {
+          name: "Shared content",
+          description: "Text used on several pages, like the footer. Edit once, it changes everywhere.",
+        },
         maintenance: { name: "Maintenance page", description: "What visitors see while the site is being upgraded." },
         "not-found": { name: "404 page", description: "Shown for any address that doesn't exist." },
       },

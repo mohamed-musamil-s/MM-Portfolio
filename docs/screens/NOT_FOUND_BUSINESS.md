@@ -49,7 +49,7 @@ A broken link shouldn't lose the visitor. The page turns a dead end into a two-s
 | `redirect.pausedLabel` | `REDIRECT PAUSED` | ≤ 32 |
 | `redirect.pauseLabel` / `redirect.resumeLabel` | `PAUSE` / `RESUME` | ≤ 16 each |
 | `redirect.srAnnouncement` | `Taking you to the main page in {seconds} seconds.` | ≤ 120. `{seconds}` is replaced. Announced politely, not every second (at start, at 5 and at 3). |
-| `footer.note` | `© 2026 ALL RIGHTS RESERVED.` | ≤ 80 |
+| `footer.note` | `© 2026 ALL RIGHTS RESERVED.` | ≤ 80. Stored once in the **shared** record (`site_screens/shared`), used by the maintenance page too |
 
 Header: the animated monogram only (`h-8`, `h-10` from `sm`), linking to `/` with the action label as its accessible name. The brand label was removed on 2026-11-23 (`content.brand` unset, version 1 → 2).
 

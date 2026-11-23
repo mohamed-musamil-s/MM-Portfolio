@@ -57,7 +57,6 @@ export const maintenanceContentSchema = z.object({
     hint: text(120),
   }),
   illustration: illustrationSchema,
-  footer: z.object({ note: text(80) }),
 });
 
 export type MaintenanceContent = z.infer<typeof maintenanceContentSchema>;

@@ -1,11 +1,13 @@
 import type { z } from "zod";
 import { maintenanceContentSchema, type MaintenanceContent } from "./maintenance-schema";
 import { notFoundContentSchema, type NotFoundContent } from "./not-found-schema";
+import { sharedContentSchema, type SharedContent } from "./shared-schema";
 import { studioLoginContentSchema, type StudioLoginContent } from "./studio-login-schema";
 import { studioShellContentSchema, type StudioShellContent } from "./studio-shell-schema";
 
 /** Content type of every database-managed screen, by slug (`site_screens._id`). */
 type ScreenContentMap = {
+  shared: SharedContent;
   maintenance: MaintenanceContent;
   "not-found": NotFoundContent;
   "studio-login": StudioLoginContent;
@@ -23,6 +25,7 @@ export type ScreenContent<S extends ScreenSlug> = ScreenContentMap[S];
  * for a generic slug.
  */
 export const SCREEN_SCHEMAS: { [S in ScreenSlug]: z.ZodType<ScreenContentMap[S]> } = {
+  shared: sharedContentSchema,
   maintenance: maintenanceContentSchema,
   "not-found": notFoundContentSchema,
   "studio-login": studioLoginContentSchema,
@@ -33,6 +36,6 @@ export const SCREEN_SCHEMAS: { [S in ScreenSlug]: z.ZodType<ScreenContentMap[S]>
  * Screens of the public portfolio site: the only ones Content Forge edits.
  * Studio screens (login, shell) stay in the database but are not listed there.
  */
-export const PORTFOLIO_SCREENS = ["maintenance", "not-found"] as const satisfies readonly ScreenSlug[];
+export const PORTFOLIO_SCREENS = ["shared", "maintenance", "not-found"] as const satisfies readonly ScreenSlug[];
 
 export const isScreenSlug = (value: string): value is ScreenSlug => Object.hasOwn(SCREEN_SCHEMAS, value);

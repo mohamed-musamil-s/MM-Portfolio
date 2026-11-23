@@ -23,7 +23,6 @@ export const notFoundContentSchema = z.object({
     /** Placeholder: {seconds}. */
     srAnnouncement: text(120),
   }),
-  footer: z.object({ note: text(80) }),
 });
 
 export type NotFoundContent = z.infer<typeof notFoundContentSchema>;

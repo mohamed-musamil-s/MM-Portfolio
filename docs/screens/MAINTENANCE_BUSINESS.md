@@ -64,7 +64,7 @@ No user-facing text, date or asset path is hardcoded in the page or its componen
 | `timeline` | object | `label` (≤ 24, e.g. `ETA`), `windowStart`, `targetAt` (dates; `targetAt` must be after `windowStart`), `srRemaining` (screen-reader template with `{days}`, `{hours}` and `{minutes}`), `units`, `overdue { title, detail }`. |
 | `liveCheck` | object | `lastCheckedLabel`, `nextCheckLabel`, `checkAgainLabel`, `checkingLabel`, `checkedLabel` (≤ 24 each), `hint` (≤ 120). The last two were added on 2026-11-23 (version 9 → 10). |
 | `illustration` | object | `steps[]` (1 to 5 items of `{ scene, label ≤ 32 }`, where scene is one of `manage`, `construct`, `content`, `redesign`, `upgrade`): the subtitle shown during that part of the film. `versionFrom` and `versionTo` (≤ 8 each): the tags in the upgrade sequence. The film always plays in the same order; a scene with no step plays without a subtitle. |
-| `footer.note` | text | Small print, footer right. |
+| `footer.note` | text | Small print, footer right. Stored once in the **shared** record (`site_screens/shared`), used by the 404 page too. |
 
 ### Saving changes (for the admin panel)
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowUpRight, FileQuestion, LoaderCircle, PanelsTopLeft, RotateCcw, Search, Wrench } from "lucide-react";
+import { ArrowUpRight, FileQuestion, LoaderCircle, PanelsTopLeft, RotateCcw, Search, Share2, Wrench } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
@@ -38,6 +38,7 @@ type ContentEditorProps = {
 };
 
 const SCREEN_ICONS: Record<string, typeof Wrench> = {
+  shared: Share2,
   maintenance: Wrench,
   "not-found": FileQuestion,
 };

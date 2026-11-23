@@ -4,6 +4,7 @@ import { InkReveal } from "@/components/motion/InkReveal";
 import { StatusDot } from "@/components/motion/StatusDot";
 import { withSignalStop } from "@/components/public/signal-stop";
 import type { MaintenanceContent } from "@/lib/shared/content/maintenance-schema";
+import type { SharedContent } from "@/lib/shared/content/shared-schema";
 import { CheckAgain } from "./CheckAgain";
 import { Countdown } from "./Countdown";
 import { LiveCheckFooter } from "./LiveCheckFooter";
@@ -13,6 +14,8 @@ import { WindowRuler } from "./WindowRuler";
 
 type MaintenanceScreenProps = {
   content: MaintenanceContent;
+  /** Text shared with other pages (footer note). */
+  shared: SharedContent;
   /** Window dates, pre-formatted on the server in UTC. */
   windowStartText: string;
   targetText: string;
@@ -36,7 +39,7 @@ const headlineLines = (lines: readonly string[]): ReactNode[] =>
  *
  * Every string comes from `content` (MongoDB).
  */
-export const MaintenanceScreen = ({ content, windowStartText, targetText }: MaintenanceScreenProps) => {
+export const MaintenanceScreen = ({ content, shared, windowStartText, targetText }: MaintenanceScreenProps) => {
   const { status, headline, timeline } = content;
   const afterHeadline = HEADLINE_DELAY + headline.lines.length * LINE_STAGGER;
 
@@ -99,7 +102,7 @@ export const MaintenanceScreen = ({ content, windowStartText, targetText }: Main
           />
         </div>
 
-        <LiveCheckFooter labels={content.liveCheck} note={content.footer.note} />
+        <LiveCheckFooter labels={content.liveCheck} note={shared.footer.note} />
       </main>
     </LiveCheckProvider>
   );

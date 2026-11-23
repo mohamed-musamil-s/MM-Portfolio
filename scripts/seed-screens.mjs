@@ -22,11 +22,12 @@ const SCREENS = {
   // Name splash before the portfolio (docs/screens/SPLASH_BUSINESS.md). Generic name: set the real one in Content Forge.
   splash: {
     enabled: true,
-    hook: { first: "IDEAS", second: "NEED", keyWord: "CRAFT" },
-    moments: { select: "DESIGN", type: "CODE", move: "MOTION" },
-    name: { first: "YOUR", last: "NAME" },
-    role: "DESIGNER & DEVELOPER",
-    label: "PORTFOLIO",
+    claim: { word: "Two letters", subtitle: "You thought the monogram meant one thing.", question: "?" },
+    moments: { first: "Design", second: "Code", third: "Motion" },
+    name: { first: "Your", last: "Name" },
+    role: "Designer & Developer",
+    tagline: "Portfolio.",
+    label: "Est. 2026",
     skip: "Skip intro",
     srLabel: "Intro animation",
   },

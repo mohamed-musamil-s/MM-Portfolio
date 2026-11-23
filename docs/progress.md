@@ -322,8 +322,8 @@ Verified with a production build (`next start`) connected to Atlas:
 
 ## 2026-11-23: Name splash
 
-- New screen `site_screens/splash` ([spec](screens/SPLASH_BUSINESS.md)): an 8.5-second kinetic-type intro at 120 BPM. The monogram's orange full stop is the through-line: hook full stops, an underline, a selection handle, a caret, a dot riding an ease curve, the name's full stop, then the monogram's period.
-- Every style is computed from time (`src/components/splash/splash-timeline.ts`); springs and expo easing in `src/lib/shared/motion/time-easing.ts`.
+- New screen `site_screens/splash` ([spec](screens/SPLASH_BUSINESS.md)): a 10-second cinematic intro at 120 BPM, modelled on `docs/reference/splash-1.mp4`. Macro shot of the rim-lit monogram, "MM. = Two letters" struck and dissolved into "?", glass cards that multiply, a star field converging into the lit monogram, then the end card. The monogram's orange period is the through-line.
+- Every style is computed from time (`src/components/splash/splash-timeline.ts`); springs and expo easing in `src/lib/shared/motion/time-easing.ts`; particles drawn on one canvas.
 - Plays once per browser session over the first public page (session cookie `mm_splash_seen`); Skip button and Esc; off for reduced motion and in the preview frame.
 - Editable and previewable (looping) in Content Forge.
 

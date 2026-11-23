@@ -1,101 +1,56 @@
-import { expoInOut, expoOut, mix, progress, spring } from "@/lib/shared/motion/time-easing";
+import { clamp01, expoInOut, expoOut, mix, progress, spring } from "@/lib/shared/motion/time-easing";
+import { MONOGRAM_VIEWBOX } from "@/lib/shared/brand/monogram";
 
 /*
  * The name splash as pure functions of time (docs/screens/SPLASH_BUSINESS.md §4).
  * Given `t` (seconds) and the measured layout, each function returns where
- * something is. Nothing here touches the DOM or keeps state, so any frame can
- * be rendered in any order.
+ * something is and how it is lit. Nothing here touches the DOM or keeps
+ * state, so any frame can be rendered in any order.
  */
 
 /** 120 BPM. */
 export const BEAT = 0.5;
 export const at = (beat: number): number => beat * BEAT;
 
-export const EXIT_AT = at(16);
-export const EXIT_SECONDS = 0.55;
+export const SCENES = {
+  macro: 0,
+  claim: at(5),
+  cards: at(10),
+  stars: at(13),
+  card: at(16),
+  exit: at(20),
+} as const;
+
+export const EXIT_AT = SCENES.exit;
+export const EXIT_SECONDS = 0.6;
 /** Preview loop: the end card stays a moment, then the sequence restarts. */
-export const LOOP_SECONDS = EXIT_AT + 1;
+export const LOOP_SECONDS = EXIT_AT + 1.2;
 
 export type Point = { x: number; y: number };
 export type Box = { x: number; y: number; w: number; h: number };
-
-/** A word as laid out (transforms ignored), in stage pixels. */
-export type WordLayout = {
-  /** The letters' box. */
-  box: Box;
-  /** Baseline y, and x where the last letter ends. */
-  end: Point;
-  fs: number;
-};
+export type Card = Box & { moment: number | null };
 
 export type SplashLayout = {
   width: number;
   height: number;
-  hook: readonly [WordLayout, WordLayout, WordLayout];
-  select: WordLayout;
-  /** `edges`: right edge of each letter, for the caret. */
-  type: WordLayout & { edges: number[] };
-  move: WordLayout;
-  /** The name block at end-card size; `end` is where its last line ends. */
-  name: WordLayout;
-  /** The monogram (letters only; the dot lands on its period). */
-  mono: Box;
+  /** The big monogram, centred (macro shot and the star convergence). */
+  hero: Box;
+  /** The small monogram inside the claim line. */
+  glyph: Box;
+  /** The monogram beside the name on the end card. */
+  endGlyph: Box;
+  /** The claim word ("Two letters") and its font size. */
+  claim: Box & { fs: number };
+  /** Pixels of the claim word, for the dissolve. */
+  dust: Point[];
+  /** Points along the monogram's outline, in viewBox units. */
+  outline: Point[];
+  cards: Card[];
 };
 
-/* ---------- Word timings (seconds) ---------- */
+/* ---------- Helpers ---------- */
 
-const RISE_SECONDS = 0.45;
-const LEAVE_SECONDS = 0.2;
-const HIDDEN = 105;
-
-/** Words leave just before the beat and the next one enters on it, so letters never overlap. */
-export const WORDS = {
-  hook: [
-    { in: at(1), out: at(2) - LEAVE_SECONDS },
-    { in: at(2), out: at(3) - LEAVE_SECONDS },
-    { in: at(3), out: at(4) },
-  ],
-  select: { in: at(5) + 0.1, out: at(7) - 0.05 },
-  type: { out: at(10) - LEAVE_SECONDS },
-  move: { in: at(10) + 0.1, out: at(12) - 0.18 },
-  role: { in: at(14) + 0.05 },
-  label: { in: at(15) },
-  mono: [at(13) + 0.1, at(13) + 0.18],
-} as const;
-
-/**
- * Vertical offset in % of the element's own height: below its mask (hidden),
- * springs up into place at `inAt`, leaves upward from `outAt`.
- */
-export const riseAt = (t: number, inAt: number, outAt = Number.POSITIVE_INFINITY, seconds = RISE_SECONDS): number =>
-  HIDDEN * (1 - spring(progress(t, inAt, seconds))) - HIDDEN * expoInOut(progress(t, outAt, LEAVE_SECONDS));
-
-/** When letter `index` of the typed word appears. */
-export const typeAt = (index: number, count: number): number => at(8) + index * Math.min(0.1, BEAT / count);
-
-const NAME_STAGGER = 0.03;
-/** When letter `index` of name line `line` rises (the payoff lands on beat 12). */
-export const nameLetterAt = (line: number, index: number): number => at(12) - 0.05 + line * 0.07 + index * NAME_STAGGER;
-
-/* ---------- Geometry helpers ---------- */
-
-/** The dot's radius as a share of the font size: same proportion as the monogram's period. */
-const DOT_RADIUS = 0.075;
-const CAP_HEIGHT = 0.72;
-
-const capBox = (word: WordLayout): Box => ({
-  x: word.box.x,
-  y: word.end.y - CAP_HEIGHT * word.fs,
-  w: word.box.w,
-  h: CAP_HEIGHT * word.fs,
-});
-
-const pad = (box: Box, amount: number): Box => ({
-  x: box.x - amount,
-  y: box.y - amount,
-  w: box.w + amount * 2,
-  h: box.h + amount * 2,
-});
+const center = (layout: SplashLayout): Point => ({ x: layout.width / 2, y: layout.height / 2 });
 
 const mixBox = (from: Box, to: Box, p: number): Box => ({
   x: mix(from.x, to.x, p),
@@ -104,215 +59,357 @@ const mixBox = (from: Box, to: Box, p: number): Box => ({
   h: mix(from.h, to.h, p),
 });
 
-/** Centre of the full stop after a word. */
-const fullStop = (end: Point, fs: number): Point => {
-  const r = DOT_RADIUS * fs;
-  return { x: end.x + 0.06 * fs + r, y: end.y - r };
+const mixPoint = (from: Point, to: Point, p: number): Point => ({ x: mix(from.x, to.x, p), y: mix(from.y, to.y, p) });
+
+/** Stable pseudo-random 0..1 for (index, salt): same value every frame. */
+export const rand = (index: number, salt: number): number => {
+  const value = Math.sin(index * 127.1 + salt * 311.7) * 43758.5453;
+  return value - Math.floor(value);
 };
 
-/* ---------- Selection frame (design moment) ---------- */
-
-export type FrameState = Box & { handles: number };
-
-export const frameAt = (t: number, layout: SplashLayout): FrameState => {
-  const caps = capBox(layout.select);
-  const loose = pad(caps, 0.2 * layout.select.fs);
-  const tight = pad(caps, 0.07 * layout.select.fs);
-  const rect = mixBox(loose, tight, spring(progress(t, at(6), 0.4)));
-  const w = rect.w * spring(progress(t, at(4) + 0.45, 0.4));
-  const h = rect.h * spring(progress(t, at(4) + 0.6, 0.4));
-  // Folds into its far corner on beat 7.
-  const fold = spring(progress(t, at(7), 0.38));
-  return {
-    x: rect.x + w * fold,
-    y: rect.y + h * fold,
-    w: w * (1 - fold),
-    h: h * (1 - fold),
-    handles: spring(progress(t, at(5) + 0.3, 0.3)) * (1 - fold),
-  };
-};
-
-export const handleSize = (layout: SplashLayout): number => Math.min(16, Math.max(9, 0.07 * layout.select.fs));
-
-/* ---------- Ease curve (motion moment) ---------- */
-
-export type Curve = { p0: Point; c1: Point; c2: Point; p1: Point };
-
-export const curveOf = (layout: SplashLayout): Curve => {
-  const { move } = layout;
-  const left = move.box.x;
-  const right = move.box.x + move.box.w;
-  const top = move.end.y + 0.24 * move.fs;
-  const bottom = top + 0.42 * move.fs;
-  return {
-    p0: { x: left, y: bottom },
-    c1: { x: left + 0.6 * move.box.w, y: bottom },
-    c2: { x: right - 0.6 * move.box.w, y: top },
-    p1: { x: right, y: top },
-  };
-};
-
-export const curvePath = ({ p0, c1, c2, p1 }: Curve): string =>
-  `M${p0.x} ${p0.y}C${c1.x} ${c1.y} ${c2.x} ${c2.y} ${p1.x} ${p1.y}`;
-
-const bezier = ({ p0, c1, c2, p1 }: Curve, q: number): Point => {
-  const u = 1 - q;
-  const a = u * u * u;
-  const b = 3 * u * u * q;
-  const c = 3 * u * q * q;
-  const d = q * q * q;
-  return { x: a * p0.x + b * c1.x + c * c2.x + d * p1.x, y: a * p0.y + b * c1.y + c * c2.y + d * p1.y };
-};
-
-const RIDE = { start: at(10) + 0.32, seconds: 0.5 };
-const rideAt = (t: number): number => expoInOut(progress(t, RIDE.start, RIDE.seconds));
-
-/** Drawn part of the curve as fractions of its length: [from, to]. */
-export const curveDrawAt = (t: number): [number, number] => [expoInOut(progress(t, WORDS.move.out, 0.3)), rideAt(t)];
-
-/* ---------- Name block (payoff) ---------- */
-
-export type NameTransform = { scale: number; dx: number; dy: number; cx: number; cy: number };
-
-/** Huge and centred on beat 12, springs down to its end-card place on beat 13. */
-export const nameTransformAt = (t: number, layout: SplashLayout): NameTransform => {
-  const { box } = layout.name;
-  // Leaves room for the camera push (about 1.17x by the payoff) and the full stop.
-  const big = Math.min((0.68 * layout.width) / box.w, (0.4 * layout.height) / box.h);
-  const settle = spring(progress(t, at(13), 0.55));
-  const cx = box.x + box.w / 2;
-  const cy = box.y + box.h / 2;
-  return {
-    scale: mix(big, 1, settle),
-    dx: mix(layout.width / 2 - cx, 0, settle),
-    dy: mix(layout.height / 2 - cy, 0, settle),
-    cx,
-    cy,
-  };
-};
-
-const throughName = (point: Point, n: NameTransform): Point => ({
-  x: n.cx + (point.x - n.cx) * n.scale + n.dx,
-  y: n.cy + (point.y - n.cy) * n.scale + n.dy,
+/** A point given in monogram viewBox units, placed in a monogram box. */
+export const inMono = (box: Box, point: Point): Point => ({
+  x: box.x + (point.x / MONOGRAM_VIEWBOX.width) * box.w,
+  y: box.y + (point.y / MONOGRAM_VIEWBOX.height) * box.h,
 });
+
+const PERIOD = { x: 398, y: 154, r: 16 } as const;
+/** Where the diagonal cut between the two Ms meets the top: the macro shot starts here. */
+const CUT = { x: 181, y: 38 } as const;
+
+/* ---------- Reveals (blur in, blur out) ---------- */
+
+export type Reveal = { opacity: number; blur: number; y: number };
+
+const REVEAL_SECONDS = 0.6;
+const HIDE_SECONDS = 0.35;
+
+/** Fades in out of a blur while settling upward; leaves blurring the other way. `y` is in em. */
+export const revealAt = (t: number, inAt: number, outAt = Number.POSITIVE_INFINITY): Reveal => {
+  const shown = spring(progress(t, inAt, REVEAL_SECONDS));
+  const gone = expoInOut(progress(t, outAt, HIDE_SECONDS));
+  return {
+    opacity: clamp01(shown * 1.5) * (1 - gone),
+    blur: (1 - shown) * 14 + gone * 10,
+    y: (1 - shown) * 0.35 - gone * 0.25,
+  };
+};
+
+/** Beat-locked entry times. Outgoing things leave before incoming ones arrive. */
+export const TIMES = {
+  claimIn: at(5) + 0.4,
+  subtitleIn: at(6) + 0.1,
+  strike: at(7),
+  glitch: at(7) + 0.05,
+  dissolve: at(7) + 0.4,
+  questionIn: at(8) + 0.25,
+  lineOut: at(9) + 0.25,
+  nameIn: at(16) + 0.2,
+  roleIn: at(17),
+  taglineIn: at(18),
+  labelIn: at(19),
+} as const;
+
+/* ---------- Camera ---------- */
+
+export type Camera = { focus: Point; scale: number; rotate: number };
+
+const MACRO = { start: 0.1, seconds: 2.3, scale: 6.5, rotate: -0.25 } as const;
+
+/**
+ * Starts as a macro shot on the monogram's diagonal cut, pulls back to the
+ * whole mark, pushes in gently through the claim, pulls back to show the card
+ * grid, then pushes in again for the convergence and the end card.
+ */
+export const cameraAt = (t: number, layout: SplashLayout): Camera => {
+  const pull = expoInOut(progress(t, MACRO.start, MACRO.seconds));
+  const focus = mixPoint(inMono(layout.hero, CUT), center(layout), pull);
+  let scale = mix(MACRO.scale, 1, pull);
+  scale *= 1 + 0.04 * expoOut(progress(t, SCENES.claim, SCENES.cards - SCENES.claim));
+  scale *= mix(1, 0.8, spring(progress(t, at(11), 1)));
+  scale *= mix(1, 1.25, expoInOut(progress(t, at(13) + 0.1, 1.4)));
+  scale *= 1 + 0.04 * expoOut(progress(t, SCENES.card, SCENES.exit - SCENES.card + EXIT_SECONDS));
+  return { focus, scale, rotate: mix(MACRO.rotate, 0, pull) };
+};
+
+/** Where a stage point appears on screen through the camera. */
+export const toScreen = (point: Point, camera: Camera, layout: SplashLayout): Point => {
+  const dx = (point.x - camera.focus.x) * camera.scale;
+  const dy = (point.y - camera.focus.y) * camera.scale;
+  const cos = Math.cos(camera.rotate);
+  const sin = Math.sin(camera.rotate);
+  return { x: layout.width / 2 + dx * cos - dy * sin, y: layout.height / 2 + dx * sin + dy * cos };
+};
+
+/* ---------- The monogram ---------- */
+
+export type HeroState = {
+  box: Box;
+  opacity: number;
+  /** How much of the paper colour the letters take: dark and rim-lit (low) to bright (high), in %. */
+  lit: number;
+  /** Orange halo around the mark, 0..1. */
+  halo: number;
+  /** Strength of the light streaks running along the edges, 0..1. */
+  streaks: number;
+  /** The warm light gliding over the letters, in viewBox units. */
+  light: Point;
+};
+
+export const heroAt = (t: number, layout: SplashLayout): HeroState => {
+  const inStars = t >= SCENES.cards;
+  let box = mixBox(layout.hero, layout.glyph, spring(progress(t, SCENES.claim, 0.55)));
+  if (inStars) {
+    box = layout.hero;
+  }
+  box = mixBox(box, layout.endGlyph, spring(progress(t, SCENES.card, 0.6)));
+
+  const opacity = inStars
+    ? spring(progress(t, at(15) + 0.05, 0.45))
+    : 1 - expoInOut(progress(t, TIMES.lineOut, HIDE_SECONDS));
+  const lit = inStars
+    ? mix(8, 92, spring(progress(t, at(15) + 0.2, 0.5)))
+    : mix(8, 90, spring(progress(t, SCENES.claim + 0.1, 0.6)));
+  const halo = inStars ? spring(progress(t, at(15), 0.6)) * (1 - 0.6 * spring(progress(t, SCENES.card, 0.8))) : 0;
+  const streaks = inStars ? spring(progress(t, at(15), 0.4)) * 0.9 : 1 - 0.6 * progress(t, SCENES.claim, 0.6);
+  const sweep = expoInOut(progress(t, 0, SCENES.claim));
+  const light = inStars ? { x: 210, y: 40 } : { x: mix(40, 330, sweep), y: mix(10, 120, sweep) };
+  return { box, opacity, lit, halo, streaks, light };
+};
+
+/** Position of a light streak along the outline (fraction of its length), for streak 0 or 1. */
+export const streakAt = (t: number, index: number): number => (index * 0.5 + 0.12 + t * 0.32) % 1;
+
+/* ---------- Claim line ---------- */
+
+/** Strike-through drawn by the dot: 0..1 grow, then retract. */
+const strikeAt = (t: number) => ({
+  grow: spring(progress(t, TIMES.strike, 0.35)),
+  retract: spring(progress(t, TIMES.dissolve + 0.15, 0.4)),
+});
+
+/** Horizontal RGB offset of the claim while it glitches, in px. */
+export const glitchAt = (t: number, layout: SplashLayout): number => {
+  const p = progress(t, TIMES.glitch, 0.4);
+  if (p <= 0 || p >= 1) {
+    return 0;
+  }
+  const jitter = Math.sign(Math.sin(t * 173)) * (0.5 + 0.5 * Math.abs(Math.sin(t * 91)));
+  return Math.sin(Math.PI * p) * 0.06 * layout.claim.fs * jitter;
+};
+
+/** Share of the claim (from the left) already dissolved into dust. */
+export const dissolvedAt = (t: number): number => expoInOut(progress(t, TIMES.dissolve, 0.35));
+
+export type Dust = { x: number; y: number; r: number; alpha: number; accent: boolean };
+
+const DUST_LIFE = 0.75;
+
+export const dustAt = (t: number, layout: SplashLayout): Dust[] => {
+  const { claim } = layout;
+  const result: Dust[] = [];
+  layout.dust.forEach((point, index) => {
+    const start = TIMES.dissolve + ((point.x - claim.x) / claim.w) * 0.35;
+    const age = t - start;
+    if (age <= 0 || age >= DUST_LIFE) {
+      return;
+    }
+    result.push({
+      x: point.x + (90 + 220 * rand(index, 1)) * age,
+      y: point.y + (-60 + 70 * rand(index, 2)) * age - 40 * age * age,
+      r: 0.7 + rand(index, 3) * 1.3,
+      alpha: (1 - age / DUST_LIFE) * 0.9,
+      accent: index % 9 === 0,
+    });
+  });
+  return result;
+};
+
+/* ---------- Cards ---------- */
+
+/** Grid of cards: 5 × 3 on wide screens, 3 × 5 on phones. The middle row's centre three carry the moments. */
+export const gridOf = (width: number, height: number): Card[] => {
+  const phone = width < 640;
+  const columns = phone ? 3 : 5;
+  const rows = phone ? 5 : 3;
+  const w = phone ? 0.3 * width : Math.min(0.19 * width, 0.34 * height, 300);
+  const h = w * 0.68;
+  const gap = w * 0.12;
+  const left = width / 2 - (columns * w + (columns - 1) * gap) / 2;
+  const top = height / 2 - (rows * h + (rows - 1) * gap) / 2;
+  const middleRow = Math.floor(rows / 2);
+  const middleColumn = Math.floor(columns / 2);
+  const cards: Card[] = [];
+  for (let row = 0; row < rows; row += 1) {
+    for (let column = 0; column < columns; column += 1) {
+      const offset = column - middleColumn;
+      const moment = row === middleRow && Math.abs(offset) <= 1 ? [1, 0, 2][offset + 1] : null;
+      cards.push({ x: left + column * (w + gap), y: top + row * (h + gap), w, h, moment: moment ?? null });
+    }
+  }
+  return cards;
+};
+
+export type CardState = { x: number; y: number; scale: number; opacity: number; blur: number };
+
+const COLLAPSE = at(12) + 0.45;
+
+const nearestMoment = (layout: SplashLayout, card: Card): Card =>
+  layout.cards
+    .filter((item) => item.moment !== null)
+    .sort((a, b) => Math.hypot(a.x - card.x, a.y - card.y) - Math.hypot(b.x - card.x, b.y - card.y))[0] ?? card;
+
+export const cardAt = (t: number, layout: SplashLayout, index: number): CardState => {
+  const card = layout.cards[index];
+  const lead = layout.cards.find((item) => item.moment === 0) ?? card;
+  const collapse = expoInOut(progress(t, COLLAPSE + rand(index, 7) * 0.1, 0.3));
+  let from: Box = lead;
+  let move = 1;
+  let shown = 1;
+  let blur = 0;
+  let grow = 1;
+  if (card.moment === 0) {
+    const reveal = revealAt(t, SCENES.cards);
+    shown = reveal.opacity;
+    blur = reveal.blur;
+    from = { ...card, y: card.y + reveal.y * card.h * 0.4 };
+    move = 0;
+  } else if (card.moment !== null) {
+    move = spring(progress(t, SCENES.cards + 0.4, 0.55));
+    shown = clamp01(progress(t, SCENES.cards + 0.4, 0.2));
+  } else {
+    // The rest multiply out of the nearest moment card, nearest first.
+    from = nearestMoment(layout, card);
+    const distance = Math.hypot(from.x - card.x, from.y - card.y) / card.w;
+    const start = at(11) + 0.05 + distance * 0.07;
+    move = spring(progress(t, start, 0.6));
+    shown = clamp01(progress(t, start, 0.25));
+    grow = mix(0.7, 1, move);
+  }
+  return {
+    x: mix(from.x, card.x, move),
+    y: mix(from.y, card.y, move),
+    scale: grow * (1 - 0.95 * collapse),
+    opacity: shown * (1 - collapse),
+    blur,
+  };
+};
+
+/** Top-right status point of the lead card: the dot sits here during the card scene. */
+const statusPoint = (card: Box, state: CardState): Point => ({
+  x: state.x + card.w * 0.9,
+  y: state.y + card.w * 0.1,
+});
+
+/* ---------- Stars (cards collapse, drift, converge into the monogram) ---------- */
+
+export const PARTICLES = 64;
+const LINK_SHARE = 0.11;
+
+export type Star = { x: number; y: number; r: number; alpha: number; accent: boolean };
+
+const leadIndex = (layout: SplashLayout) =>
+  Math.max(
+    0,
+    layout.cards.findIndex((card) => card.moment === 0),
+  );
+
+const starAt = (t: number, layout: SplashLayout, index: number): Point => {
+  const { width, height, cards } = layout;
+  const lead = leadIndex(layout);
+  const source = cards[index - 1];
+  const spawn =
+    index === 0
+      ? statusPoint(cards[lead], cardAt(COLLAPSE, layout, lead))
+      : source
+        ? { x: source.x + source.w / 2, y: source.y + source.h / 2 }
+        : { x: width * (0.35 + 0.3 * rand(index, 8)), y: height * (0.35 + 0.3 * rand(index, 9)) };
+  const field = {
+    x: width * (0.05 + 0.9 * rand(index, 1)) + Math.sin(t * 0.9 + index) * 0.012 * width,
+    y: height * (0.07 + 0.86 * rand(index, 2)) + Math.cos(t * 0.7 + index * 1.3) * 0.012 * height,
+  };
+  const outline = layout.outline[(index * 7) % Math.max(1, layout.outline.length)] ?? PERIOD;
+  const target = inMono(layout.hero, index === 0 ? PERIOD : outline);
+  const spread = spring(progress(t, COLLAPSE + rand(index, 3) * 0.12, 0.7));
+  const gather = expoInOut(progress(t, at(14) + 0.25 + rand(index, 4) * 0.2, 0.55));
+  return mixPoint(mixPoint(spawn, field, spread), target, gather);
+};
+
+export const starsAt = (t: number, layout: SplashLayout): { stars: Star[]; links: number } => {
+  if (t < COLLAPSE || t > at(15) + 0.6) {
+    return { stars: [], links: 0 };
+  }
+  const alpha = spring(progress(t, COLLAPSE, 0.3)) * (1 - progress(t, at(15) + 0.25, 0.3));
+  const stars = Array.from({ length: PARTICLES }, (_, index) => ({
+    ...starAt(t, layout, index),
+    r: 1.1 + rand(index, 5) * 1.7,
+    alpha: index === 0 ? 0 : alpha * (0.55 + 0.45 * rand(index, 6)),
+    accent: index % 7 === 3,
+  }));
+  return { stars, links: alpha * (1 - expoInOut(progress(t, at(14) + 0.2, 0.5))) };
+};
+
+export const linkDistance = (layout: SplashLayout): number => LINK_SHARE * Math.hypot(layout.width, layout.height);
 
 /* ---------- The dot (through-line object) ---------- */
 
-/** `round`: 1 = fully rounded (circle, pill), 0 = square corners. */
-export type DotState = { x: number; y: number; w: number; h: number; round: number };
+export type DotState = { x: number; y: number; w: number; h: number; glow: number };
 
 const toward = (from: DotState, to: Partial<DotState>, p: number): DotState => ({
   x: mix(from.x, to.x ?? from.x, p),
   y: mix(from.y, to.y ?? from.y, p),
   w: mix(from.w, to.w ?? from.w, p),
   h: mix(from.h, to.h ?? from.h, p),
-  round: mix(from.round, to.round ?? from.round, p),
+  glow: mix(from.glow, to.glow ?? from.glow, p),
 });
 
-/** Spring move with a small arc over the top. */
-const hop = (
-  from: DotState,
-  to: Partial<DotState>,
-  t: number,
-  start: number,
-  seconds: number,
-  lift: number,
-): DotState => {
-  const next = toward(from, to, spring(progress(t, start, seconds)));
-  return { ...next, y: next.y - lift * Math.sin(Math.PI * progress(t, start, seconds)) };
+const periodOf = (box: Box) => {
+  const point = inMono(box, PERIOD);
+  const size = ((2 * PERIOD.r) / MONOGRAM_VIEWBOX.height) * box.h;
+  return { ...point, w: size, h: size };
 };
 
-const circle = (point: Point, fs: number) => ({ ...point, w: 2 * DOT_RADIUS * fs, h: 2 * DOT_RADIUS * fs, round: 1 });
-
-/** Edge the caret sits on: slides one letter right as each letter types in. */
-const typedEdge = (t: number, layout: SplashLayout): number => {
-  const { edges, box } = layout.type;
-  return edges.reduce(
-    (x, edge, index) =>
-      x + (edge - (edges[index - 1] ?? box.x)) * spring(progress(t, typeAt(index, edges.length), 0.16)),
-    box.x,
-  );
-};
-
+/**
+ * The monogram's orange full stop: ignites as the macro shot pulls back,
+ * draws the strike-through, becomes the lead card's status light, leads the
+ * stars into the monogram, and ends as its period on the end card.
+ */
 export const dotAt = (t: number, layout: SplashLayout): DotState => {
-  const [first, second, key] = layout.hook;
-  const grow = spring(progress(t, 0, 0.45));
-  const start = circle({ x: layout.width / 2, y: layout.height / 2 }, first.fs);
-  let dot: DotState = { ...start, w: start.w * grow, h: start.h * grow };
+  const ignite = spring(progress(t, 1.7, 0.5));
+  // Follows the mark into the claim line (not reset for the stars, so the dot never jumps).
+  const period = periodOf(mixBox(layout.hero, layout.glyph, spring(progress(t, SCENES.claim, 0.55))));
+  let dot: DotState = { ...period, w: period.w * ignite, h: period.h * ignite, glow: ignite };
 
-  // Hook: full stop of each word, then the key word's underline.
-  dot = toward(dot, circle(fullStop(first.end, first.fs), first.fs), spring(progress(t, at(1), 0.45)));
-  dot = hop(dot, circle(fullStop(second.end, second.fs), second.fs), t, at(2), 0.42, 0.3 * second.fs);
-  dot = hop(dot, circle(fullStop(key.end, key.fs), key.fs), t, at(3), 0.38, 0.3 * key.fs);
-  const underline = {
-    x: key.box.x + key.box.w / 2,
-    y: key.end.y + 0.16 * key.fs,
-    w: key.box.w,
-    h: 0.08 * key.fs,
-  };
-  dot = toward(dot, underline, spring(progress(t, at(3) + 0.22, 0.38)));
+  // Strike-through: stretch from the period across the claim, then pull back.
+  const { claim } = layout;
+  const strike = strikeAt(t);
+  const thickness = Math.max(3, 0.06 * claim.fs);
+  const lineWidth = claim.x + claim.w - period.x + period.w / 2;
+  // Through the middle of the lowercase letters, not on the baseline.
+  const strikeY = period.y + period.h / 2 - 0.3 * claim.fs;
+  dot = toward(dot, { x: period.x + (lineWidth - period.w) / 2, y: strikeY, w: lineWidth, h: thickness }, strike.grow);
+  dot = toward(dot, { x: period.x, y: period.y, w: period.w, h: period.h }, strike.retract);
 
-  // Design: pull back into a dot, become the frame's corner handle.
-  dot = toward(dot, { w: underline.h * 1.6, h: underline.h * 1.6 }, spring(progress(t, at(4), 0.3)));
-  const frame = frameAt(t, layout);
-  const handle = handleSize(layout);
-  dot = toward(
-    dot,
-    { x: frame.x, y: frame.y, w: handle, h: handle, round: 0.3 },
-    spring(progress(t, at(4) + 0.2, 0.4)),
-  );
+  // Cards: the lead card's status light.
+  const lead = leadIndex(layout);
+  const status = statusPoint(layout.cards[lead], cardAt(t, layout, lead));
+  const light = 0.07 * layout.cards[lead].w;
+  dot = toward(dot, { ...status, w: light, h: light, glow: 0.7 }, spring(progress(t, SCENES.cards, 0.6)));
 
-  // Code: stretch into a caret, follow the letters, blink on beat 9.
-  const { type } = layout;
-  const caretHeight = CAP_HEIGHT * 1.05 * type.fs;
-  const caret = {
-    x: typedEdge(t, layout) + 0.07 * type.fs,
-    y: type.end.y - caretHeight / 2,
-    w: Math.max(3, 0.07 * type.fs),
-    h: caretHeight,
-    round: 1,
-  };
-  dot = toward(dot, caret, spring(progress(t, at(7) + 0.32, 0.35)));
-  dot = { ...dot, h: dot.h * (1 - 0.75 * Math.sin(Math.PI * progress(t, at(9), 0.22))) };
-
-  // Motion: back to a dot at the curve's start, then ride it.
-  const curve = curveOf(layout);
-  dot = toward(dot, circle(curve.p0, layout.move.fs * 0.9), spring(progress(t, at(10), 0.32)));
-  if (t >= RIDE.start) {
-    dot = { ...dot, ...bezier(curve, rideAt(t)) };
+  // Stars: lead them into the monogram's period.
+  if (t >= COLLAPSE) {
+    const star = starAt(t, layout, 0);
+    dot = toward(dot, { ...star, w: light * 0.8, h: light * 0.8, glow: 1 }, spring(progress(t, COLLAPSE, 0.25)));
   }
-
-  // Payoff: the name's full stop, carried as the name settles.
-  const n = nameTransformAt(t, layout);
-  const nameStop = circle(throughName(fullStop(layout.name.end, layout.name.fs), n), layout.name.fs * n.scale);
-  dot = hop(dot, nameStop, t, WORDS.move.out, 0.42, 0.06 * layout.height);
-
-  // End card: the monogram's period.
-  const { mono } = layout;
-  const period = { x: mono.x + (398 / 414) * mono.w, y: mono.y + (154 / 170) * mono.h, w: 0, h: 0, round: 1 };
-  const periodSize = (32 / 170) * mono.h;
-  dot = hop(dot, { ...period, w: periodSize, h: periodSize }, t, at(14), 0.45, 0.12 * mono.h);
-
+  dot = toward(dot, { ...periodOf(heroAt(t, layout).box), glow: 0.8 }, spring(progress(t, at(15), 0.35)));
   return dot;
 };
 
-/* ---------- Camera ---------- */
+/* ---------- Light and exit ---------- */
 
-const SCENES = [0, at(4), at(7), at(10), at(12), EXIT_AT, EXIT_AT + EXIT_SECONDS] as const;
-const PUSH_PER_SCENE = 0.035;
+/** Strength of the warm light pool behind everything, 0..1. */
+export const poolAt = (t: number): number =>
+  spring(progress(t, 0, 0.8)) * mix(1, 0.6, progress(t, SCENES.cards, 1)) * mix(1, 1.5, progress(t, at(15), 0.6));
 
-/** Scale: pushes in a little every scene (never sits still), with one kick on the payoff beat. */
-export const cameraScaleAt = (t: number): number => {
-  const index = Math.max(
-    0,
-    SCENES.findLastIndex((start) => t >= start),
-  );
-  const scene = Math.min(index, SCENES.length - 2);
-  const p = progress(t, SCENES[scene], SCENES[scene + 1] - SCENES[scene]);
-  const since = t - at(12);
-  const kick = since <= 0 ? 0 : (1 - Math.exp(-since * 25)) * Math.exp(-since * 4);
-  return 1 + PUSH_PER_SCENE * (scene + expoOut(p)) + 0.05 * kick;
-};
-
-/** The wipe that reveals the page: share of the screen uncovered from the bottom. */
+/** Share of the screen uncovered from the bottom by the exit wipe. */
 export const exitAt = (t: number, start: number): number => expoInOut(progress(t, start, EXIT_SECONDS));

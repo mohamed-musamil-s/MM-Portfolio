@@ -34,7 +34,7 @@ Two guards, both in the repository:
 ## 3. One-time Vercel setup (dashboard)
 
 1. **Import** the GitHub repository as a new project (framework: Next.js; build and install commands: defaults).
-2. **Settings → Environments → Production → Branch Tracking**: set the production branch to **`go-live`**.
+2. **Settings → Environments → Production → Branch Tracking**: set the production branch to **`go-live`**. Vercel starts with the GitHub default branch (here `develop`); until this is changed, `develop` is treated as production and the build guard skips it, so nothing deploys.
 3. **Settings → Environment Variables**: add the variables from section 4 twice:
    - **Production**: production values.
    - **Preview**: development/preview values. Optionally scope them to the `develop` branch only.

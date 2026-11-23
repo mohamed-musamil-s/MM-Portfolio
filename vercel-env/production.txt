@@ -1,0 +1,6 @@
+MONGODB_URI=mongodb+srv://mohamedmusamil_db_user:mmadmin%40123@mm-cluster.e4qmder.mongodb.net/?retryWrites=true&w=majority&appName=mm-release-studio
+MONGODB_DB=mm-portfolio-prod
+ADMIN_EMAIL=mohamed.musamil@outlook.com
+ADMIN_ACCESS_CODE=YEKpw4EfUSAXtMar46p7
+SESSION_SECRET=qw33jRraO+eYsFSnocHPG/9cIT1BaDF+p6a4v6uMETCWYAOUul6FJ9qhJIe0ZY1e
+LOG_LEVEL=info

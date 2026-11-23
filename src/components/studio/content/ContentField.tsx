@@ -105,7 +105,7 @@ const FieldTile = ({
         data-invalid={error ? "" : undefined}
         className={cn(
           "group/field relative overflow-hidden rounded-xl border border-transparent bg-muted/60 px-3.5 pt-2.5 pb-2.5 transition-[background-color,border-color,box-shadow] duration-200",
-          "hover:bg-muted",
+          "hover:not-focus-within:bg-muted",
           "focus-within:border-primary/45 focus-within:bg-card focus-within:ring-4 focus-within:ring-primary/10",
           "data-invalid:border-destructive/50 data-invalid:bg-destructive/[0.04] data-invalid:focus-within:ring-destructive/10",
           inline && "flex items-center gap-3 py-3",
@@ -215,7 +215,7 @@ const LeafField = ({ name, path, value, saved, onChange, errors, copy }: FieldPr
           rows={3}
           aria-invalid={invalid}
           onChange={(event) => onChange(path, event.target.value)}
-          className={cn(BARE, "field-sizing-content min-h-16 resize-none leading-relaxed")}
+          className={cn(BARE, "field-sizing-content min-h-11 resize-none leading-relaxed")}
         />
       ) : (
         <input

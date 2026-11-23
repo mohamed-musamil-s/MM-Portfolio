@@ -304,6 +304,10 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] Studio shell is a fixed 100vh frame; only the page area scrolls.
 - [x] Content Forge from 1280px: three full-height columns that scroll independently; the preview stage fills its column. New default view "Fit to panel" fills the stage; Desktop and Mobile are centred and scaled to fit (`editor.previewPanel.fit`, DB version 14).
 
+## 2026-11-23: Content Forge on phones
+
+- [x] Screens as a sideways row of chips; no hide toggle on mobile; sticky Edit / Preview switch below 1280px; Fit preview shows the phone layout on phones (`editor.previewPanel.editTab` / `previewTab`, DB version 15). Verified at 375×812 (no sideways scroll) and 1440×900 (unchanged).
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

@@ -70,6 +70,8 @@ export const studioShellContentSchema = z.object({
     tooShort: text(64),
     previewPanel: z.object({
       title: text(32),
+      editTab: text(16),
+      previewTab: text(16),
       fit: text(24),
       desktop: text(24),
       mobile: text(24),

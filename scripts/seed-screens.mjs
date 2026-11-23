@@ -198,6 +198,8 @@ const SCREENS = {
       tooShort: "Too short: use at least {min} characters.",
       previewPanel: {
         title: "Live preview",
+        editTab: "Edit",
+        previewTab: "Preview",
         fit: "Fit to panel",
         desktop: "Desktop",
         mobile: "Mobile",

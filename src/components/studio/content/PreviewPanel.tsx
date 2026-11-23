@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowUpRight, Crosshair, LoaderCircle, Maximize, Monitor, Smartphone, TriangleAlert } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { StudioShellContent } from "@/lib/shared/content/studio-shell-schema";
 import {
   fromPreviewSchema,
@@ -26,7 +26,20 @@ const DEVICES = {
 } as const;
 type Device = keyof typeof DEVICES;
 const DEVICE_KEYS: Device[] = ["fit", "desktop", "mobile"];
-const FIT_WIDTH = 900;
+/** Fit renders a 900px page, or the phone layout when the studio itself is open on a phone. */
+const FIT_WIDTH = { wide: 900, phone: 390 } as const;
+const PHONE_QUERY = "(max-width: 767px)";
+const subscribePhone = (onChange: () => void) => {
+  const query = window.matchMedia(PHONE_QUERY);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+};
+const useIsPhone = () =>
+  useSyncExternalStore(
+    subscribePhone,
+    () => window.matchMedia(PHONE_QUERY).matches,
+    () => false,
+  );
 
 const PAGE_ROUTES: Record<PreviewableScreen, string> = {
   maintenance: ROUTES.maintenance,
@@ -55,11 +68,11 @@ const useSize = () => {
 };
 
 /** Virtual viewport, scale and position of the frame inside a box. */
-const layoutFrame = (device: Device, box: { width: number; height: number }) => {
+const layoutFrame = (device: Device, box: { width: number; height: number }, phone: boolean) => {
   const width = Math.max(box.width, 1);
   const height = Math.max(box.height, 1);
   if (device === "fit") {
-    const scale = Math.min(1, width / FIT_WIDTH);
+    const scale = Math.min(1, width / (phone ? FIT_WIDTH.phone : FIT_WIDTH.wide));
     return { vw: width / scale, vh: height / scale, scale, left: 0, top: 0 };
   }
   const { width: vw, height: vh } = DEVICES[device];
@@ -92,7 +105,8 @@ export const PreviewPanel = ({ copy, targets, drafts, focusTexts, focusLabel }: 
   const [ready, setReady] = useState(false);
   const [status, setStatus] = useState({ valid: true, matches: 0 });
 
-  const { vw, vh, scale, left, top } = layoutFrame(device, box);
+  const phone = useIsPhone();
+  const { vw, vh, scale, left, top } = layoutFrame(device, box, phone);
 
   // Replies from the frame (same origin, known shape only).
   useEffect(() => {
@@ -222,7 +236,7 @@ export const PreviewPanel = ({ copy, targets, drafts, focusTexts, focusLabel }: 
       */}
       <div
         ref={boxRef}
-        className="relative h-[70svh] w-full shrink-0 overflow-hidden rounded-xl bg-muted/60 bg-[radial-gradient(var(--studio-border)_1px,transparent_1px)] bg-size-[14px_14px] xl:h-auto xl:min-h-0 xl:flex-1"
+        className="relative h-[62svh] min-h-96 w-full shrink-0 overflow-hidden rounded-xl bg-muted/60 bg-[radial-gradient(var(--studio-border)_1px,transparent_1px)] bg-size-[14px_14px] xl:h-auto xl:min-h-0 xl:flex-1"
       >
         <div
           className={cn(

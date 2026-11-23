@@ -1,6 +1,6 @@
 # Module: Content Forge (Content Management), Business Spec
 
-Version 1.4, 2026-11-23 (full-height columns, fit preview). Route `/studio/content`, inside the studio shell. Design system: [ADMIN_STYLE.md](../ADMIN_STYLE.md).
+Version 1.5, 2026-11-23 (mobile: screen chips, Edit / Preview switch). Route `/studio/content`, inside the studio shell. Design system: [ADMIN_STYLE.md](../ADMIN_STYLE.md).
 
 Content Forge edits the text of the **public portfolio site**. Every string, date and setting on those pages lives in MongoDB (`site_screens`), and this page is where the owner changes it without touching code.
 
@@ -22,7 +22,7 @@ New portfolio sections are added to `PORTFOLIO_SCREENS` once their schema exists
 | **Centre: fields** | Screen header (name, `Version n`, `Saved {time} by {who}`, field search), section chips, one card per section, the save bar (`Discard`, `Save`, `Ctrl/⌘ S`). |
 | **Right: live preview** | The real public page in a scaled frame, showing the current drafts (unsaved edits included) as you type. The stage fills the column top to bottom. Views: **Fit to panel** (default: the page renders 900px wide and as tall as the panel, so it fills the stage), **Desktop** (1440×900) and **Mobile** (390×844), centred and scaled to fit; plus `Open page ↗`. For **Shared content**, `Shown on` chips switch between the pages that use it. |
 
-From 1280px wide the page is a **100vh workspace**: the three columns fill the viewport under the topbar and each scrolls on its own (the save bar stays at the bottom of the fields column). Between 1024 and 1280 the preview moves under the fields (70vh tall) and the page scrolls; below 1024 everything stacks.
+From 1280px wide the page is a **100vh workspace**: the three columns fill the viewport under the topbar and each scrolls on its own (the save bar stays at the bottom of the fields column). Below 1280 the fields and the preview share one column, with a sticky **Edit / Preview** switch on top (the Edit tab shows an amber dot when there are unsaved edits). Below 1024 (phones) the screens become a compact, sideways-scrolling row of chips (icon + name), the hide toggle is not shown (hiding is desktop-only), and **Fit to panel** renders the phone layout of the page.
 
 ### 2b. Preview and impact
 

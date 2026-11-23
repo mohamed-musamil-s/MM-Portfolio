@@ -2,11 +2,13 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import {
+  Eye,
   FileQuestion,
   LoaderCircle,
   PanelLeftClose,
   PanelLeftOpen,
   PanelsTopLeft,
+  PencilLine,
   RotateCcw,
   Search,
   Share2,
@@ -106,6 +108,8 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
   const [saving, setSaving] = useState(false);
   const [conflict, setConflict] = useState(false);
   const [screensOpen, setScreensOpen] = useState(true);
+  /** Below xl the fields and the preview share one column: this picks which one shows. */
+  const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
   /** The field being edited, for the preview outline. */
   const [focusPath, setFocusPath] = useState<Path | null>(null);
 
@@ -229,8 +233,11 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
         )}
       >
         {/* Left: screens (collapsible) */}
-        <aside className="flex flex-col gap-4 lg:sticky lg:top-0 xl:static xl:min-h-0 xl:[scrollbar-width:thin] xl:overflow-y-auto">
-          {screensOpen ? <SiteModeCard copy={copy} failed={copy.failed} initialMaintenance={maintenance} /> : null}
+        <aside className="flex min-w-0 flex-col gap-3 lg:sticky lg:top-0 lg:row-span-3 lg:gap-4 xl:static xl:row-span-1 xl:min-h-0 xl:[scrollbar-width:thin] xl:overflow-y-auto">
+          {/* Hidden only with the desktop collapse; phones always show it. */}
+          <div className={cn(!screensOpen && "lg:hidden")}>
+            <SiteModeCard copy={copy} failed={copy.failed} initialMaintenance={maintenance} />
+          </div>
           <ScreensList
             copy={copy}
             screens={screens}
@@ -242,130 +249,175 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
           />
         </aside>
 
+        {/* Below xl: switch between the fields and the preview (both show side by side from xl). */}
+        {targets.length > 0 ? (
+          <div className="sticky top-0 z-20 -mx-4 bg-background/85 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:col-start-2 lg:mx-0 lg:px-0 xl:hidden">
+            <div
+              role="tablist"
+              aria-label={copy.previewPanel.title}
+              className="grid grid-cols-2 rounded-xl bg-muted p-1"
+            >
+              {(["edit", "preview"] as const).map((view) => (
+                <button
+                  key={view}
+                  type="button"
+                  role="tab"
+                  aria-selected={mobileView === view}
+                  onClick={() => setMobileView(view)}
+                  className={cn(
+                    "flex h-9 items-center justify-center gap-2 rounded-lg text-sm font-medium transition-colors",
+                    mobileView === view
+                      ? "bg-card text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {view === "edit" ? (
+                    <PencilLine aria-hidden className="size-4" />
+                  ) : (
+                    <Eye aria-hidden className="size-4" />
+                  )}
+                  {view === "edit" ? copy.previewPanel.editTab : copy.previewPanel.previewTab}
+                  {view === "edit" && isDirty ? <span className="size-1.5 rounded-full bg-warning" /> : null}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         {/* Centre: the screen's fields */}
         {screen && draft ? (
           <section
             key={screen.slug}
             onFocusCapture={onFieldFocus}
-            className="@container flex min-w-0 animate-in flex-col gap-4 duration-300 fade-in slide-in-from-bottom-2 motion-reduce:animate-none xl:-mx-2 xl:min-h-0 xl:[scrollbar-width:thin] xl:overflow-y-auto xl:px-2 xl:pb-2"
-          >
-            <ScreenHeader screen={screen} copy={copy} query={query} onQuery={setQuery} />
-
-            {conflict ? (
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-warning/40 bg-warning/10 px-4 py-3 text-sm">
-                <span>{copy.conflict}</span>
-                <Button size="sm" variant="outline" onClick={() => window.location.reload()}>
-                  <RotateCcw aria-hidden />
-                  {copy.reload}
-                </Button>
-              </div>
-            ) : null}
-
-            {sections.length > 1 && !query ? (
-              <nav aria-label={copy.screensTitle} className="flex flex-wrap gap-1.5">
-                {sections.map(([key]) => (
-                  <a
-                    key={key}
-                    href={`#section-${key}`}
-                    className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
-                  >
-                    {humanize(key)}
-                  </a>
-                ))}
-              </nav>
-            ) : null}
-
-            {sections.length === 0 ? (
-              <p className="rounded-2xl border border-dashed border-border bg-card px-6 py-12 text-center text-sm text-muted-foreground">
-                {copy.noFields}
-              </p>
-            ) : (
-              sections.map(([key, value]) => (
-                <section
-                  key={key}
-                  id={`section-${key}`}
-                  className="scroll-mt-4 rounded-2xl border border-border/80 bg-card p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04),0_8px_24px_-16px_rgb(15_23_42/0.12)] sm:p-5"
-                >
-                  <header className="mb-4 flex items-center gap-3">
-                    <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-linear-to-br from-primary/12 to-aurora-indigo/12 text-sm font-semibold text-primary">
-                      {humanize(key).charAt(0)}
-                    </span>
-                    <span className="flex min-w-0 flex-1 flex-col leading-tight">
-                      <h3 className="truncate text-sm font-semibold">{humanize(key)}</h3>
-                      <span className="text-xs text-muted-foreground">
-                        {countFields(value) === 1
-                          ? copy.fieldCountOne
-                          : fill(copy.fieldCount, { n: countFields(value) })}
-                      </span>
-                    </span>
-                    {same(value, screen.content[key]) ? null : (
-                      <span className="flex items-center gap-1.5 rounded-full bg-warning/12 px-2 py-0.5 text-[0.6875rem] font-semibold text-warning">
-                        <span className="size-1.5 rounded-full bg-warning" />
-                        {copy.edited}
-                      </span>
-                    )}
-                  </header>
-                  <ContentField
-                    name={key}
-                    path={[key]}
-                    value={value}
-                    saved={screen.content[key]}
-                    onChange={update}
-                    errors={errors}
-                    query={query}
-                    copy={copy}
-                  />
-                </section>
-              ))
+            className={cn(
+              targets.length > 0 && mobileView === "preview" && "hidden xl:flex",
+              "min-w-0 lg:col-start-2 xl:col-start-auto xl:flex xl:min-h-0 xl:flex-col",
             )}
+          >
+            <div className="@container flex min-w-0 animate-in flex-col gap-4 duration-300 fade-in slide-in-from-bottom-2 motion-reduce:animate-none xl:-mx-2 xl:min-h-0 xl:flex-1 xl:[scrollbar-width:thin] xl:overflow-y-auto xl:px-2 xl:pb-2">
+              <ScreenHeader screen={screen} copy={copy} query={query} onQuery={setQuery} />
 
-            <AnimatePresence>
-              {isDirty ? (
-                <motion.div
-                  className="sticky bottom-4 z-10 flex items-center justify-between gap-3 rounded-2xl border border-border bg-foreground px-4 py-3 text-card shadow-2xl"
-                  initial={{ y: 24, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: 24, opacity: 0 }}
-                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                >
-                  <span className="flex items-center gap-2 text-sm font-medium">
-                    <span className="size-2 rounded-full bg-warning" />
-                    {copy.unsaved}
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={discard}
-                      disabled={saving}
-                      className="text-card hover:bg-card/10 hover:text-card"
-                    >
-                      {copy.discard}
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => void save()}
-                      disabled={saving}
-                      className="bg-card text-foreground hover:bg-card/90"
-                    >
-                      {saving ? <LoaderCircle aria-hidden className="animate-spin" /> : null}
-                      {saving ? copy.saving : copy.save}
-                      {saving ? null : (
-                        <kbd className="ml-1 rounded border border-border px-1 text-[0.625rem] text-muted-foreground">
-                          ⌘S
-                        </kbd>
-                      )}
-                    </Button>
-                  </span>
-                </motion.div>
+              {conflict ? (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-warning/40 bg-warning/10 px-4 py-3 text-sm">
+                  <span>{copy.conflict}</span>
+                  <Button size="sm" variant="outline" onClick={() => window.location.reload()}>
+                    <RotateCcw aria-hidden />
+                    {copy.reload}
+                  </Button>
+                </div>
               ) : null}
-            </AnimatePresence>
+
+              {sections.length > 1 && !query ? (
+                <nav aria-label={copy.screensTitle} className="flex flex-wrap gap-1.5">
+                  {sections.map(([key]) => (
+                    <a
+                      key={key}
+                      href={`#section-${key}`}
+                      className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                    >
+                      {humanize(key)}
+                    </a>
+                  ))}
+                </nav>
+              ) : null}
+
+              {sections.length === 0 ? (
+                <p className="rounded-2xl border border-dashed border-border bg-card px-6 py-12 text-center text-sm text-muted-foreground">
+                  {copy.noFields}
+                </p>
+              ) : (
+                sections.map(([key, value]) => (
+                  <section
+                    key={key}
+                    id={`section-${key}`}
+                    className="scroll-mt-4 rounded-2xl border border-border/80 bg-card p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04),0_8px_24px_-16px_rgb(15_23_42/0.12)] sm:p-5"
+                  >
+                    <header className="mb-4 flex items-center gap-3">
+                      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-linear-to-br from-primary/12 to-aurora-indigo/12 text-sm font-semibold text-primary">
+                        {humanize(key).charAt(0)}
+                      </span>
+                      <span className="flex min-w-0 flex-1 flex-col leading-tight">
+                        <h3 className="truncate text-sm font-semibold">{humanize(key)}</h3>
+                        <span className="text-xs text-muted-foreground">
+                          {countFields(value) === 1
+                            ? copy.fieldCountOne
+                            : fill(copy.fieldCount, { n: countFields(value) })}
+                        </span>
+                      </span>
+                      {same(value, screen.content[key]) ? null : (
+                        <span className="flex items-center gap-1.5 rounded-full bg-warning/12 px-2 py-0.5 text-[0.6875rem] font-semibold text-warning">
+                          <span className="size-1.5 rounded-full bg-warning" />
+                          {copy.edited}
+                        </span>
+                      )}
+                    </header>
+                    <ContentField
+                      name={key}
+                      path={[key]}
+                      value={value}
+                      saved={screen.content[key]}
+                      onChange={update}
+                      errors={errors}
+                      query={query}
+                      copy={copy}
+                    />
+                  </section>
+                ))
+              )}
+
+              <AnimatePresence>
+                {isDirty ? (
+                  <motion.div
+                    className="sticky bottom-4 z-10 flex items-center justify-between gap-3 rounded-2xl border border-border bg-foreground px-4 py-3 text-card shadow-2xl"
+                    initial={{ y: 24, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 24, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                  >
+                    <span className="flex items-center gap-2 text-sm font-medium">
+                      <span className="size-2 rounded-full bg-warning" />
+                      {copy.unsaved}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={discard}
+                        disabled={saving}
+                        className="text-card hover:bg-card/10 hover:text-card"
+                      >
+                        {copy.discard}
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => void save()}
+                        disabled={saving}
+                        className="bg-card text-foreground hover:bg-card/90"
+                      >
+                        {saving ? <LoaderCircle aria-hidden className="animate-spin" /> : null}
+                        {saving ? copy.saving : copy.save}
+                        {saving ? null : (
+                          <kbd className="ml-1 rounded border border-border px-1 text-[0.625rem] text-muted-foreground">
+                            ⌘S
+                          </kbd>
+                        )}
+                      </Button>
+                    </span>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </div>
           </section>
         ) : null}
 
         {/* Right: live preview of the page(s) this screen feeds */}
         {targets.length > 0 ? (
-          <aside className="min-w-0 lg:col-start-2 xl:col-start-auto xl:min-h-0">
+          <aside
+            className={cn(
+              "min-w-0 lg:col-start-2 xl:col-start-auto xl:min-h-0",
+              mobileView === "edit" && "hidden xl:block",
+            )}
+          >
             <PreviewPanel
               key={targets.join()}
               copy={copy}
@@ -417,8 +469,9 @@ const ScreensList = ({
   const toggleLabel = open ? copy.previewPanel.hideScreens : copy.previewPanel.showScreens;
   const ToggleIcon = open ? PanelLeftClose : PanelLeftOpen;
   return (
-    <section className="rounded-2xl border border-border bg-card p-2 shadow-xs">
-      <div className={cn("flex items-center gap-2 pb-1", open ? "px-2 pt-1" : "justify-center")}>
+    <section className="rounded-2xl border border-border bg-card p-1.5 shadow-xs lg:p-2">
+      {/* Title and the hide toggle are desktop-only; phones get a scrolling row of screens. */}
+      <div className={cn("hidden items-center gap-2 pb-1 lg:flex", open ? "px-2 pt-1" : "justify-center")}>
         {open ? (
           <h2 className="flex-1 text-[0.625rem] font-semibold tracking-[0.12em] text-muted-foreground/70 uppercase">
             {copy.screensTitle}
@@ -439,7 +492,7 @@ const ScreensList = ({
           <TooltipContent side="right">{toggleLabel}</TooltipContent>
         </Tooltip>
       </div>
-      <ul className="flex flex-col gap-1">
+      <ul className="flex [scrollbar-width:none] gap-1.5 overflow-x-auto lg:flex-col lg:gap-1 lg:overflow-visible">
         {screens.map((item) => {
           const Icon = SCREEN_ICONS[item.slug] ?? PanelsTopLeft;
           const meta = copy.screens[item.slug];
@@ -452,14 +505,14 @@ const ScreensList = ({
               aria-current={active ? "true" : undefined}
               aria-label={open ? undefined : name}
               className={cn(
-                "relative flex w-full items-start gap-3 rounded-xl text-left transition-colors duration-200",
-                open ? "p-2.5" : "justify-center p-1.5",
+                "relative flex items-center gap-2.5 rounded-xl py-1.5 pr-3 pl-1.5 text-left whitespace-nowrap transition-colors duration-200 lg:w-full lg:whitespace-normal",
+                open ? "lg:items-start lg:gap-3 lg:p-2.5" : "lg:justify-center lg:p-1.5",
                 active ? "bg-primary/[0.07]" : "hover:bg-muted/70",
               )}
             >
               <span
                 className={cn(
-                  "grid size-9 shrink-0 place-items-center rounded-lg transition-colors",
+                  "grid size-8 shrink-0 place-items-center rounded-lg transition-colors lg:size-9",
                   active
                     ? "bg-linear-to-br from-primary to-aurora-indigo text-primary-foreground shadow-sm shadow-primary/30"
                     : "bg-muted text-muted-foreground",
@@ -467,21 +520,22 @@ const ScreensList = ({
               >
                 <Icon aria-hidden className="size-4" />
               </span>
-              {open ? (
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-                    <span className="truncate">{name}</span>
-                    {dirty.has(item.slug) ? <span className="size-1.5 shrink-0 rounded-full bg-warning" /> : null}
-                  </span>
-                  <span className="line-clamp-2 text-xs leading-snug text-muted-foreground">{meta?.description}</span>
+              <span className={cn("flex min-w-0 flex-col lg:flex-1", !open && "lg:hidden")}>
+                <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <span className="truncate">{name}</span>
+                  {dirty.has(item.slug) ? <span className="size-1.5 shrink-0 rounded-full bg-warning" /> : null}
                 </span>
-              ) : dirty.has(item.slug) ? (
-                <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-warning ring-2 ring-card" />
+                <span className="hidden text-xs leading-snug text-muted-foreground lg:line-clamp-2">
+                  {meta?.description}
+                </span>
+              </span>
+              {!open && dirty.has(item.slug) ? (
+                <span className="absolute top-1.5 right-1.5 hidden size-2 rounded-full bg-warning ring-2 ring-card lg:block" />
               ) : null}
             </button>
           );
           return (
-            <li key={item.slug}>
+            <li key={item.slug} className="shrink-0 lg:shrink">
               {open ? (
                 button
               ) : (

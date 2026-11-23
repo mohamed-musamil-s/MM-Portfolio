@@ -25,13 +25,16 @@ export type LiveCheck = {
  * admin switches maintenance off, it sends the visitor to the site; while it
  * stays on, it records the check time. A manual `checkNow` resets the timer.
  */
-export const useLiveCheck = (intervalSeconds: number): LiveCheck => {
+export const useLiveCheck = (intervalSeconds: number, { enabled = true }: { enabled?: boolean } = {}): LiveCheck => {
   const [lastCheckedAt, setLastCheckedAt] = useState<number | null>(null);
   const [checking, setChecking] = useState(false);
   const now = useSecondClock();
   const checkRef = useRef<() => Promise<void>>(() => Promise.resolve());
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -67,7 +70,7 @@ export const useLiveCheck = (intervalSeconds: number): LiveCheck => {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [intervalSeconds]);
+  }, [enabled, intervalSeconds]);
 
   const checkNow = useCallback(() => checkRef.current(), []);
   const elapsedSeconds = lastCheckedAt !== null && now !== null ? Math.max(0, (now - lastCheckedAt) / 1000) : 0;

@@ -4,6 +4,8 @@ export const ROUTES = {
   home: "/",
   maintenance: "/maintenance",
   notFound: "/404",
+  /** Studio-only live preview of a portfolio screen: `${preview}/<slug>`. */
+  preview: "/preview",
   studio: {
     root: "/studio",
     login: "/studio/login",

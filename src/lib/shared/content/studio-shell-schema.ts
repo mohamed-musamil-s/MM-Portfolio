@@ -68,7 +68,30 @@ export const studioShellContentSchema = z.object({
     tooLong: text(64),
     /** Placeholder: {min}. */
     tooShort: text(64),
-    siteMode: z.object({ title: text(32), maintenance: text(120), live: text(120), toggle: text(32), updated: text(64) }),
+    previewPanel: z.object({
+      title: text(32),
+      fit: text(24),
+      desktop: text(24),
+      mobile: text(24),
+      openPage: text(24),
+      hint: text(140),
+      invalid: text(120),
+      idle: text(120),
+      hitsOne: text(64),
+      /** Placeholder: {n}. */
+      hits: text(64),
+      none: text(140),
+      showOn: text(32),
+      hideScreens: text(32),
+      showScreens: text(32),
+    }),
+    siteMode: z.object({
+      title: text(32),
+      maintenance: text(120),
+      live: text(120),
+      toggle: text(32),
+      updated: text(64),
+    }),
     screens: z.record(z.string(), z.object({ name: text(40), description: text(140) })),
   }),
   actions: z.object({

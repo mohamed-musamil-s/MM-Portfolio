@@ -31,14 +31,15 @@ export const StudioShell = ({ content, initialCollapsed, maintenance, children }
     <TooltipProvider delayDuration={200}>
       <SidebarStateProvider initialCollapsed={initialCollapsed}>
         <ShellBackdrop />
-        <div className="flex min-h-svh">
+        {/* A fixed 100vh frame: sidebar and topbar stay put, only the page area scrolls. */}
+        <div className="flex h-svh overflow-hidden">
           <StudioSidebar content={content} maintenance={maintenance} />
-          <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
             <StudioTopbar content={content} />
-            <main className="flex-1 px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
+            <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
               <div
                 key={pathname}
-                className="animate-in duration-500 ease-out fade-in slide-in-from-bottom-3 motion-reduce:animate-none"
+                className="flex min-h-0 flex-1 animate-in flex-col duration-500 ease-out fade-in slide-in-from-bottom-3 motion-reduce:animate-none"
               >
                 {children}
               </div>

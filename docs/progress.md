@@ -294,6 +294,16 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] Checked all portfolio content for repeated values: only the footer note ("© 2026 ALL RIGHTS RESERVED.") was stored twice (maintenance and 404). It now lives once in a new `shared` record (`site_screens/shared`, `shared-schema.ts`); both pages read it. Removed `footer` from the maintenance and 404 records (DB versions 18 and 3).
 - [x] Content Forge lists "Shared content" first. Verified: one save changed the footer on /maintenance and /404; value restored.
 
+## 2026-11-23: Content Forge in three columns with live preview
+
+- [x] Left: screens list with a hide toggle (icon strip with tooltips). Centre: fields. Right: the real page in a scaled frame showing unsaved drafts live, desktop/mobile switch, and an outline on every place the focused field's text appears ("Shown in n places").
+- [x] `/preview/<slug>`: signed-in only, same-origin framing only (`X-Frame-Options: SAMEORIGIN` there, `DENY` elsewhere); screens run in preview mode (no 404 redirect, no status polling). Copy in `editor.previewPanel` (DB version 13).
+
+## 2026-11-23: 100vh admin frame, full-height preview
+
+- [x] Studio shell is a fixed 100vh frame; only the page area scrolls.
+- [x] Content Forge from 1280px: three full-height columns that scroll independently; the preview stage fills its column. New default view "Fit to panel" fills the stage; Desktop and Mobile are centred and scaled to fit (`editor.previewPanel.fit`, DB version 14).
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

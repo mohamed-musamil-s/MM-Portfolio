@@ -1,6 +1,6 @@
 # Module: Content Forge (Content Management), Business Spec
 
-Version 1.2, 2026-11-23 (shared content). Route `/studio/content`, inside the studio shell. Design system: [ADMIN_STYLE.md](../ADMIN_STYLE.md).
+Version 1.4, 2026-11-23 (full-height columns, fit preview). Route `/studio/content`, inside the studio shell. Design system: [ADMIN_STYLE.md](../ADMIN_STYLE.md).
 
 Content Forge edits the text of the **public portfolio site**. Every string, date and setting on those pages lives in MongoDB (`site_screens`), and this page is where the owner changes it without touching code.
 
@@ -14,15 +14,21 @@ Content Forge edits the text of the **public portfolio site**. Every string, dat
 
 New portfolio sections are added to `PORTFOLIO_SCREENS` once their schema exists; the editor builds their form automatically.
 
-## 2. Layout
+## 2. Layout: three columns
 
-| Area | Content |
+| Column | Content |
 | --- | --- |
-| Left column | **Site mode** card (switch between Live and Maintenance; calls `PUT /api/studio/settings/maintenance`), then the screen list: icon, name, one-line description, an amber dot when the screen has unsaved edits |
-| Screen header | Name, `Version n`, `Saved {time} by {who}`, a field search, and `Preview ↗` (opens the public page in a new tab) |
-| Section chips | One chip per top-level section; clicking scrolls to it |
-| Section cards | One card per section with its fields |
-| Save bar | Slides up from the bottom when there are unsaved edits: `Unsaved changes`, `Discard`, `Save` (also `Ctrl/⌘ S`) |
+| **Left: screens** | Site mode card (Live / Maintenance switch), then the screen list: icon, name, one-line description, amber dot for unsaved edits. A toggle hides the column down to an icon strip (names in tooltips, dots stay), like the side navigation. |
+| **Centre: fields** | Screen header (name, `Version n`, `Saved {time} by {who}`, field search), section chips, one card per section, the save bar (`Discard`, `Save`, `Ctrl/⌘ S`). |
+| **Right: live preview** | The real public page in a scaled frame, showing the current drafts (unsaved edits included) as you type. The stage fills the column top to bottom. Views: **Fit to panel** (default: the page renders 900px wide and as tall as the panel, so it fills the stage), **Desktop** (1440×900) and **Mobile** (390×844), centred and scaled to fit; plus `Open page ↗`. For **Shared content**, `Shown on` chips switch between the pages that use it. |
+
+From 1280px wide the page is a **100vh workspace**: the three columns fill the viewport under the topbar and each scrolls on its own (the save bar stays at the bottom of the fields column). Between 1024 and 1280 the preview moves under the fields (70vh tall) and the page scrolls; below 1024 everything stacks.
+
+### 2b. Preview and impact
+
+- The frame loads `/preview/<slug>` (signed-in only, framable by the same origin only). It renders the real screen component in **preview mode**: the 404 countdown never redirects and the maintenance page never polls `/api/status`.
+- The editor sends drafts to the frame with `postMessage` (shape in `src/lib/shared/content/preview-protocol.ts`; both sides check origin and shape). The frame validates the draft with the screen's schema. If it doesn't pass (for example an empty required field), the last valid version stays and the panel says `Fix the highlighted fields to update the preview.`
+- **Impact:** clicking into a field outlines every place its text appears on the page (blue outline) and the panel says `Status › Kicker: Shown in 1 place on this page`. Text that never appears on the page (browser tab title, search description, screen-reader text) says so instead. Dates are matched as the page prints them.
 
 ## 3. Fields
 
@@ -64,6 +70,8 @@ All copy is in `site_screens/studio-shell` under `editor` (schema `studio-shell-
 | Editor | `src/components/studio/content/ContentEditor.tsx` |
 | Field renderer | `ContentField.tsx` (recursive) |
 | Site mode | `SiteModeCard.tsx` |
+| Live preview panel | `PreviewPanel.tsx` |
+| Preview page | `src/app/(public)/preview/[slug]/page.tsx`, `src/components/public/LivePreview.tsx`, `preview-mode.tsx` |
 | Helpers | `content-paths.ts` (labels, paths, immutable set, dates, search) |
 
 ## 7. Acceptance criteria

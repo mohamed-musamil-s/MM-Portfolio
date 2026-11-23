@@ -87,3 +87,19 @@ export const fill = (template: string, values: Record<string, string | number>) 
 
 /** Deep equality for plain JSON values. */
 export const same = (a: JsonValue | undefined, b: JsonValue | undefined) => JSON.stringify(a) === JSON.stringify(b);
+
+/** Inverse of `pathKey` (numeric segments become list indexes). */
+export const parsePathKey = (key: string): Path =>
+  key.split(".").map((segment) => (/^\d+$/.test(segment) ? Number(segment) : segment));
+
+/** Value at `path`, or undefined when the path doesn't exist. */
+export const getAt = (value: JsonValue | undefined, path: Path): JsonValue | undefined =>
+  path.reduce<JsonValue | undefined>((current, segment) => {
+    if (Array.isArray(current) && typeof segment === "number") {
+      return current[segment];
+    }
+    if (isObject(current) && typeof segment === "string") {
+      return current[segment];
+    }
+    return undefined;
+  }, value);

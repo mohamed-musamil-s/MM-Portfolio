@@ -47,6 +47,7 @@ Version 1.4, 2026-11-23 (clean topbar with account menu). Screenshots: [desktop]
 | **Sign out** | Bottom row. Calls `POST /api/auth/logout`, shows "Signing out…", then replaces the route with `/studio/login`. |
 | **Topbar** | Sticky, 56px, `bg-card/80` with backdrop blur and a hairline. Left: menu button (mobile) and the breadcrumb `Studio / <current page>` with the page icon. Right: the owner chip. |
 | **Owner chip** | Avatar with the owner's initials (accent gradient), the owner's name (`text-sm font-medium`) and role (`text-xs` muted). Below `sm` only the avatar shows; the name stays as its accessible label. |
+| **Viewport** | The shell is a fixed **100vh** frame: the sidebar and topbar never scroll away; only the page area (`main`) scrolls. Pages can fill the height (Content Forge does). |
 | **Theme** | Light only (`data-studio-theme="light"` on the studio surface), matching the reference and the login. |
 | **Reduced motion** | Width, pill and content changes happen without animation; icons don't animate. |
 

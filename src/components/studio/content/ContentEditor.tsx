@@ -1,19 +1,38 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowUpRight, FileQuestion, LoaderCircle, PanelsTopLeft, RotateCcw, Search, Share2, Wrench } from "lucide-react";
+import {
+  FileQuestion,
+  LoaderCircle,
+  PanelLeftClose,
+  PanelLeftOpen,
+  PanelsTopLeft,
+  RotateCcw,
+  Search,
+  Share2,
+  Wrench,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore, type FocusEvent } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/studio/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/studio/ui/tooltip";
+import {
+  PREVIEWABLE_SCREENS,
+  isPreviewableScreen,
+  type PreviewableScreen,
+} from "@/lib/shared/content/preview-protocol";
+import { formatDateUtc } from "@/lib/shared/format";
 import type { StudioShellContent } from "@/lib/shared/content/studio-shell-schema";
 import { cn } from "@/lib/shared/cn";
-import { ROUTES } from "@/lib/shared/routes";
 import { ContentField, countFields } from "./ContentField";
 import {
   fill,
+  getAt,
   humanize,
+  isIsoDate,
   matchesQuery,
+  parsePathKey,
   pathKey,
   same,
   setAt,
@@ -21,6 +40,7 @@ import {
   type JsonValue,
   type Path,
 } from "./content-paths";
+import { PreviewPanel } from "./PreviewPanel";
 import { SiteModeCard } from "./SiteModeCard";
 
 export type EditableScreen = {
@@ -42,7 +62,6 @@ const SCREEN_ICONS: Record<string, typeof Wrench> = {
   maintenance: Wrench,
   "not-found": FileQuestion,
 };
-const PREVIEW: Record<string, string> = { maintenance: ROUTES.maintenance, "not-found": ROUTES.notFound };
 
 type Issue = { path: (string | number)[]; message: string; code?: string; minimum?: number; maximum?: number };
 type SaveResponse =
@@ -86,6 +105,9 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [conflict, setConflict] = useState(false);
+  const [screensOpen, setScreensOpen] = useState(true);
+  /** The field being edited, for the preview outline. */
+  const [focusPath, setFocusPath] = useState<Path | null>(null);
 
   const screen = screens.find((item) => item.slug === selected);
   const draft = drafts[selected];
@@ -174,74 +196,58 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
   }, [save]);
 
   const sections = draft ? Object.entries(draft).filter(([key, value]) => matchesQuery(key, value, query)) : [];
+  const targets: PreviewableScreen[] =
+    selected === "shared" ? [...PREVIEWABLE_SCREENS] : isPreviewableScreen(selected) ? [selected] : [];
+  const focusValue = focusPath ? getAt(draft, focusPath) : undefined;
+
+  const selectScreen = (slug: string) => {
+    setSelected(slug);
+    setErrors({});
+    setConflict(false);
+    setFocusPath(null);
+  };
+
+  const onFieldFocus = (event: FocusEvent<HTMLElement>) => {
+    const path = event.target instanceof HTMLElement ? event.target.dataset.path : undefined;
+    setFocusPath(path ? parsePathKey(path) : null);
+  };
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-      <header className="flex flex-col gap-1.5">
-        <h1 className="text-3xl font-semibold tracking-tight">{shell.modules.content.title}</h1>
+    <div className="mx-auto flex w-full max-w-[1680px] flex-col gap-5 xl:min-h-0 xl:flex-1">
+      <header className="flex shrink-0 flex-col gap-1">
+        <h1 className="text-2xl font-semibold tracking-tight">{shell.modules.content.title}</h1>
         <p className="text-sm text-muted-foreground">{shell.modules.content.description}</p>
       </header>
 
-      <div className="grid items-start gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-        {/* Left: site mode + screens */}
-        <aside className="flex flex-col gap-4 lg:sticky lg:top-24">
-          <SiteModeCard copy={copy} failed={copy.failed} initialMaintenance={maintenance} />
-          <section className="rounded-2xl border border-border bg-card p-2 shadow-xs">
-            <h2 className="px-2 pt-2 pb-1 text-[0.625rem] font-semibold tracking-[0.12em] text-muted-foreground/70 uppercase">
-              {copy.screensTitle}
-            </h2>
-            <ul className="flex flex-col gap-1">
-              {screens.map((item) => {
-                const Icon = SCREEN_ICONS[item.slug] ?? PanelsTopLeft;
-                const meta = copy.screens[item.slug];
-                const active = item.slug === selected;
-                return (
-                  <li key={item.slug}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelected(item.slug);
-                        setErrors({});
-                        setConflict(false);
-                      }}
-                      aria-current={active ? "true" : undefined}
-                      className={cn(
-                        "flex w-full items-start gap-3 rounded-xl p-2.5 text-left transition-colors duration-200",
-                        active ? "bg-primary/[0.07]" : "hover:bg-muted/70",
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "grid size-9 shrink-0 place-items-center rounded-lg transition-colors",
-                          active
-                            ? "bg-linear-to-br from-primary to-aurora-indigo text-primary-foreground shadow-sm shadow-primary/30"
-                            : "bg-muted text-muted-foreground",
-                        )}
-                      >
-                        <Icon aria-hidden className="size-4" />
-                      </span>
-                      <span className="flex min-w-0 flex-1 flex-col">
-                        <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-                          <span className="truncate">{meta?.name ?? humanize(item.slug)}</span>
-                          {dirty.has(item.slug) ? <span className="size-1.5 shrink-0 rounded-full bg-warning" /> : null}
-                        </span>
-                        <span className="line-clamp-2 text-xs leading-snug text-muted-foreground">
-                          {meta?.description}
-                        </span>
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
+      <div
+        className={cn(
+          // From xl the three columns fill the viewport and each scrolls on its own.
+          "grid items-start gap-5 xl:min-h-0 xl:flex-1 xl:grid-rows-[minmax(0,1fr)] xl:items-stretch",
+          screensOpen
+            ? "lg:grid-cols-[256px_minmax(0,1fr)] xl:grid-cols-[256px_minmax(0,1fr)_minmax(380px,0.95fr)]"
+            : "lg:grid-cols-[60px_minmax(0,1fr)] xl:grid-cols-[60px_minmax(0,1fr)_minmax(380px,1.1fr)]",
+        )}
+      >
+        {/* Left: screens (collapsible) */}
+        <aside className="flex flex-col gap-4 lg:sticky lg:top-0 xl:static xl:min-h-0 xl:[scrollbar-width:thin] xl:overflow-y-auto">
+          {screensOpen ? <SiteModeCard copy={copy} failed={copy.failed} initialMaintenance={maintenance} /> : null}
+          <ScreensList
+            copy={copy}
+            screens={screens}
+            selected={selected}
+            dirty={dirty}
+            open={screensOpen}
+            onToggle={() => setScreensOpen((open) => !open)}
+            onSelect={selectScreen}
+          />
         </aside>
 
-        {/* Right: editor */}
+        {/* Centre: the screen's fields */}
         {screen && draft ? (
           <section
             key={screen.slug}
-            className="flex min-w-0 animate-in flex-col gap-4 duration-300 fade-in slide-in-from-bottom-2 motion-reduce:animate-none"
+            onFocusCapture={onFieldFocus}
+            className="@container flex min-w-0 animate-in flex-col gap-4 duration-300 fade-in slide-in-from-bottom-2 motion-reduce:animate-none xl:-mx-2 xl:min-h-0 xl:[scrollbar-width:thin] xl:overflow-y-auto xl:px-2 xl:pb-2"
           >
             <ScreenHeader screen={screen} copy={copy} query={query} onQuery={setQuery} />
 
@@ -278,7 +284,7 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
                 <section
                   key={key}
                   id={`section-${key}`}
-                  className="scroll-mt-24 rounded-2xl border border-border/80 bg-card p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04),0_8px_24px_-16px_rgb(15_23_42/0.12)] sm:p-5"
+                  className="scroll-mt-4 rounded-2xl border border-border/80 bg-card p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04),0_8px_24px_-16px_rgb(15_23_42/0.12)] sm:p-5"
                 >
                   <header className="mb-4 flex items-center gap-3">
                     <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-linear-to-br from-primary/12 to-aurora-indigo/12 text-sm font-semibold text-primary">
@@ -356,8 +362,139 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
             </AnimatePresence>
           </section>
         ) : null}
+
+        {/* Right: live preview of the page(s) this screen feeds */}
+        {targets.length > 0 ? (
+          <aside className="min-w-0 lg:col-start-2 xl:col-start-auto xl:min-h-0">
+            <PreviewPanel
+              key={targets.join()}
+              copy={copy}
+              targets={targets}
+              drafts={drafts}
+              focusTexts={previewTexts(focusValue)}
+              focusLabel={focusPath ? fieldLabel(focusPath) : null}
+            />
+          </aside>
+        ) : null}
       </div>
     </div>
+  );
+};
+
+/** Texts to look for on the page for a field value (dates as the page prints them). */
+const previewTexts = (value: JsonValue | undefined): string[] => {
+  if (typeof value === "number") {
+    return [String(value)];
+  }
+  if (typeof value !== "string") {
+    return [];
+  }
+  return isIsoDate(value) ? [formatDateUtc(new Date(value))] : [value];
+};
+
+/** "Status › Kicker", "Lines 2". */
+const fieldLabel = (path: Path): string =>
+  path.map((segment) => (typeof segment === "number" ? String(segment + 1) : humanize(segment))).join(" › ");
+
+/** Screens column; collapses to icons like the side navigation. */
+const ScreensList = ({
+  copy,
+  screens,
+  selected,
+  dirty,
+  open,
+  onToggle,
+  onSelect,
+}: {
+  copy: StudioShellContent["editor"];
+  screens: EditableScreen[];
+  selected: string;
+  dirty: Set<string>;
+  open: boolean;
+  onToggle: () => void;
+  onSelect: (slug: string) => void;
+}) => {
+  const toggleLabel = open ? copy.previewPanel.hideScreens : copy.previewPanel.showScreens;
+  const ToggleIcon = open ? PanelLeftClose : PanelLeftOpen;
+  return (
+    <section className="rounded-2xl border border-border bg-card p-2 shadow-xs">
+      <div className={cn("flex items-center gap-2 pb-1", open ? "px-2 pt-1" : "justify-center")}>
+        {open ? (
+          <h2 className="flex-1 text-[0.625rem] font-semibold tracking-[0.12em] text-muted-foreground/70 uppercase">
+            {copy.screensTitle}
+          </h2>
+        ) : null}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={onToggle}
+              aria-label={toggleLabel}
+              aria-expanded={open}
+              className="grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
+            >
+              <ToggleIcon aria-hidden className="size-4" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right">{toggleLabel}</TooltipContent>
+        </Tooltip>
+      </div>
+      <ul className="flex flex-col gap-1">
+        {screens.map((item) => {
+          const Icon = SCREEN_ICONS[item.slug] ?? PanelsTopLeft;
+          const meta = copy.screens[item.slug];
+          const name = meta?.name ?? humanize(item.slug);
+          const active = item.slug === selected;
+          const button = (
+            <button
+              type="button"
+              onClick={() => onSelect(item.slug)}
+              aria-current={active ? "true" : undefined}
+              aria-label={open ? undefined : name}
+              className={cn(
+                "relative flex w-full items-start gap-3 rounded-xl text-left transition-colors duration-200",
+                open ? "p-2.5" : "justify-center p-1.5",
+                active ? "bg-primary/[0.07]" : "hover:bg-muted/70",
+              )}
+            >
+              <span
+                className={cn(
+                  "grid size-9 shrink-0 place-items-center rounded-lg transition-colors",
+                  active
+                    ? "bg-linear-to-br from-primary to-aurora-indigo text-primary-foreground shadow-sm shadow-primary/30"
+                    : "bg-muted text-muted-foreground",
+                )}
+              >
+                <Icon aria-hidden className="size-4" />
+              </span>
+              {open ? (
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <span className="truncate">{name}</span>
+                    {dirty.has(item.slug) ? <span className="size-1.5 shrink-0 rounded-full bg-warning" /> : null}
+                  </span>
+                  <span className="line-clamp-2 text-xs leading-snug text-muted-foreground">{meta?.description}</span>
+                </span>
+              ) : dirty.has(item.slug) ? (
+                <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-warning ring-2 ring-card" />
+              ) : null}
+            </button>
+          );
+          return (
+            <li key={item.slug}>
+              {open ? (
+                button
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>{button}</TooltipTrigger>
+                  <TooltipContent side="right">{name}</TooltipContent>
+                </Tooltip>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 };
 
@@ -374,9 +511,8 @@ const ScreenHeader = ({
 }) => {
   const time = useFormattedTime(screen.updatedAt);
   const meta = copy.screens[screen.slug];
-  const preview = PREVIEW[screen.slug];
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-xs @2xl:flex-row @2xl:items-center @2xl:justify-between @2xl:p-5">
       <div className="flex min-w-0 flex-col gap-1">
         <h2 className="text-lg font-semibold tracking-tight">{meta?.name ?? humanize(screen.slug)}</h2>
         <p className="text-xs text-muted-foreground">
@@ -386,8 +522,8 @@ const ScreenHeader = ({
           {time ? <span className="ml-2">{fill(copy.lastSaved, { time, who: screen.updatedBy })}</span> : null}
         </p>
       </div>
-      <div className="flex items-center gap-2">
-        <label className="flex h-9 min-w-0 items-center gap-2 rounded-lg border border-border bg-background/70 px-2.5 text-sm transition-colors focus-within:border-ring focus-within:bg-card focus-within:ring-3 focus-within:ring-ring/15 sm:w-56">
+      <div className="flex w-full items-center gap-2 @2xl:w-auto">
+        <label className="flex h-9 w-full min-w-0 items-center gap-2 rounded-lg border border-border bg-background/70 px-2.5 text-sm transition-colors focus-within:border-ring focus-within:bg-card focus-within:ring-3 focus-within:ring-ring/15 @2xl:w-56">
           <Search aria-hidden className="size-4 shrink-0 text-muted-foreground" />
           <span className="sr-only">{copy.searchFields}</span>
           <input
@@ -398,14 +534,6 @@ const ScreenHeader = ({
             className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
           />
         </label>
-        {preview ? (
-          <Button asChild variant="outline" size="sm" className="h-9 rounded-lg">
-            <a href={preview} target="_blank" rel="noopener noreferrer">
-              {copy.preview}
-              <ArrowUpRight aria-hidden />
-            </a>
-          </Button>
-        ) : null}
       </div>
     </div>
   );

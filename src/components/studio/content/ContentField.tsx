@@ -176,6 +176,7 @@ const LeafField = ({ name, path, value, saved, onChange, errors, copy }: FieldPr
       <FieldTile {...tile} icon={Hash}>
         <input
           id={id}
+          data-path={pathKey(path)}
           type="number"
           value={value}
           aria-invalid={invalid}
@@ -194,6 +195,7 @@ const LeafField = ({ name, path, value, saved, onChange, errors, copy }: FieldPr
       >
         <input
           id={id}
+          data-path={pathKey(path)}
           type="datetime-local"
           value={isoToLocalInput(value)}
           aria-invalid={invalid}
@@ -211,6 +213,7 @@ const LeafField = ({ name, path, value, saved, onChange, errors, copy }: FieldPr
       {long ? (
         <textarea
           id={id}
+          data-path={pathKey(path)}
           value={text}
           rows={3}
           aria-invalid={invalid}
@@ -220,6 +223,7 @@ const LeafField = ({ name, path, value, saved, onChange, errors, copy }: FieldPr
       ) : (
         <input
           id={id}
+          data-path={pathKey(path)}
           value={text}
           aria-invalid={invalid}
           onChange={(event) => onChange(path, event.target.value)}
@@ -296,6 +300,7 @@ const ListField = (props: FieldProps & { value: JsonValue[] }) => {
               <IndexBadge n={index + 1} />
               <input
                 aria-label={`${label} ${index + 1}`}
+                data-path={pathKey([...path, index])}
                 value={typeof item === "string" ? item : ""}
                 aria-invalid={errors[pathKey([...path, index])] ? true : undefined}
                 onChange={(event) => onChange([...path, index], event.target.value)}
@@ -335,12 +340,12 @@ const GroupField = (props: FieldProps & { value: Record<string, JsonValue> }) =>
   const { value, path, saved, query } = props;
   const entries = Object.entries(value).filter(([key, child]) => matchesQuery(key, child, query));
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid gap-3 @lg:grid-cols-2">
       {entries.map(([key, child]) => {
         const wide = isObject(child) || Array.isArray(child) || (typeof child === "string" && child.length > LONG_TEXT);
         const childSaved = savedChild(saved, key);
         return (
-          <div key={key} className={cn(wide && "sm:col-span-2")}>
+          <div key={key} className={cn(wide && "@lg:col-span-2")}>
             {isObject(child) ? (
               <div className="rounded-xl border border-border/70 bg-background/50 p-3.5">
                 <p className="mb-3 flex items-center gap-2 text-xs font-semibold text-foreground">

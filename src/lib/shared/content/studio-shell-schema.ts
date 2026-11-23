@@ -14,7 +14,7 @@ export type StudioModule = (typeof STUDIO_MODULES)[number];
 const moduleCopy = z.object({ label: text(32), title: text(48), description: text(200) });
 
 export const studioShellContentSchema = z.object({
-  brand: z.object({ name: text(24) }),
+  brand: z.object({ name: text(24), tagline: text(32) }),
   owner: z.object({ name: text(60), role: text(32) }),
   breadcrumbRoot: text(24),
   groups: z

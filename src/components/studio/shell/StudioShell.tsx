@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { TooltipProvider } from "@/components/studio/ui/tooltip";
@@ -19,28 +18,27 @@ type StudioShellProps = {
 
 /**
  * Frame for every signed-in studio page (docs/components/STUDIO_SHELL_BUSINESS.md):
- * a floating glass sidebar and topbar over a drifting light canvas, the page
- * in the main slot. Each navigation blurs, fades and slides the page in.
+ * flush full-height sidebar and full-width topbar over a static porcelain
+ * canvas, the page in the main slot. Motion happens only on first load and
+ * when you act: the page slides in after each navigation you trigger.
  */
 export const StudioShell = ({ content, initialCollapsed, children }: StudioShellProps) => {
   const pathname = usePathname();
   return (
-    <TooltipProvider delayDuration={150}>
+    <TooltipProvider delayDuration={200}>
       <SidebarStateProvider initialCollapsed={initialCollapsed}>
         <ShellBackdrop />
         <div className="flex min-h-svh">
           <StudioSidebar content={content} />
           <div className="flex min-w-0 flex-1 flex-col">
             <StudioTopbar content={content} />
-            <main className="flex-1 px-4 py-6 sm:px-6 lg:py-8 lg:pr-8 lg:pl-5">
-              <motion.div
+            <main className="flex-1 px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
+              <div
                 key={pathname}
-                initial={{ opacity: 0, y: 16, scale: 0.99, filter: "blur(8px)" }}
-                animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-                transition={{ duration: 0.5, ease: [0.2, 0, 0, 1] }}
+                className="animate-in duration-500 ease-out fade-in slide-in-from-bottom-3 motion-reduce:animate-none"
               >
                 {children}
-              </motion.div>
+              </div>
             </main>
           </div>
         </div>

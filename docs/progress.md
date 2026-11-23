@@ -261,6 +261,12 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] Installed `tw-animate-css`, so shadcn's Sheet/Tooltip enter and exit animations now run.
 - [x] Verified: navigation and breadcrumb, gliding hover, collapse, mobile drawer slides in and closes after choosing a page, sign-out → `/studio/login` and protected pages redirect afterwards; no horizontal scroll.
 
+## 2026-11-23: Studio shell v1.2 (flush, click-only motion)
+
+- [x] Researched current admin sidebar/topbar practice; built an original design: flush full-height sidebar and full-width topbar with edge shades (no rounded floating panels), 22px icons in 40px icon wells, sliding edge accent bar, title + group + date chip + owner in the topbar, static porcelain canvas.
+- [x] Motion only on first load and on click (ripple, press, bar slide, icon-well pop, title roll, page slide); hover is colour only; no loops (verified: 0 running animations after load and after a click settles). Entrances use shadcn / tw-animate-css.
+- [x] `brand.tagline` added (DB version 3). Verified navigation, collapse (icons centred), mobile, no horizontal scroll.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

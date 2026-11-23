@@ -133,7 +133,7 @@ const SCREENS = {
     footer: { note: "Restricted area. Sign-in attempts are logged and rate limited." },
   },
   "studio-shell": {
-    brand: { name: "Studio" },
+    brand: { name: "Studio", tagline: "Admin console" },
     // Generic on purpose: the live database holds the real owner's name, the repository never does.
     owner: { name: "Studio Owner", role: "Owner" },
     breadcrumbRoot: "Studio",

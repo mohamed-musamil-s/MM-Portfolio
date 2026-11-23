@@ -26,7 +26,7 @@ Names follow the shadcn/ui convention, so shadcn components work without edits. 
 
 | Utility | Role | Light | Dark |
 | --- | --- | --- | --- |
-| `background` | App canvas (the shell adds drifting light fields on top) | `#F3F5FC` | `#0F172A` |
+| `background` | App canvas (the shell adds static washes on top) | `#F5F6F8` | `#0F172A` |
 | `foreground` | Primary text | `#1E293B` | `#F1F5F9` |
 | `card` / `card-foreground` | Cards, popovers | `#FFFFFF` / `#1E293B` | `#1E293B` / `#F1F5F9` |
 | `primary` / `primary-foreground` | **The accent**: primary actions, focus, active and progress states | `#2563EB` / `#FFFFFF` | `#60A5FA` / `#0F172A` |
@@ -123,6 +123,10 @@ Uses the `studio` theme in `src/lib/motion/tokens.ts`: 0.12 / 0.18 / 0.28s, `eas
 - Progress indicators: `scaleX` from the left.
 - Spinners only inside the control that is busy (`LoaderCircle` + `animate-spin`).
 - Reduced motion: slides become fades; nothing moves more than opacity.
+
+## 6b. Motion rule for the admin shell
+
+Animate on **first load** and **on click** only. Hover changes colour (and an icon's small pose), never size or position. No looping animation anywhere in the shell. Click feedback: ripple (`use-ripple.tsx`), press scale, and the state change itself (edge bar slide, icon-well pop, title roll).
 
 ## 7. Accessibility
 

@@ -1,48 +1,12 @@
-"use client";
-
-import { motion, type TargetAndTransition } from "motion/react";
-import { useMotionTheme } from "@/hooks/useMotionTheme";
-import { cn } from "@/lib/shared/cn";
-
 /*
- * Light canvas behind the studio shell: a cool lavender base with three soft
- * light fields (periwinkle, sky, lavender) drifting slowly and a faint dot
- * grid that fades toward the edges. Light only; still under reduced motion.
+ * Static light canvas behind the studio shell: porcelain base, a soft cool
+ * wash from the top right and a faint dot grid in that corner. No motion:
+ * the shell only animates on first load and in response to clicks.
  */
-
-type Field = { className: string; drift: TargetAndTransition; seconds: number };
-
-const FIELDS: Field[] = [
-  {
-    className: "-top-[20%] -left-[10%] size-[55vmax] bg-aurora-periwinkle opacity-45",
-    drift: { x: ["0%", "8%", "-3%", "0%"], y: ["0%", "6%", "10%", "0%"] },
-    seconds: 26,
-  },
-  {
-    className: "-top-[25%] -right-[15%] size-[50vmax] bg-aurora-sky opacity-35",
-    drift: { x: ["0%", "-10%", "4%", "0%"], y: ["0%", "8%", "-4%", "0%"] },
-    seconds: 30,
-  },
-  {
-    className: "-bottom-[30%] left-[20%] size-[60vmax] bg-aurora-lavender opacity-50",
-    drift: { x: ["0%", "6%", "-8%", "0%"], y: ["0%", "-8%", "-3%", "0%"] },
-    seconds: 34,
-  },
-];
-
-export const ShellBackdrop = () => {
-  const { reducedMotion } = useMotionTheme();
-  return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-background">
-      {FIELDS.map(({ className, drift, seconds }) => (
-        <motion.div
-          key={className}
-          className={cn("absolute rounded-full blur-3xl", className)}
-          animate={reducedMotion ? undefined : drift}
-          transition={{ duration: seconds, ease: "easeInOut", repeat: Infinity }}
-        />
-      ))}
-      <div className="absolute inset-0 bg-[radial-gradient(var(--studio-aurora-periwinkle)_1px,transparent_1px)] mask-radial-from-10% mask-radial-to-70% bg-size-[24px_24px] opacity-40" />
-    </div>
-  );
-};
+export const ShellBackdrop = () => (
+  <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-background">
+    <div className="absolute inset-0 bg-[radial-gradient(120%_80%_at_100%_0%,color-mix(in_oklab,var(--studio-aurora-lavender)_55%,transparent)_0%,transparent_55%)]" />
+    <div className="absolute inset-0 bg-[radial-gradient(90%_70%_at_0%_100%,color-mix(in_oklab,var(--studio-aurora-ice)_60%,transparent)_0%,transparent_60%)]" />
+    <div className="absolute top-0 right-0 h-[60vh] w-[60vw] bg-[radial-gradient(var(--studio-aurora-periwinkle)_1px,transparent_1px)] mask-[radial-gradient(closest-side_at_100%_0%,black,transparent)] bg-size-[22px_22px] opacity-35" />
+  </div>
+);

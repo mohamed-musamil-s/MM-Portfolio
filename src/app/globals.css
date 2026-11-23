@@ -171,7 +171,7 @@
     color-scheme: light;
 
     /* Slate neutrals + one blue accent (docs/ADMIN_STYLE.md §2). Contrast on card. */
-    --studio-background: #f3f5fc; /* cool lavender-tinted canvas (light only) */
+    --studio-background: #f5f6f8; /* porcelain canvas (light only) */
     --studio-foreground: #1e293b; /* 14.6:1 */
     --studio-card: #ffffff;
     --studio-card-foreground: #1e293b;

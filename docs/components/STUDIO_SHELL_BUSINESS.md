@@ -1,6 +1,6 @@
 # Component: Studio Shell (Sidebar + Topbar), Business Spec
 
-Version 1.1, 2026-11-23 (modern glass redesign, everything animates). Screenshots: [desktop](studio-shell/desktop-1440x900.jpg), [mobile drawer](studio-shell/mobile-drawer-390x844.jpg). The frame around every signed-in studio page: a collapsible **side navigation** and a sticky **topbar**, with the page in the main slot. Design system: [ADMIN_STYLE.md](../ADMIN_STYLE.md) (shadcn/ui, studio tokens). `/studio/login` stays standalone.
+Version 1.2, 2026-11-23 (flush redesign; motion only on load and on click). Screenshots: [desktop](studio-shell/desktop-1440x900.jpg), [mobile](studio-shell/mobile-390x844.jpg). The frame around every signed-in studio page: a collapsible **side navigation** and a sticky **topbar**, with the page in the main slot. Design system: [ADMIN_STYLE.md](../ADMIN_STYLE.md) (shadcn/ui, studio tokens). `/studio/login` stays standalone.
 
 ## 1. Reference
 
@@ -50,21 +50,24 @@ Version 1.1, 2026-11-23 (modern glass redesign, everything animates). Screenshot
 | **Theme** | Light only (`data-studio-theme="light"` on the studio surface), matching the reference and the login. |
 | **Reduced motion** | Width, pill and content changes happen without animation; icons don't animate. |
 
-## 3b. Look and motion (v1.1)
+## 3b. Look and motion (v1.2)
 
-| Element | Look | Animation |
-| --- | --- | --- |
-| Canvas | Light only: cool lavender base (`#F3F5FC`) with periwinkle, sky and lavender light fields and a faint dot grid | Light fields drift on 26–34s loops |
-| Sidebar | Floating frosted-glass panel (`m-3`, `rounded-2xl`, `bg-card/70`, blur, soft indigo shadow); 260px / 72px | Width springs on collapse; gradient logo tile springs in and tilts on hover; brand name slides in; rows cascade in (50ms stagger); group labels swap with hairlines |
-| Active row | Blue → indigo gradient pill, white text and icon, coloured shadow | Pill springs between rows (`layoutId`); a light sweep crosses it every few seconds |
-| Hover | Glass highlight (`bg-card/80`, hairline) | One highlight glides from row to row; the icon scales and tilts and plays its own hover pose; the label nudges right |
-| Press | — | Rows press to 97% |
-| Sign out | Red-tinted highlight on hover | Door arrow slides out; label switches to "Signing out…" |
-| Topbar | Floating glass bar (`rounded-2xl`, `h-16`) | Drops in on load; the page name and its icon tile roll over (slide + blur) when the page changes |
-| Owner chip | Initials avatar inside a rotating cyan → blue → indigo ring, green live dot | Ring turns (6s); dot pings; chip lifts on hover |
-| Page change | — | Content blurs, fades and slides in (0.5s) |
-| Placeholder | Card with a flowing gradient border; icon tile in an orbiting dashed ring; shimmering badge; three pulsing preview rows | Tile springs in then floats; ring orbits; rows cascade in |
-| Drawer, tooltips | shadcn Sheet / Tooltip | Enter/exit animations from `tw-animate-css` (slide, fade, zoom) |
+Research (2026 SaaS dashboard write-ups) pointed to: a fixed, collapsible left sidebar (icons-only when narrow, a drawer on mobile), minimal chrome with colour reserved for meaning, motion that confirms an action, and interactive elements that stay perfectly stable on hover. The v1.2 design is original, built on those principles.
+
+**Motion rule:** things animate only on **first load** and **in response to a click**. Hover is colour only (plus each icon's small hover pose). Nothing loops.
+
+| Element | Look | First load | On click | On hover |
+| --- | --- | --- | --- | --- |
+| Canvas | Static porcelain `#F5F6F8` with a cool lavender wash top right, an ice wash bottom left, a faint dot grid in the corner | — | — | — |
+| Sidebar | **Flush, full height, square edges**, white, right-edge hairline + soft shade; 288px / 88px | Slides in from the left; rows cascade in (55ms stagger) | Collapse/expand: width springs | — |
+| Brand | Ink → blue gradient tile (monogram), `Studio` + tagline `Admin console` | — | — | — |
+| Row | 48px tall; **40px icon well with a 22px icon**; label 15px | — | Ripple from the pointer, 98% press, the edge accent bar slides to the row, the icon well pops (spring) | Band tint, well turns white with a hairline shadow, icon darkens and plays its hover pose |
+| Active row | Tinted band, solid gradient well with a white icon, 4px gradient bar on the sidebar's left edge | — | — | — |
+| Topbar | **Flush, full width**, 72px, white at 85% with blur, bottom hairline + shade | Slides down | The page title (with its group above it and its icon well) rolls over | — |
+| Right side | Today's date chip (viewer's locale, browser-only), divider, owner avatar (ink → blue) with an online dot, name, role | — | — | — |
+| Page | — | — | Content fades and slides up after each navigation | — |
+| Placeholder | White card with a gradient top rule, icon tile in a dashed ring, badge, three preview rows | Staggered entrance (title, text, card, tile spins in, badge, rows) | — | — |
+| Drawer, tooltips | shadcn Sheet / Tooltip | — | Enter/exit from `tw-animate-css` | — |
 
 ## 4. Content (database)
 
@@ -72,7 +75,7 @@ All shell text lives in `site_screens`, `_id: "studio-shell"` (schema `src/lib/s
 
 | Field | Default (seed) |
 | --- | --- |
-| `brand.name` | `Studio` |
+| `brand.name` / `brand.tagline` | `Studio` / `Admin console` |
 | `owner.name` / `owner.role` | `Studio Owner` / `Owner` (the live database holds the real owner's name; the repository never does) |
 | `breadcrumbRoot` | `Studio` |
 | `groups[]` | `Workspace`: dashboard, release, content · `Tools`: resume, chat, analytics |

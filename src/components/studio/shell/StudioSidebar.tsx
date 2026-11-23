@@ -18,15 +18,13 @@ const WIDTH = { expanded: 288, collapsed: 88 } as const;
 /** Right-edge hairline plus a soft shade that falls onto the canvas. */
 const EDGE_SHADOW = "shadow-[1px_0_0_var(--studio-border),12px_0_32px_-18px_rgb(30_41_59/0.22)]";
 
+/** The monogram on its own (no tile behind it), in the foreground colour. */
 const LogoTile = ({ className }: { className?: string }) => (
   <span
     aria-hidden
-    className={cn(
-      "grid size-10 shrink-0 place-items-center rounded-xl bg-linear-to-br from-foreground to-primary text-primary-foreground shadow-md shadow-primary/25 transition-opacity duration-150",
-      className,
-    )}
+    className={cn("grid size-10 shrink-0 place-items-center transition-opacity duration-150", className)}
   >
-    <Monogram dot="letter" className="w-6 text-primary-foreground" />
+    <Monogram dot="letter" className="w-9 text-foreground" />
   </span>
 );
 

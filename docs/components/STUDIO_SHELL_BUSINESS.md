@@ -60,7 +60,7 @@ Research (2026 SaaS dashboard write-ups) pointed to: a fixed, collapsible left s
 | --- | --- | --- | --- | --- |
 | Canvas | Static porcelain `#F5F6F8` with a cool lavender wash top right, an ice wash bottom left, a faint dot grid in the corner | — | — | — |
 | Sidebar | **Flush, full height, square edges**, white, right-edge hairline + soft shade; 288px / 88px | Slides in from the left; rows cascade in (55ms stagger) | Collapse/expand: width springs | — |
-| Brand | Ink → blue gradient tile (monogram), `Studio` + tagline `Admin console` | — | — | — |
+| Brand | The MM. monogram on its own (no tile behind it), `Studio` + tagline `Admin console` | — | — | — |
 | Row | 48px tall; **40px icon well with a 22px icon**; label 15px | — | Ripple from the pointer, 98% press, the edge accent bar slides to the row, the icon well pops (spring) | Band tint, well turns white with a hairline shadow, icon darkens and plays its hover pose |
 | Active row | Tinted band, solid gradient well with a white icon, 4px gradient bar on the sidebar's left edge | — | — | — |
 | Topbar | **Flush, full width**, 72px, white at 85% with blur, bottom hairline + shade | Slides down | The page title (with its group above it and its icon well) rolls over | — |

@@ -320,7 +320,16 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] `go-live` deployed to Production: https://md-musamil.vercel.app. Verified: `/api/health` database up, `/` → `/maintenance` with live content, unknown pages → 404, studio redirects to login, security headers present, cross-origin write 403, favicon served.
 - [x] `develop` deployed to Preview (protected by Vercel Authentication); `/api/health` database up. The build guard cancelled the two `develop`-as-production attempts, as designed.
 
+## 2026-11-23: Name splash
+
+- New screen `site_screens/splash` ([spec](screens/SPLASH_BUSINESS.md)): an 8.5-second kinetic-type intro at 120 BPM. The monogram's orange full stop is the through-line: hook full stops, an underline, a selection handle, a caret, a dot riding an ease curve, the name's full stop, then the monogram's period.
+- Every style is computed from time (`src/components/splash/splash-timeline.ts`); springs and expo easing in `src/lib/shared/motion/time-easing.ts`.
+- Plays once per browser session over the first public page (session cookie `mm_splash_seen`); Skip button and Esc; off for reduced motion and in the preview frame.
+- Editable and previewable (looping) in Content Forge.
+
 ## Open items
+
+- [ ] Seed the name splash on production (`npm run seed:screens:prod -- --only=splash`) and add its entry to the production studio-shell `editor.screens`; until then production shows no splash.
 
 - [ ] Delete the local `vercel-env/` folder after saving the production access code in a password manager.
 

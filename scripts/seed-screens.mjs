@@ -19,6 +19,17 @@ const SCREENS = {
   shared: {
     footer: { note: "© 2026 ALL RIGHTS RESERVED." },
   },
+  // Name splash before the portfolio (docs/screens/SPLASH_BUSINESS.md). Generic name: set the real one in Content Forge.
+  splash: {
+    enabled: true,
+    hook: { first: "IDEAS", second: "NEED", keyWord: "CRAFT" },
+    moments: { select: "DESIGN", type: "CODE", move: "MOTION" },
+    name: { first: "YOUR", last: "NAME" },
+    role: "DESIGNER & DEVELOPER",
+    label: "PORTFOLIO",
+    skip: "Skip intro",
+    srLabel: "Intro animation",
+  },
   maintenance: {
     meta: {
       title: "System upgrade in progress",
@@ -226,6 +237,7 @@ const SCREENS = {
           name: "Shared content",
           description: "Text used on several pages, like the footer. Edit once, it changes everywhere.",
         },
+        splash: { name: "Name splash", description: "The intro that plays once before the portfolio opens." },
         maintenance: { name: "Maintenance page", description: "What visitors see while the site is being upgraded." },
         "not-found": { name: "404 page", description: "Shown for any address that doesn't exist." },
       },

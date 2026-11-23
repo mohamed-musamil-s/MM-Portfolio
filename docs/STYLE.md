@@ -393,6 +393,10 @@ As of 2026-11-23 (v1.7) this is **one viewport (`h-svh`) with no scrolling**, on
 - **Ruler:** a full-width timeline with an orange elapsed line, a now dot, and dates at both ends.
 - **Footer:** three spaced columns on hairlines: LAST CHECKED, NEXT CHECK (orange progress, every minute) and the note.
 
+### 6.4b Name splash
+
+Spec: [screens/SPLASH_BUSINESS.md](screens/SPLASH_BUSINESS.md). Plays once per visit before the portfolio: kinetic type on the paper canvas, Inter Tight only, signal orange on the through-line dot only. All words come from the database (`site_screens`, `_id: "splash"`).
+
 ### 6.5 404 screen
 
 Spec: [screens/NOT_FOUND_BUSINESS.md](screens/NOT_FOUND_BUSINESS.md). Same frame and family as maintenance. All copy comes from the database (`site_screens`, `_id: "not-found"`).

@@ -19,11 +19,7 @@ import { useCallback, useEffect, useMemo, useState, useSyncExternalStore, type F
 import { toast } from "sonner";
 import { Button } from "@/components/studio/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/studio/ui/tooltip";
-import {
-  PREVIEWABLE_SCREENS,
-  isPreviewableScreen,
-  type PreviewableScreen,
-} from "@/lib/shared/content/preview-protocol";
+import { SHARED_CONSUMERS, isPreviewableScreen, type PreviewableScreen } from "@/lib/shared/content/preview-protocol";
 import { formatDateUtc } from "@/lib/shared/format";
 import type { StudioShellContent } from "@/lib/shared/content/studio-shell-schema";
 import { cn } from "@/lib/shared/cn";
@@ -201,7 +197,7 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
 
   const sections = draft ? Object.entries(draft).filter(([key, value]) => matchesQuery(key, value, query)) : [];
   const targets: PreviewableScreen[] =
-    selected === "shared" ? [...PREVIEWABLE_SCREENS] : isPreviewableScreen(selected) ? [selected] : [];
+    selected === "shared" ? [...SHARED_CONSUMERS] : isPreviewableScreen(selected) ? [selected] : [];
   const focusValue = focusPath ? getAt(draft, focusPath) : undefined;
 
   const selectScreen = (slug: string) => {

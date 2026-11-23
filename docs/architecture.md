@@ -2,16 +2,16 @@
 
 ## Stack
 
-| Layer | Choice |
-| --- | --- |
-| Framework | Next.js 16 (App Router, Turbopack), React 19 |
-| Language | TypeScript (strict) |
-| Database | MongoDB Atlas via the official `mongodb` driver, database `mm-portfolio` |
-| Session signing | `jose` (HS256 JWT) |
-| Logging | `pino` (JSON), `pino-pretty` in development |
-| Motion | `motion` (transforms, springs, gestures), `animejs` (SVG draw and morph), `gsap` + ScrollTrigger (scroll), `lenis` (smooth scroll), `three` + R3F + drei (WebGL hero, not built yet). See [ANIMATION_UI.md](ANIMATION_UI.md) |
-| UI primitives | `radix-ui` (headless, accessible) |
-| Styling | Tailwind CSS v4 (`@tailwindcss/postcss`), `tailwind-variants` (`tv()`), `clsx` + `tailwind-merge` (`cn()`), Prettier with `prettier-plugin-tailwindcss` |
+| Layer           | Choice                                                                                                                                                                                                                       |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework       | Next.js 16 (App Router, Turbopack), React 19                                                                                                                                                                                 |
+| Language        | TypeScript (strict)                                                                                                                                                                                                          |
+| Database        | MongoDB Atlas via the official `mongodb` driver, database `mm-portfolio`                                                                                                                                                     |
+| Session signing | `jose` (HS256 JWT)                                                                                                                                                                                                           |
+| Logging         | `pino` (JSON), `pino-pretty` in development                                                                                                                                                                                  |
+| Motion          | `motion` (transforms, springs, gestures), `animejs` (SVG draw and morph), `gsap` + ScrollTrigger (scroll), `lenis` (smooth scroll), `three` + R3F + drei (WebGL hero, not built yet). See [ANIMATION_UI.md](ANIMATION_UI.md) |
+| UI primitives   | `radix-ui` (headless, accessible)                                                                                                                                                                                            |
+| Styling         | Tailwind CSS v4 (`@tailwindcss/postcss`), `tailwind-variants` (`tv()`), `clsx` + `tailwind-merge` (`cn()`), Prettier with `prettier-plugin-tailwindcss`                                                                      |
 
 Next.js 16 renamed Middleware to **Proxy**: the file is `src/proxy.ts` and it runs on the Node.js runtime.
 
@@ -105,24 +105,25 @@ Browser
 
 ## Routes
 
-| Path | Access | Behaviour |
-| --- | --- | --- |
-| `/` | public | 302 to `/maintenance` while the maintenance flag is ON. When it's OFF: the home page (not built yet, so it shows the 404 screen). |
-| `/maintenance` | public | System-upgrade screen from database content, 200 (see [screens/MAINTENANCE_BUSINESS.md](screens/MAINTENANCE_BUSINESS.md)) |
-| `/404` | public | 404 screen from the DB (`site_screens/not-found`), status 404, auto-redirect to `/` after 10s |
-| any unknown path | public | 302 to `/404` |
-| `/studio` | protected | 302 to `/studio/dashboard` (or to login) |
-| `/studio/login` | public | two-step sign-in (email → access code); already signed in: redirect to dashboard |
-| `/studio/{dashboard,release,content,resume,chat,analytics}` | protected | placeholders |
-| `POST /api/auth/initiate-login` | public, same-origin | step 1: issue the login challenge (same answer for any valid email) |
-| `POST /api/auth/login` | public, same-origin | step 2; see [auth-security.md](auth-security.md) |
-| `POST /api/auth/logout` | session | revokes the session |
-| `GET /api/health` | public | 200 when MongoDB answers a ping, else 500 |
-| `GET /api/studio/screens/:slug` | session | Screen content + version (backend for the admin panel) |
-| `PUT /api/studio/screens/:slug` | session, same-origin | Save validated content; 409 on a version conflict |
-| `GET /api/status` | public | `{ maintenance, checkedAt }`, uncached. The maintenance page polls it every minute. |
-| `GET /api/studio/settings/maintenance` | session | `{ enabled, updatedAt, updatedBy }` |
-| `PUT /api/studio/settings/maintenance` | session, same-origin | `{ enabled: boolean }`: the admin maintenance switch |
+| Path                                                        | Access               | Behaviour                                                                                                                                |
+| ----------------------------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                                                         | public               | 302 to `/maintenance` while the maintenance flag is ON. When it's OFF: the home page (not built yet, so it shows the 404 screen).        |
+| `/maintenance`                                              | public               | System-upgrade screen from database content, 200 (see [screens/MAINTENANCE_BUSINESS.md](screens/MAINTENANCE_BUSINESS.md))                |
+| (first public page of a visit)                              | public               | Name splash overlay from the DB (`site_screens/splash`), once per session (see [screens/SPLASH_BUSINESS.md](screens/SPLASH_BUSINESS.md)) |
+| `/404`                                                      | public               | 404 screen from the DB (`site_screens/not-found`), status 404, auto-redirect to `/` after 10s                                            |
+| any unknown path                                            | public               | 302 to `/404`                                                                                                                            |
+| `/studio`                                                   | protected            | 302 to `/studio/dashboard` (or to login)                                                                                                 |
+| `/studio/login`                                             | public               | two-step sign-in (email → access code); already signed in: redirect to dashboard                                                         |
+| `/studio/{dashboard,release,content,resume,chat,analytics}` | protected            | placeholders                                                                                                                             |
+| `POST /api/auth/initiate-login`                             | public, same-origin  | step 1: issue the login challenge (same answer for any valid email)                                                                      |
+| `POST /api/auth/login`                                      | public, same-origin  | step 2; see [auth-security.md](auth-security.md)                                                                                         |
+| `POST /api/auth/logout`                                     | session              | revokes the session                                                                                                                      |
+| `GET /api/health`                                           | public               | 200 when MongoDB answers a ping, else 500                                                                                                |
+| `GET /api/studio/screens/:slug`                             | session              | Screen content + version (backend for the admin panel)                                                                                   |
+| `PUT /api/studio/screens/:slug`                             | session, same-origin | Save validated content; 409 on a version conflict                                                                                        |
+| `GET /api/status`                                           | public               | `{ maintenance, checkedAt }`, uncached. The maintenance page polls it every minute.                                                      |
+| `GET /api/studio/settings/maintenance`                      | session              | `{ enabled, updatedAt, updatedBy }`                                                                                                      |
+| `PUT /api/studio/settings/maintenance`                      | session, same-origin | `{ enabled: boolean }`: the admin maintenance switch                                                                                     |
 
 ## MongoDB
 
@@ -145,12 +146,12 @@ Browser
 
 Local files `.env.development` / `.env.production` (templates: `.env.*.example`); Vercel Preview and Production have their own values. Full setup: [deployment.md](deployment.md). Values are read lazily, so `next build` works without secrets. A missing value throws on first use, gets logged, and the request returns 500.
 
-| Variable | Purpose |
-| --- | --- |
-| `MONGODB_URI` | Atlas connection string |
-| `MONGODB_DB` | database name (default `mm-portfolio`) |
-| `ADMIN_EMAIL` | studio admin email |
-| `ADMIN_ACCESS_CODE` | studio static access code |
-| `SESSION_SECRET` | at least 32 characters, used to sign session cookies |
-| `LOG_LEVEL` | pino level (default `info`) |
-| `CORS_ALLOWED_ORIGINS` | optional, origins allowed to read public GET APIs |
+| Variable               | Purpose                                              |
+| ---------------------- | ---------------------------------------------------- |
+| `MONGODB_URI`          | Atlas connection string                              |
+| `MONGODB_DB`           | database name (default `mm-portfolio`)               |
+| `ADMIN_EMAIL`          | studio admin email                                   |
+| `ADMIN_ACCESS_CODE`    | studio static access code                            |
+| `SESSION_SECRET`       | at least 32 characters, used to sign session cookies |
+| `LOG_LEVEL`            | pino level (default `info`)                          |
+| `CORS_ALLOWED_ORIGINS` | optional, origins allowed to read public GET APIs    |

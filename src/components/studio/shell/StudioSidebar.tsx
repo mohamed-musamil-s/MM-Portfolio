@@ -22,9 +22,9 @@ const EDGE_SHADOW = "shadow-[1px_0_0_var(--studio-border),12px_0_32px_-18px_rgb(
 const LogoTile = ({ className }: { className?: string }) => (
   <span
     aria-hidden
-    className={cn("grid size-10 shrink-0 place-items-center transition-opacity duration-150", className)}
+    className={cn("grid h-10 w-14 shrink-0 place-items-center transition-opacity duration-150", className)}
   >
-    <Monogram dot="letter" className="w-9 text-foreground" />
+    <Monogram dot="letter" className="w-14 text-foreground" />
   </span>
 );
 
@@ -109,7 +109,7 @@ export const StudioSidebar = ({ content }: { content: StudioShellContent }) => {
       >
         <div className="group/header relative flex h-[72px] shrink-0 items-center gap-3 border-b border-border px-6">
           {collapsed ? (
-            <div className="relative mx-auto grid size-10 place-items-center">
+            <div className="relative mx-auto grid h-10 w-14 place-items-center">
               <LogoTile className="group-focus-within/header:opacity-0 group-hover/header:opacity-0" />
               <ToggleButton
                 content={content}

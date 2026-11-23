@@ -22,7 +22,7 @@ export const humanize = (key: string | number): string => {
 
 export const pathKey = (path: Path): string => path.join(".");
 
-export const isObject = (value: JsonValue): value is JsonObject =>
+export const isObject = (value: JsonValue | undefined): value is JsonObject =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/;
@@ -80,3 +80,10 @@ export const blankLike = (value: JsonValue): JsonValue => {
   }
   return value;
 };
+
+/** Fills `{name}` placeholders in a copy template. */
+export const fill = (template: string, values: Record<string, string | number>) =>
+  template.replace(/\{(\w+)\}/g, (match, key: string) => (key in values ? String(values[key]) : match));
+
+/** Deep equality for plain JSON values. */
+export const same = (a: JsonValue | undefined, b: JsonValue | undefined) => JSON.stringify(a) === JSON.stringify(b);

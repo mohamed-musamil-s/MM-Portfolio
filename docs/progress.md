@@ -284,10 +284,14 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] Content Forge (`/studio/content`, [spec](components/CONTENT_FORGE_BUSINESS.md)): form generated from the stored content, field search, section chips, sticky save bar with Ctrl/⌘ S, plain-language validation messages, version-conflict banner, site-mode switch. Lists portfolio screens only (Maintenance page, 404 page); studio screens are not edited there.
 - [x] Verified: edit → save → live on /maintenance; empty field → field error; value restored.
 
+## 2026-11-23: Modern content fields and app icons
+
+- [x] Content Forge fields redesigned: filled tiles with type icons, accent focus ring, inline errors with an icon, per-field `Edited` marker with undo, numbered list rows, section headers with field counts. New copy in `editor` (DB version 11).
+- [x] App icons from the monogram (`npm run brand:icons`): favicon.ico (16/32/48), icon.svg, apple-icon.png, manifest icons 192/512 and a maskable 512; `src/app/manifest.ts`. Verified the `<link>` tags and that the manifest and icons are served.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.
-- [ ] Optional: use the monogram as the favicon (`app/icon.svg`).
 
 - [ ] Choose a longer `ADMIN_ACCESS_CODE` before deploying.
 - [ ] When deploying, set all `.env.example` variables in the host's environment, and confirm that the host sets `x-forwarded-for`.

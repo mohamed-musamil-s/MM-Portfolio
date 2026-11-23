@@ -9,8 +9,18 @@ import { Button } from "@/components/studio/ui/button";
 import type { StudioShellContent } from "@/lib/shared/content/studio-shell-schema";
 import { cn } from "@/lib/shared/cn";
 import { ROUTES } from "@/lib/shared/routes";
-import { ContentField } from "./ContentField";
-import { humanize, matchesQuery, pathKey, setAt, type JsonObject, type JsonValue, type Path } from "./content-paths";
+import { ContentField, countFields } from "./ContentField";
+import {
+  fill,
+  humanize,
+  matchesQuery,
+  pathKey,
+  same,
+  setAt,
+  type JsonObject,
+  type JsonValue,
+  type Path,
+} from "./content-paths";
 import { SiteModeCard } from "./SiteModeCard";
 
 export type EditableScreen = {
@@ -45,11 +55,6 @@ const useFormattedTime = (iso: string) =>
     () => new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso)),
     () => "",
   );
-
-const fill = (template: string, values: Record<string, string | number>) =>
-  template.replace(/\{(\w+)\}/g, (match, key: string) => (key in values ? String(values[key]) : match));
-
-const same = (a: JsonValue, b: JsonValue) => JSON.stringify(a) === JSON.stringify(b);
 
 /** Plain-language message for a validation issue (falls back to the server's wording). */
 const friendly = (issue: Issue, copy: StudioShellContent["editor"]): string => {
@@ -272,13 +277,32 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
                 <section
                   key={key}
                   id={`section-${key}`}
-                  className="scroll-mt-24 rounded-2xl border border-border bg-card p-5 shadow-xs"
+                  className="scroll-mt-24 rounded-2xl border border-border/80 bg-card p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04),0_8px_24px_-16px_rgb(15_23_42/0.12)] sm:p-5"
                 >
-                  <h3 className="mb-4 text-sm font-semibold">{humanize(key)}</h3>
+                  <header className="mb-4 flex items-center gap-3">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-linear-to-br from-primary/12 to-aurora-indigo/12 text-sm font-semibold text-primary">
+                      {humanize(key).charAt(0)}
+                    </span>
+                    <span className="flex min-w-0 flex-1 flex-col leading-tight">
+                      <h3 className="truncate text-sm font-semibold">{humanize(key)}</h3>
+                      <span className="text-xs text-muted-foreground">
+                        {countFields(value) === 1
+                          ? copy.fieldCountOne
+                          : fill(copy.fieldCount, { n: countFields(value) })}
+                      </span>
+                    </span>
+                    {same(value, screen.content[key]) ? null : (
+                      <span className="flex items-center gap-1.5 rounded-full bg-warning/12 px-2 py-0.5 text-[0.6875rem] font-semibold text-warning">
+                        <span className="size-1.5 rounded-full bg-warning" />
+                        {copy.edited}
+                      </span>
+                    )}
+                  </header>
                   <ContentField
                     name={key}
                     path={[key]}
                     value={value}
+                    saved={screen.content[key]}
                     onChange={update}
                     errors={errors}
                     query={query}

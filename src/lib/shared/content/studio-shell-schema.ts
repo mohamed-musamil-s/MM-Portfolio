@@ -56,6 +56,13 @@ export const studioShellContentSchema = z.object({
     addItem: text(24),
     removeItem: text(24),
     characters: text(24),
+    edited: text(24),
+    resetField: text(32),
+    /** Placeholder: {n}. */
+    fieldCount: text(32),
+    fieldCountOne: text(32),
+    /** Placeholder: {n}. */
+    item: text(24),
     required: text(64),
     /** Placeholder: {max}. */
     tooLong: text(64),

@@ -46,6 +46,20 @@ Generated with `npm run brand:assets` (`scripts/build-brand-assets.mjs`):
 | `public/brand/mm-monogram-circuit.svg` | transparent | circuit |
 | `public/brand/mm-monogram-circuit-on-paper.svg` | off-white, half-cap-height clear space | circuit |
 
+### App icons
+
+Generated with `npm run brand:icons` (`scripts/build-app-icons.mjs`): charcoal tile, off-white letters, orange period. Next.js adds the `<link>` tags for the files in `src/app`.
+
+| File | Size | Use |
+| --- | --- | --- |
+| `src/app/favicon.ico` | 16, 32, 48 px | Browser tab (classic) |
+| `src/app/icon.svg` | scalable | Browser tab (modern) |
+| `src/app/apple-icon.png` | 180 px | iOS home screen |
+| `public/icons/icon-192.png`, `icon-512.png` | 192, 512 px | Web app manifest (`src/app/manifest.ts`) |
+| `public/icons/icon-maskable-512.png` | 512 px, full bleed | Android adaptive icon |
+
+Small sizes (favicon, SVG) give the mark more of the tile so it stays readable at 16 px.
+
 ## 5. Component
 
 ```tsx

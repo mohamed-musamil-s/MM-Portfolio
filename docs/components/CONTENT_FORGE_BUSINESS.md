@@ -1,6 +1,6 @@
 # Module: Content Forge (Content Management), Business Spec
 
-Version 1.0, 2026-11-23. Route `/studio/content`, inside the studio shell. Design system: [ADMIN_STYLE.md](../ADMIN_STYLE.md).
+Version 1.1, 2026-11-23 (modern field tiles). Route `/studio/content`, inside the studio shell. Design system: [ADMIN_STYLE.md](../ADMIN_STYLE.md).
 
 Content Forge edits the text of the **public portfolio site**. Every string, date and setting on those pages lives in MongoDB (`site_screens`), and this page is where the owner changes it without touching code.
 
@@ -26,6 +26,10 @@ New portfolio sections are added to `PORTFOLIO_SCREENS` once their schema exists
 
 The form is generated from the stored content, so it always matches the schema.
 
+**Field tile:** every field sits in a soft grey tile with a small type icon and its label on top. While typing, the tile turns white with an accent border and a soft ring, and the icon and label take the accent colour. An invalid field turns red with an alert icon and a message under it. An edited field gets an amber left edge, an `Edited` tag and an undo button that restores the saved value. Hover only changes colour.
+
+**Section card:** a letter tile, the section name, a field count (`1 field` / `{n} fields`) and an `Edited` tag when anything inside changed.
+
 | Value | Editor |
 | --- | --- |
 | Short text | Input with a character count |
@@ -33,9 +37,9 @@ The form is generated from the stored content, so it always matches the schema.
 | ISO date | Date-time picker, in UTC |
 | Number | Number input |
 | On / off | Switch |
-| List of text | One input per item, remove button, `Add item` |
-| List of groups | A card per item, remove button, `Add item` (copies the last item's shape, emptied) |
-| Group | Labelled box with its fields in two columns |
+| List of text | Numbered rows in one tile, × to remove, `+ Add item` |
+| List of groups | A card per item (`Item n`), × to remove, `+ Add item` (copies the last item's shape, emptied) |
+| Group | Titled panel with its fields in two columns |
 
 ## 4. Saving
 

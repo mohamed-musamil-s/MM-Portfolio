@@ -1,6 +1,6 @@
 # Component: Studio Shell (Sidebar + Topbar), Business Spec
 
-Version 1.0, 2026-11-23. The frame around every signed-in studio page: a collapsible **side navigation** and a sticky **topbar**, with the page in the main slot. Design system: [ADMIN_STYLE.md](../ADMIN_STYLE.md) (shadcn/ui, studio tokens). `/studio/login` stays standalone.
+Version 1.1, 2026-11-23 (modern glass redesign, everything animates). Screenshots: [desktop](studio-shell/desktop-1440x900.jpg), [mobile drawer](studio-shell/mobile-drawer-390x844.jpg). The frame around every signed-in studio page: a collapsible **side navigation** and a sticky **topbar**, with the page in the main slot. Design system: [ADMIN_STYLE.md](../ADMIN_STYLE.md) (shadcn/ui, studio tokens). `/studio/login` stays standalone.
 
 ## 1. Reference
 
@@ -47,8 +47,24 @@ Version 1.0, 2026-11-23. The frame around every signed-in studio page: a collaps
 | **Sign out** | Bottom row. Calls `POST /api/auth/logout`, shows "Signing out…", then replaces the route with `/studio/login`. |
 | **Topbar** | Sticky, 56px, `bg-card/80` with backdrop blur and a hairline. Left: menu button (mobile) and the breadcrumb `Studio / <current page>` with the page icon. Right: the owner chip. |
 | **Owner chip** | Avatar with the owner's initials (accent gradient), the owner's name (`text-sm font-medium`) and role (`text-xs` muted). Below `sm` only the avatar shows; the name stays as its accessible label. |
-| **Theme** | The studio is light-only for now, matching the reference and the login. |
+| **Theme** | Light only (`data-studio-theme="light"` on the studio surface), matching the reference and the login. |
 | **Reduced motion** | Width, pill and content changes happen without animation; icons don't animate. |
+
+## 3b. Look and motion (v1.1)
+
+| Element | Look | Animation |
+| --- | --- | --- |
+| Canvas | Light only: cool lavender base (`#F3F5FC`) with periwinkle, sky and lavender light fields and a faint dot grid | Light fields drift on 26–34s loops |
+| Sidebar | Floating frosted-glass panel (`m-3`, `rounded-2xl`, `bg-card/70`, blur, soft indigo shadow); 260px / 72px | Width springs on collapse; gradient logo tile springs in and tilts on hover; brand name slides in; rows cascade in (50ms stagger); group labels swap with hairlines |
+| Active row | Blue → indigo gradient pill, white text and icon, coloured shadow | Pill springs between rows (`layoutId`); a light sweep crosses it every few seconds |
+| Hover | Glass highlight (`bg-card/80`, hairline) | One highlight glides from row to row; the icon scales and tilts and plays its own hover pose; the label nudges right |
+| Press | — | Rows press to 97% |
+| Sign out | Red-tinted highlight on hover | Door arrow slides out; label switches to "Signing out…" |
+| Topbar | Floating glass bar (`rounded-2xl`, `h-16`) | Drops in on load; the page name and its icon tile roll over (slide + blur) when the page changes |
+| Owner chip | Initials avatar inside a rotating cyan → blue → indigo ring, green live dot | Ring turns (6s); dot pings; chip lifts on hover |
+| Page change | — | Content blurs, fades and slides in (0.5s) |
+| Placeholder | Card with a flowing gradient border; icon tile in an orbiting dashed ring; shimmering badge; three pulsing preview rows | Tile springs in then floats; ring orbits; rows cascade in |
+| Drawer, tooltips | shadcn Sheet / Tooltip | Enter/exit animations from `tw-animate-css` (slide, fade, zoom) |
 
 ## 4. Content (database)
 

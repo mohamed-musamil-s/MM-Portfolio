@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* Enter/exit animations used by shadcn/ui (animate-in, fade-in-0, slide-in-from-left ...). */
+@import "tw-animate-css";
 
 /*
  * Token architecture
@@ -126,6 +128,24 @@
   --color-aurora-mist: var(--studio-aurora-mist);
   --color-aurora-ice: var(--studio-aurora-ice);
 
+  /* Studio shell: flowing gradient border and shimmer */
+  --animate-border-flow: border-flow 6s linear infinite;
+  --animate-shimmer: shimmer 2.4s ease-in-out infinite;
+  @keyframes border-flow {
+    to {
+      background-position: 200% 0;
+    }
+  }
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-120%);
+    }
+    60%,
+    100% {
+      transform: translateX(220%);
+    }
+  }
+
   /* shadcn input-otp caret */
   --animate-caret-blink: caret-blink 1.1s ease-out infinite;
   @keyframes caret-blink {
@@ -151,7 +171,7 @@
     color-scheme: light;
 
     /* Slate neutrals + one blue accent (docs/ADMIN_STYLE.md §2). Contrast on card. */
-    --studio-background: #f8fafc;
+    --studio-background: #f3f5fc; /* cool lavender-tinted canvas (light only) */
     --studio-foreground: #1e293b; /* 14.6:1 */
     --studio-card: #ffffff;
     --studio-card-foreground: #1e293b;

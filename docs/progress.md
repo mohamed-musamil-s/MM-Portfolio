@@ -254,7 +254,12 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] Spec: docs/components/STUDIO_SHELL_BUSINESS.md (reference video inspected frame by frame).
 - [x] Collapsible sidebar (256px / 68px rail, cookie-persisted, Ctrl/Cmd+B, tooltips when collapsed, sliding active pill), mobile Sheet drawer, sticky topbar with breadcrumb and owner chip, sign-out row. Eight new animated MagicIcons. Module pages are "Coming soon" placeholders inside the shell. Shell copy from site_screens/studio-shell (owner name set only in the DB). Studio is light-only.
 - [x] Verified: navigation + active state, collapse persists through reload, centred rail icons, tooltip, mobile drawer opens with all six links, next= redirect after login.
-- [ ] Not yet verified in the browser: sign-out from the sidebar row, closing the drawer by choosing a page.
+
+## 2026-11-23: Studio shell, modern glass redesign
+
+- [x] Light-only lavender canvas with drifting light fields; floating glass sidebar and topbar; gradient active pill that springs between rows with a light sweep; one hover highlight gliding between rows; staggered row entrance; press feedback; animated breadcrumb; owner chip with a rotating gradient ring and live dot; blur/slide page transitions; animated placeholder (flowing border, orbiting ring, shimmering badge, pulsing rows).
+- [x] Installed `tw-animate-css`, so shadcn's Sheet/Tooltip enter and exit animations now run.
+- [x] Verified: navigation and breadcrumb, gliding hover, collapse, mobile drawer slides in and closes after choosing a page, sign-out → `/studio/login` and protected pages redirect afterwards; no horizontal scroll.
 
 ## Open items
 

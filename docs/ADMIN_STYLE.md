@@ -26,7 +26,7 @@ Names follow the shadcn/ui convention, so shadcn components work without edits. 
 
 | Utility | Role | Light | Dark |
 | --- | --- | --- | --- |
-| `background` | App canvas | `#F8FAFC` | `#0F172A` |
+| `background` | App canvas (the shell adds drifting light fields on top) | `#F3F5FC` | `#0F172A` |
 | `foreground` | Primary text | `#1E293B` | `#F1F5F9` |
 | `card` / `card-foreground` | Cards, popovers | `#FFFFFF` / `#1E293B` | `#1E293B` / `#F1F5F9` |
 | `primary` / `primary-foreground` | **The accent**: primary actions, focus, active and progress states | `#2563EB` / `#FFFFFF` | `#60A5FA` / `#0F172A` |
@@ -100,7 +100,9 @@ Generated with the shadcn CLI (`components.json`, style `new-york`) into `src/co
 | `Tooltip` | Dark bubble (`bg-foreground text-background`). Every icon-only button gets one, plus an `aria-label` with the same text. |
 | `InputOTP` | One box per digit (`h-14`, `rounded-xl`, `text-2xl`), separated boxes in a grid. Added a `masked` prop to `InputOTPSlot` so secrets show as dots. `animate-caret-blink` keyframes live in globals.css. |
 
-Icons: `lucide-react`, 16px, `aria-hidden` when next to text.
+Icons: `lucide-react`, 16px, `aria-hidden` when next to text. Navigation icons are MagicIcons (`dashboard`, `release`, `content`, `resume`, `chat`, `analytics`, `logout`, `panel`).
+
+shadcn's enter/exit animations (`animate-in`, `slide-in-from-left`, …) come from **`tw-animate-css`**, imported in `globals.css`.
 
 Patterns used by the login: an **icon tile** above each step's title (48px, `rounded-2xl`, primary → indigo gradient, white icon); a **segmented progress** bar (one segment per step, gradient fill, current step name and `n/total` above); an **identity chip** (gradient avatar initial, email, a pencil icon button with a tooltip to change it); `h-12 rounded-xl` fields with a 4px soft focus ring; **code boxes** `h-16 rounded-2xl` that tint (`border-primary/50 bg-primary/5`) once filled; a **gradient primary button** (`from-primary to-aurora-indigo`, coloured shadow, brightens on hover). Shared classes live in `src/components/studio/login/auth-styles.ts`.
 

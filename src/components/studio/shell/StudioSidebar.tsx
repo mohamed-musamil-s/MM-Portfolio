@@ -14,18 +14,22 @@ import { SidebarNav } from "./SidebarNav";
 import { useSidebarState } from "./sidebar-state";
 import { SignOutRow } from "./SignOutRow";
 
-const WIDTH = { expanded: 256, collapsed: 68 } as const;
+const WIDTH = { expanded: 260, collapsed: 72 } as const;
 
 const LogoTile = ({ className }: { className?: string }) => (
-  <span
+  <motion.span
     aria-hidden
     className={cn(
-      "grid size-8 shrink-0 place-items-center rounded-lg bg-foreground text-card shadow-sm transition-opacity duration-150",
+      "grid size-9 shrink-0 place-items-center rounded-xl bg-linear-to-br from-primary to-aurora-indigo text-primary-foreground shadow-lg shadow-primary/30 transition-opacity duration-150",
       className,
     )}
+    initial={{ scale: 0.6, rotate: -20, opacity: 0 }}
+    animate={{ scale: 1, rotate: 0, opacity: 1 }}
+    whileHover={{ rotate: -8, scale: 1.06 }}
+    transition={{ type: "spring", stiffness: 380, damping: 18 }}
   >
-    <Monogram dot="letter" className="w-5 text-card" />
-  </span>
+    <Monogram dot="letter" className="w-5 text-primary-foreground" />
+  </motion.span>
 );
 
 /** Collapse / expand button; the icon's "active" pose means collapsed (chevron points out). */
@@ -70,7 +74,11 @@ const SidebarBody = ({
     <div className={cn("flex-1 overflow-x-hidden overflow-y-auto px-3 py-4", collapsed && "px-2.5")}>
       <SidebarNav content={content} collapsed={collapsed} onNavigate={onNavigate} />
     </div>
-    <div className={cn("border-t border-border px-3 py-3", collapsed && "px-2.5")}>
+    <div className={cn("relative px-3 pt-3 pb-3", collapsed && "px-2.5")}>
+      <span
+        aria-hidden
+        className="absolute inset-x-4 top-0 h-px bg-linear-to-r from-transparent via-border to-transparent"
+      />
       <SignOutRow label={content.actions.signOut} pendingLabel={content.actions.signingOut} collapsed={collapsed} />
     </div>
   </>
@@ -83,29 +91,40 @@ const SidebarBody = ({
  */
 export const StudioSidebar = ({ content }: { content: StudioShellContent }) => {
   const { collapsed, mobileOpen, setMobileOpen } = useSidebarState();
-  const { tokens, reducedMotion } = useMotionTheme();
+  const { reducedMotion } = useMotionTheme();
 
   return (
     <>
       <motion.aside
-        className="sticky top-0 z-30 hidden h-svh shrink-0 flex-col overflow-hidden border-r border-border bg-card lg:flex"
+        className="sticky top-3 z-30 my-3 ml-3 hidden h-[calc(100svh-1.5rem)] shrink-0 flex-col overflow-hidden rounded-2xl border border-card bg-card/70 shadow-xl shadow-aurora-indigo/10 backdrop-blur-xl lg:flex"
         initial={false}
         animate={{ width: collapsed ? WIDTH.collapsed : WIDTH.expanded }}
-        transition={reducedMotion ? { duration: 0 } : { duration: tokens.duration.slow, ease: tokens.ease }}
+        transition={reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 260, damping: 30 }}
       >
-        <div className="group/header relative flex h-14 shrink-0 items-center gap-2.5 border-b border-border px-3.5">
+        <div className="group/header relative flex h-16 shrink-0 items-center gap-3 px-4">
+          <span
+            aria-hidden
+            className="absolute inset-x-4 bottom-0 h-px bg-linear-to-r from-transparent via-border to-transparent"
+          />
           {collapsed ? (
-            <div className="relative mx-auto grid size-8 place-items-center">
+            <div className="relative mx-auto grid size-9 place-items-center">
               <LogoTile className="group-focus-within/header:opacity-0 group-hover/header:opacity-0" />
               <ToggleButton
                 content={content}
-                className="absolute inset-0 size-8 opacity-0 group-focus-within/header:opacity-100 group-hover/header:opacity-100"
+                className="absolute inset-0 size-9 opacity-0 group-focus-within/header:opacity-100 group-hover/header:opacity-100"
               />
             </div>
           ) : (
             <>
               <LogoTile />
-              <span className="truncate text-sm font-semibold tracking-tight">{content.brand.name}</span>
+              <motion.span
+                className="truncate text-[0.9375rem] font-semibold tracking-tight"
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
+              >
+                {content.brand.name}
+              </motion.span>
               <ToggleButton content={content} className="ml-auto" />
             </>
           )}
@@ -114,8 +133,11 @@ export const StudioSidebar = ({ content }: { content: StudioShellContent }) => {
       </motion.aside>
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="flex w-72 flex-col gap-0 p-0 sm:max-w-72">
-          <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-border px-4">
+        <SheetContent
+          side="left"
+          className="flex w-72 flex-col gap-0 border-card bg-card/90 p-0 backdrop-blur-xl sm:max-w-72"
+        >
+          <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border px-4">
             <LogoTile />
             <SheetTitle className="text-sm font-semibold tracking-tight">{content.brand.name}</SheetTitle>
             <SheetDescription className="sr-only">{content.actions.navigation}</SheetDescription>

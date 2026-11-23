@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { ROUTES } from "@/lib/shared/routes";
 import { NavRow } from "./NavRow";
 
@@ -11,6 +11,8 @@ type SignOutRowProps = { label: string; pendingLabel: string; collapsed: boolean
 export const SignOutRow = ({ label, pendingLabel, collapsed }: SignOutRowProps) => {
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const hoverId = `signout-${useId()}`;
 
   const signOut = async () => {
     setPending(true);
@@ -24,6 +26,9 @@ export const SignOutRow = ({ label, pendingLabel, collapsed }: SignOutRowProps) 
       label={pending ? pendingLabel : label}
       icon="logout"
       collapsed={collapsed}
+      hovered={hovered || pending}
+      hoverId={hoverId}
+      onHoverChange={setHovered}
       onSelect={signOut}
       disabled={pending}
       tone="danger"

@@ -175,6 +175,7 @@ const SCREENS = {
       navigation: "Navigation",
       signOut: "Sign out",
       signingOut: "Signing out…",
+      accountMenu: "Account menu",
       shortcut: "Ctrl B",
     },
   },

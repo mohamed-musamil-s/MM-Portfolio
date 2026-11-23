@@ -41,6 +41,8 @@ export const studioShellContentSchema = z.object({
     navigation: text(32),
     signOut: text(24),
     signingOut: text(24),
+    /** Accessible name of the topbar account menu button. */
+    accountMenu: text(32),
     /** Shown in the collapse tooltip, e.g. "Ctrl B". */
     shortcut: text(16),
   }),

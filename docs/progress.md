@@ -273,6 +273,11 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] Menu search (Ctrl/⌘ K, live filter, Enter opens the first match, Esc clears, empty state) and a site status card reading the real maintenance flag with a "View site" link. New content: `search`, `siteStatus` (DB version 5); `warning` token for the amber dot.
 - [x] Verified: filter ("an" → Content Management, Analytics), "chat" + Enter → /studio/chat, no-match message, status shows "Maintenance mode".
 
+## 2026-11-23: Clean topbar with account menu
+
+- [x] Topbar simplified: one-line breadcrumb (group / page), date with a calendar icon, and an account menu (shadcn DropdownMenu) with who is signed in, View site and Sign out. `actions.accountMenu` added (DB version 6).
+- [x] Verified: menu opens with the right items, Sign out from the menu → /studio/login and protected pages redirect, phone topbar (menu, page name, avatar), no horizontal scroll.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

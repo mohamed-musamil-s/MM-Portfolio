@@ -90,13 +90,41 @@ The database stores only a hash of the session id. If the database leaks, its ro
 
 `getCurrentSession()` is wrapped in React `cache()`, so several callers in one request share one database lookup.
 
+## API security
+
+Every route handler is wrapped (`src/lib/server/http/with-api.ts`), so the rules below can't be forgotten per route.
+
+| Layer | Where | Rule |
+| --- | --- | --- |
+| CORS gate | `src/proxy.ts` + `http/origin.ts`, every `/api/**` request | Same-origin calls pass. Cross-origin **preflights** (OPTIONS) and **writes** (POST/PUT/PATCH/DELETE) get **403** before any route code runs. Cross-origin reads get no CORS headers, so browsers block them. Origins listed in `CORS_ALLOWED_ORIGINS` may read public GET endpoints only (no cookies, no writes). Cross-origin is detected from `Origin`, or `Sec-Fetch-Site: cross-site` when `Origin` is absent. |
+| Write checks | `withApi`, every write | Same origin again (403), JSON only: `content-type: application/json` (**415**), body at most 256 KB (**413**). |
+| Authentication | `withStudioApi`, every `/api/studio/**` handler | A valid session, checked against MongoDB (**401** otherwise). The handler receives the session (e.g. to record `updatedBy`). |
+| Authorization | single admin | Any valid session is the admin; there are no other roles. Public endpoints (`/api/status`, `/api/health`, the two login steps) expose nothing private. |
+| Validation | each handler | Every body is parsed with a zod schema (**400** `invalid_input`); screen content is validated against the screen's schema (**400** `invalid_content` with `issues`). |
+| Errors | `responses.ts` | One envelope: `{ ok: true, data }` or `{ ok: false, error: { code, message, …details } }`. Thrown errors become a logged **500** `internal_error` with a `requestId` and no internals. |
+| Caching | `withApi` | Every API response is `Cache-Control: no-store` unless the handler sets its own. |
+
+API endpoints:
+
+| Endpoint | Access |
+| --- | --- |
+| `GET /api/health`, `GET /api/status` | Public, read-only |
+| `POST /api/auth/initiate-login`, `POST /api/auth/login` | Public, same-origin, rate limited |
+| `POST /api/auth/logout` | Same-origin |
+| `GET`/`PUT /api/studio/screens/:slug` | Admin session; PUT same-origin JSON |
+| `GET`/`PUT /api/studio/settings/maintenance` | Admin session; PUT same-origin JSON |
+
 ## Other hardening
 
-- Security headers on every response:
-  - `X-Frame-Options: DENY`
+- Security headers on every response (`next.config.ts`):
+  - `X-Frame-Options: DENY` and CSP `frame-ancestors 'none'` (`/preview/*`: `SAMEORIGIN` / `'self'`, for Content Forge's preview frame)
+  - CSP `base-uri 'self'; form-action 'self'; object-src 'none'`
+  - `Strict-Transport-Security: max-age=63072000; includeSubDomains` (ignored by browsers on plain-http localhost)
+  - `Cross-Origin-Opener-Policy: same-origin`
   - `X-Content-Type-Options: nosniff`
   - `Referrer-Policy: strict-origin-when-cross-origin`
   - `Permissions-Policy`
+  - `X-DNS-Prefetch-Control: off`
 - The `X-Powered-By` header is turned off.
 - Studio pages send `robots: noindex, nofollow`.
 - 500 responses never include internals. They carry a `requestId` that matches the server log entry.
@@ -111,5 +139,7 @@ The database stores only a hash of the session id. If the database leaks, its ro
 | 400 | invalid input, or `challenge_expired` (step 2 without a valid step 1) |
 | 401 | invalid credentials |
 | 403 | cross-origin request |
+| 413 | body larger than 256 KB |
+| 415 | write without a JSON body |
 | 429 | locked out |
 | 500 | server or database failure |

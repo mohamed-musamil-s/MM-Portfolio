@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/server/auth/session-token";
 import { getLogger } from "@/lib/server/logger";
 import { isMaintenanceEnabled } from "@/lib/server/settings/maintenance-flag";
+import { UNSAFE_METHODS, corsHeaders, isCrossOrigin, listedOrigin } from "@/lib/server/http/origin";
 import { REQUEST_ID_HEADER } from "@/lib/server/http/request";
 import { ROUTES, isStudioPath } from "@/lib/shared/routes";
 
@@ -15,6 +16,9 @@ import { ROUTES, isStudioPath } from "@/lib/shared/routes";
  * 3. `/studio/**` (except login) requires a validly signed session cookie,
  *    otherwise 302 -> `/studio/login`. This is the optimistic check; pages
  *    re-verify the session against MongoDB via `requireSession()`.
+ * 4. `/api/**` CORS gate (lib/server/http/origin.ts): cross-origin preflights
+ *    and writes are refused here; listed origins may read public GETs.
+ *    Route handlers still check origin, session and input themselves.
  */
 
 const log = getLogger("proxy");
@@ -30,6 +34,39 @@ const passThrough = (request: NextRequest, requestId: string): NextResponse => {
   headers.set(REQUEST_ID_HEADER, requestId);
   const response = NextResponse.next({ request: { headers } });
   response.headers.set(REQUEST_ID_HEADER, requestId);
+  return response;
+};
+
+const json403 = (requestId: string): NextResponse =>
+  NextResponse.json(
+    { ok: false, error: { code: "forbidden", message: "Cross-origin request rejected." } },
+    { status: 403, headers: { [REQUEST_ID_HEADER]: requestId, "Cache-Control": "no-store" } },
+  );
+
+const gateApi = (request: NextRequest, requestId: string): NextResponse => {
+  if (!isCrossOrigin(request)) {
+    return passThrough(request, requestId);
+  }
+  const origin = listedOrigin(request);
+  if (request.method === "OPTIONS") {
+    if (!origin) {
+      log.warn({ requestId, path: request.nextUrl.pathname }, "cors preflight rejected");
+      return json403(requestId);
+    }
+    return new NextResponse(null, { status: 204, headers: { ...corsHeaders(origin), [REQUEST_ID_HEADER]: requestId } });
+  }
+  if (UNSAFE_METHODS.has(request.method)) {
+    log.warn({ requestId, path: request.nextUrl.pathname, method: request.method }, "cross-origin write rejected");
+    return json403(requestId);
+  }
+  if (!origin) {
+    // No CORS headers: the browser blocks the cross-origin read.
+    return passThrough(request, requestId);
+  }
+  const response = passThrough(request, requestId);
+  for (const [key, value] of Object.entries(corsHeaders(origin))) {
+    response.headers.set(key, value);
+  }
   return response;
 };
 
@@ -77,6 +114,9 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
       if (!maintenance && pathname === ROUTES.maintenance) {
         return redirect302(request, ROUTES.home, requestId);
       }
+    }
+    if (pathname.startsWith("/api/")) {
+      return gateApi(request, requestId);
     }
     if (isStudioPath(pathname)) {
       return await guardStudio(request, requestId);

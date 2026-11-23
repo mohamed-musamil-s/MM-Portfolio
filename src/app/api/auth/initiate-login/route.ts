@@ -1,6 +1,6 @@
 import { issueLoginChallenge } from "@/lib/server/auth/login-challenge";
 import { getLockStatus } from "@/lib/server/auth/rate-limit";
-import { getClientIp, isSameOrigin } from "@/lib/server/http/request";
+import { getClientIp } from "@/lib/server/http/request";
 import { HTTP_STATUS, fail, ok } from "@/lib/server/http/responses";
 import { withApi } from "@/lib/server/http/with-api";
 import { initiateLoginSchema } from "@/lib/shared/auth/login-input";
@@ -13,11 +13,6 @@ import { initiateLoginSchema } from "@/lib/shared/auth/login-input";
  *   200 challenge issued · 400 invalid email · 403 cross-origin · 429 locked out
  */
 export const POST = withApi(async (request, { log }) => {
-  if (!isSameOrigin(request)) {
-    log.warn("initiate-login rejected: cross-origin request");
-    return fail(HTTP_STATUS.forbidden, "forbidden", "Cross-origin request rejected.");
-  }
-
   const input = initiateLoginSchema.safeParse(await request.json().catch(() => null));
   if (!input.success) {
     return fail(HTTP_STATUS.badRequest, "invalid_input", "A valid email address is required.");

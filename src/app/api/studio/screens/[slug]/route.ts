@@ -1,29 +1,23 @@
 import { z } from "zod";
-import { getCurrentSession } from "@/lib/server/auth/session";
 import { getScreenRecord, saveScreenContent, ScreenContentError } from "@/lib/server/content/screens";
-import { isSameOrigin } from "@/lib/server/http/request";
 import { HTTP_STATUS, fail, ok } from "@/lib/server/http/responses";
-import { withApi } from "@/lib/server/http/with-api";
+import { withStudioApi } from "@/lib/server/http/with-api";
 import { SCREEN_SCHEMAS, isScreenSlug } from "@/lib/shared/content/screens";
 
 /**
- * Admin content API for database-managed screens (backend of the future admin panel).
+ * Admin content API for database-managed screens (Content Forge).
  *   GET /api/studio/screens/:slug  -> { content, version, updatedAt, updatedBy }
  *   PUT /api/studio/screens/:slug  <- { content, version }  (optimistic concurrency)
- * Both require an admin session. PUT also requires a same-origin request.
+ * Both need an admin session (401); PUT is same-origin JSON only (withApi).
  */
 
 type Route = RouteContext<"/api/studio/screens/[slug]">;
 
-const unauthorized = () => fail(HTTP_STATUS.unauthorized, "unauthorized", "Sign in to the studio first.");
 const unknownScreen = () => fail(HTTP_STATUS.notFound, "unknown_screen", "No such screen.");
 
 const putBody = z.object({ content: z.unknown(), version: z.number().int().positive() });
 
-export const GET = withApi<Route>(async (_request, _api, route) => {
-  if (!(await getCurrentSession())) {
-    return unauthorized();
-  }
+export const GET = withStudioApi<Route>(async (_request, _api, route) => {
   const { slug } = await route.params;
   if (!isScreenSlug(slug)) {
     return unknownScreen();
@@ -38,14 +32,7 @@ export const GET = withApi<Route>(async (_request, _api, route) => {
   }
 });
 
-export const PUT = withApi<Route>(async (request, { log }, route) => {
-  if (!isSameOrigin(request)) {
-    return fail(HTTP_STATUS.forbidden, "forbidden", "Cross-origin request rejected.");
-  }
-  const session = await getCurrentSession();
-  if (!session) {
-    return unauthorized();
-  }
+export const PUT = withStudioApi<Route>(async (request, { log, session }, route) => {
   const { slug } = await route.params;
   if (!isScreenSlug(slug)) {
     return unknownScreen();
@@ -57,13 +44,9 @@ export const PUT = withApi<Route>(async (request, { log }, route) => {
   }
   const content = SCREEN_SCHEMAS[slug].safeParse(body.data.content);
   if (!content.success) {
-    return Response.json(
-      {
-        ok: false,
-        error: { code: "invalid_content", message: "Content failed validation.", issues: content.error.issues },
-      },
-      { status: HTTP_STATUS.badRequest },
-    );
+    return fail(HTTP_STATUS.badRequest, "invalid_content", "Content failed validation.", {
+      details: { issues: content.error.issues },
+    });
   }
 
   const result = await saveScreenContent(slug, content.data, body.data.version, session.email);

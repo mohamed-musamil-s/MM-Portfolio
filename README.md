@@ -8,7 +8,7 @@ The project currently contains only the foundation: routing, authentication, ses
 
 ```bash
 npm install
-cp .env.example .env.local   # then fill in the values
+cp .env.development.example .env.development   # then fill in the values (see docs/deployment.md)
 npm run seed:screens         # one-time: default page content into MongoDB
 npm run dev                  # http://localhost:3000
 ```

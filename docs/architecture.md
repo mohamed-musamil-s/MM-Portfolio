@@ -143,7 +143,7 @@ Browser
 
 ## Environment
 
-See `.env.example`. Values are read lazily, so `next build` works without secrets. A missing value throws on first use, gets logged, and the request returns 500.
+Local files `.env.development` / `.env.production` (templates: `.env.*.example`); Vercel Preview and Production have their own values. Full setup: [deployment.md](deployment.md). Values are read lazily, so `next build` works without secrets. A missing value throws on first use, gets logged, and the request returns 500.
 
 | Variable | Purpose |
 | --- | --- |
@@ -153,3 +153,4 @@ See `.env.example`. Values are read lazily, so `next build` works without secret
 | `ADMIN_ACCESS_CODE` | studio static access code |
 | `SESSION_SECRET` | at least 32 characters, used to sign session cookies |
 | `LOG_LEVEL` | pino level (default `info`) |
+| `CORS_ALLOWED_ORIGINS` | optional, origins allowed to read public GET APIs |

@@ -2,18 +2,13 @@ import { verifyAdminCredentials } from "@/lib/server/auth/credentials";
 import { clearLoginChallenge, hasValidLoginChallenge } from "@/lib/server/auth/login-challenge";
 import { clearFailedLogins, getLockStatus, recordFailedLogin } from "@/lib/server/auth/rate-limit";
 import { createSession } from "@/lib/server/auth/session";
-import { getClientIp, isSameOrigin } from "@/lib/server/http/request";
+import { getClientIp } from "@/lib/server/http/request";
 import { HTTP_STATUS, fail, ok } from "@/lib/server/http/responses";
 import { withApi } from "@/lib/server/http/with-api";
 import { loginSchema } from "@/lib/shared/auth/login-input";
 import { ROUTES } from "@/lib/shared/routes";
 
 export const POST = withApi(async (request, { log }) => {
-  if (!isSameOrigin(request)) {
-    log.warn("login rejected: cross-origin request");
-    return fail(HTTP_STATUS.forbidden, "forbidden", "Cross-origin request rejected.");
-  }
-
   const parsed = loginSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return fail(HTTP_STATUS.badRequest, "invalid_input", "Email and access code are required.");

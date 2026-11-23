@@ -308,12 +308,19 @@ Verified with a production build (`next start`) connected to Atlas:
 
 - [x] Screens as a sideways row of chips; no hide toggle on mobile; sticky Edit / Preview switch below 1280px; Fit preview shows the phone layout on phones (`editor.previewPanel.editTab` / `previewTab`, DB version 15). Verified at 375×812 (no sideways scroll) and 1440×900 (unchanged).
 
+## 2026-11-23: Deployment setup
+
+- [x] Branches `develop` (Vercel Preview) and `go-live` (Production); other branches never deploy (`vercel.json` `git.deploymentEnabled` + `scripts/vercel-ignore-build.mjs`). Guide: [deployment.md](deployment.md).
+- [x] Env split: `.env.development` (local dev) and `.env.production` (local production build), both gitignored, own database (`mm-portfolio-prod`) and own session secret for production; templates `.env.*.example` committed; Vercel values set per environment in the dashboard.
+- [x] API security: CORS gate in the proxy, central write checks (same-origin, JSON, 256 KB), `withStudioApi` session guard, one error envelope with `details`, `no-store` on all API responses, extra security headers (CSP base, HSTS, COOP). Verified with curl: 403 cross-origin preflight/write, 401 without session, 415, 413, 400.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.
 
 - [ ] Choose a longer `ADMIN_ACCESS_CODE` before deploying.
-- [ ] When deploying, set all `.env.example` variables in the host's environment, and confirm that the host sets `x-forwarded-for`.
+- [ ] Do the one-time Vercel setup and the first-deploy checklist in [deployment.md](deployment.md) (Vercel sets `x-forwarded-for`).
+- [ ] Delete the old `.env.local` (its values now live in `.env.development`; it would override both env files).
 
 ## On hold (waiting for instructions)
 

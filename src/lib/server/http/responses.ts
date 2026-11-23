@@ -16,6 +16,8 @@ export const HTTP_STATUS = {
   forbidden: 403,
   notFound: 404,
   conflict: 409,
+  payloadTooLarge: 413,
+  unsupportedMediaType: 415,
   tooManyRequests: 429,
   internalServerError: 500,
 } as const;
@@ -28,13 +30,17 @@ export const ok = <T>(data: T, init?: ResponseInit): NextResponse<ApiSuccess<T>>
 export const found = (location: string | URL, base?: string | URL): NextResponse =>
   NextResponse.redirect(new URL(location, base), HTTP_STATUS.found);
 
-/** 4xx client error with a stable machine-readable code. */
+/**
+ * 4xx client error with a stable machine-readable code. `details` adds
+ * structured data to the error (e.g. validation `issues`).
+ */
 export const fail = (
   status: Exclude<(typeof HTTP_STATUS)[keyof typeof HTTP_STATUS], 200 | 302 | 500>,
   code: string,
   message: string,
-  init?: ResponseInit,
-): NextResponse<ApiFailure> => NextResponse.json({ ok: false, error: { code, message } }, { ...init, status });
+  { headers, details }: { headers?: HeadersInit; details?: Record<string, unknown> } = {},
+): NextResponse<ApiFailure> =>
+  NextResponse.json({ ok: false, error: { ...details, code, message } }, { status, headers });
 
 /** 500 Internal Server Error. Never leaks internals; the requestId ties it to the server log. */
 export const serverError = (requestId?: string): NextResponse<ApiFailure> =>

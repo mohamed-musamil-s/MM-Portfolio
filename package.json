@@ -9,10 +9,11 @@
     "lint": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "seed:screens": "node --env-file=.env.local scripts/seed-screens.mjs",
+    "seed:screens": "node --env-file=.env.development scripts/seed-screens.mjs",
     "brand:assets": "node scripts/build-brand-assets.mjs",
     "ui:add": "node scripts/shadcn-add.mjs",
-    "brand:icons": "node scripts/build-app-icons.mjs"
+    "brand:icons": "node scripts/build-app-icons.mjs",
+    "seed:screens:prod": "node --env-file=.env.production scripts/seed-screens.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

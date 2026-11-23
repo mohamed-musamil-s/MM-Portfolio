@@ -314,12 +314,19 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] Env split: `.env.development` (local dev) and `.env.production` (local production build), both gitignored, own database (`mm-portfolio-prod`) and own session secret for production; templates `.env.*.example` committed; Vercel values set per environment in the dashboard.
 - [x] API security: CORS gate in the proxy, central write checks (same-origin, JSON, 256 KB), `withStudioApi` session guard, one error envelope with `details`, `no-store` on all API responses, extra security headers (CSP base, HSTS, COOP). Verified with curl: 403 cross-origin preflight/write, 401 without session, 415, 413, 400.
 
+## 2026-11-23: First deployment (Vercel project md-musamil)
+
+- [x] Production branch set to `go-live` (Vercel had picked `develop`, the GitHub default). 12 environment variables (6 Production, 6 Preview). Production database `mm-portfolio-prod` filled with a copy of the development content.
+- [x] `go-live` deployed to Production: https://md-musamil-tau.vercel.app. Verified: `/api/health` database up, `/` → `/maintenance` with live content, unknown pages → 404, studio redirects to login, security headers present, cross-origin write 403, favicon served.
+- [x] `develop` deployed to Preview (protected by Vercel Authentication); `/api/health` database up. The build guard cancelled the two `develop`-as-production attempts, as designed.
+
 ## Open items
+
+- [ ] Delete the local `vercel-env/` folder after saving the production access code in a password manager.
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.
 
 - [ ] Choose a longer `ADMIN_ACCESS_CODE` before deploying.
-- [ ] Do the one-time Vercel setup and the first-deploy checklist in [deployment.md](deployment.md) (Vercel sets `x-forwarded-for`).
 - [ ] Delete the old `.env.local` (its values now live in `.env.development`; it would override both env files).
 
 ## On hold (waiting for instructions)

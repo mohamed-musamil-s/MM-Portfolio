@@ -43,3 +43,6 @@ next-env.d.ts
 
 # local design reference media (large, not part of the app)
 /docs/reference/
+
+# Paste-ready Vercel variables (secrets, never committed)
+/vercel-env/

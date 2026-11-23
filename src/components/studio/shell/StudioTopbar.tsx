@@ -43,9 +43,9 @@ const MenuButton = ({ content }: { content: StudioShellContent }) => {
       aria-expanded={mobileOpen}
       onClick={() => setMobileOpen(true)}
       onPointerDown={onPointerDown}
-      className="relative grid size-10 place-items-center rounded-xl text-muted-foreground transition-colors duration-200 outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40 lg:hidden"
+      className="relative grid size-9 place-items-center rounded-lg text-muted-foreground transition-colors duration-200 outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40 lg:hidden"
     >
-      <MagicIcon name="menu" size={22} state={mobileOpen ? "active" : "idle"} />
+      <MagicIcon name="menu" size={20} state={mobileOpen ? "active" : "idle"} />
       {ripples}
     </button>
   );
@@ -63,7 +63,7 @@ export const StudioTopbar = ({ content }: { content: StudioShellContent }) => {
   return (
     <header
       className={cn(
-        "sticky top-0 z-20 flex h-[72px] shrink-0 animate-in items-center gap-4 bg-card/85 px-4 backdrop-blur-xl duration-500 ease-out fade-in slide-in-from-top-3 motion-reduce:animate-none sm:px-6 lg:px-8",
+        "sticky top-0 z-20 flex h-16 shrink-0 animate-in items-center gap-4 bg-card/85 px-4 backdrop-blur-xl duration-500 ease-out fade-in slide-in-from-top-3 motion-reduce:animate-none sm:px-6 lg:px-8",
         BOTTOM_SHADOW,
       )}
     >
@@ -80,10 +80,7 @@ export const StudioTopbar = ({ content }: { content: StudioShellContent }) => {
               exit={{ y: -14, opacity: 0 }}
               transition={{ duration: 0.32, ease: EASE }}
             >
-              <li
-                aria-hidden
-                className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"
-              >
+              <li aria-hidden className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
                 <MagicIcon name={MODULE_ICONS[active]} size={20} state="active" />
               </li>
               <li className="flex min-w-0 flex-col leading-tight">

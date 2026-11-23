@@ -166,6 +166,8 @@ const SCREENS = {
       analytics: { label: "Analytics", title: "Analytics", description: "Traffic, sources and engagement over time." },
     },
     placeholder: { badge: "Coming soon", body: "This module is on the way. The shell and navigation are ready for it." },
+    search: { placeholder: "Search menu", empty: "No matching pages", shortcut: "Ctrl K", clear: "Clear search" },
+    siteStatus: { title: "Public site", maintenance: "Maintenance mode", live: "Live", viewSite: "View site" },
     actions: {
       collapse: "Collapse sidebar",
       expand: "Expand sidebar",

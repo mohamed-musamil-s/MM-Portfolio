@@ -267,6 +267,12 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] Motion only on first load and on click (ripple, press, bar slide, icon-well pop, title roll, page slide); hover is colour only; no loops (verified: 0 running animations after load and after a click settles). Entrances use shadcn / tw-animate-css.
 - [x] `brand.tagline` added (DB version 3). Verified navigation, collapse (icons centred), mobile, no horizontal scroll.
 
+## 2026-11-23: Studio sidebar v1.3 (compact, search, site status)
+
+- [x] Smaller overall: 248px / 68px, 40px rows, 32px icon wells with 18px icons, 64px header and topbar, smaller logo.
+- [x] Menu search (Ctrl/⌘ K, live filter, Enter opens the first match, Esc clears, empty state) and a site status card reading the real maintenance flag with a "View site" link. New content: `search`, `siteStatus` (DB version 5); `warning` token for the amber dot.
+- [x] Verified: filter ("an" → Content Management, Analytics), "chat" + Enter → /studio/chat, no-match message, status shows "Maintenance mode".
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.

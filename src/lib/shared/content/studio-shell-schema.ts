@@ -30,6 +30,10 @@ export const studioShellContentSchema = z.object({
     analytics: moduleCopy,
   }),
   placeholder: z.object({ badge: text(24), body: text(200) }),
+  /** Menu filter at the top of the sidebar. */
+  search: z.object({ placeholder: text(32), empty: text(48), shortcut: text(12), clear: text(24) }),
+  /** Public-site status card at the bottom of the sidebar (reads the maintenance flag). */
+  siteStatus: z.object({ title: text(24), maintenance: text(32), live: text(32), viewSite: text(24) }),
   actions: z.object({
     collapse: text(32),
     expand: text(32),

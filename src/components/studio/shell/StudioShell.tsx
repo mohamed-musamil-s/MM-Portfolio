@@ -13,6 +13,8 @@ type StudioShellProps = {
   content: StudioShellContent;
   /** From the studio_sidebar cookie, so the server render matches. */
   initialCollapsed: boolean;
+  /** The public site's maintenance flag, for the sidebar status card. */
+  maintenance: boolean;
   children: ReactNode;
 };
 
@@ -22,14 +24,14 @@ type StudioShellProps = {
  * canvas, the page in the main slot. Motion happens only on first load and
  * when you act: the page slides in after each navigation you trigger.
  */
-export const StudioShell = ({ content, initialCollapsed, children }: StudioShellProps) => {
+export const StudioShell = ({ content, initialCollapsed, maintenance, children }: StudioShellProps) => {
   const pathname = usePathname();
   return (
     <TooltipProvider delayDuration={200}>
       <SidebarStateProvider initialCollapsed={initialCollapsed}>
         <ShellBackdrop />
         <div className="flex min-h-svh">
-          <StudioSidebar content={content} />
+          <StudioSidebar content={content} maintenance={maintenance} />
           <div className="flex min-w-0 flex-1 flex-col">
             <StudioTopbar content={content} />
             <main className="flex-1 px-4 py-8 sm:px-6 lg:px-10 lg:py-10">

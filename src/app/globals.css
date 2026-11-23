@@ -110,6 +110,7 @@
   --color-destructive: var(--studio-destructive);
   --color-destructive-surface: var(--studio-destructive-surface);
   --color-success: var(--studio-success);
+  --color-warning: var(--studio-warning);
   --color-border: var(--studio-border);
   --color-input: var(--studio-input);
   --color-ring: var(--studio-ring);
@@ -186,6 +187,7 @@
     --studio-destructive: #dc2626; /* 4.8:1 */
     --studio-destructive-surface: #fef2f2;
     --studio-success: #15803d; /* 5.0:1 */
+    --studio-warning: #d97706; /* status dots only (non-text, 3.2:1) */
     --studio-border: #e2e8f0; /* decorative hairlines */
     --studio-input: #7b8ba3; /* field boundary, 3.5:1 (WCAG 1.4.11) */
     --studio-ring: #2563eb;

@@ -1,6 +1,6 @@
 # Component: Studio Shell (Sidebar + Topbar), Business Spec
 
-Version 1.2, 2026-11-23 (flush redesign; motion only on load and on click). Screenshots: [desktop](studio-shell/desktop-1440x900.jpg), [mobile](studio-shell/mobile-390x844.jpg). The frame around every signed-in studio page: a collapsible **side navigation** and a sticky **topbar**, with the page in the main slot. Design system: [ADMIN_STYLE.md](../ADMIN_STYLE.md) (shadcn/ui, studio tokens). `/studio/login` stays standalone.
+Version 1.3, 2026-11-23 (compact sidebar with menu search and site status). Screenshots: [desktop](studio-shell/desktop-1440x900.jpg), [mobile](studio-shell/mobile-390x844.jpg). The frame around every signed-in studio page: a collapsible **side navigation** and a sticky **topbar**, with the page in the main slot. Design system: [ADMIN_STYLE.md](../ADMIN_STYLE.md) (shadcn/ui, studio tokens). `/studio/login` stays standalone.
 
 ## 1. Reference
 
@@ -59,13 +59,15 @@ Research (2026 SaaS dashboard write-ups) pointed to: a fixed, collapsible left s
 | Element | Look | First load | On click | On hover |
 | --- | --- | --- | --- | --- |
 | Canvas | Static porcelain `#F5F6F8` with a cool lavender wash top right, an ice wash bottom left, a faint dot grid in the corner | — | — | — |
-| Sidebar | **Flush, full height, square edges**, white, right-edge hairline + soft shade; 288px / 88px | Slides in from the left; rows cascade in (55ms stagger) | Collapse/expand: width springs | — |
+| Sidebar | **Flush, full height, square edges**, white, right-edge hairline + soft shade; **248px / 68px** | Slides in from the left; rows cascade in (55ms stagger) | Collapse/expand: width springs | — |
 | Brand | The MM. monogram on its own (no tile behind it), `Studio` + tagline `Admin console` | — | — | — |
-| Row | 48px tall; **40px icon well with a 22px icon**; label 15px | — | Ripple from the pointer, 98% press, the edge accent bar slides to the row, the icon well pops (spring) | Band tint, well turns white with a hairline shadow, icon darkens and plays its hover pose |
+| Row | 40px tall; **32px icon well with an 18px icon**; label 14px | — | Ripple from the pointer, 98% press, the edge accent bar slides to the row, the icon well pops (spring) | Band tint, well turns white with a hairline shadow, icon darkens and plays its hover pose |
 | Active row | Tinted band, solid gradient well with a white icon, 4px gradient bar on the sidebar's left edge | — | — | — |
-| Topbar | **Flush, full width**, 72px, white at 85% with blur, bottom hairline + shade | Slides down | The page title (with its group above it and its icon well) rolls over | — |
+| Topbar | **Flush, full width**, 64px, white at 85% with blur, bottom hairline + shade | Slides down | The page title (with its group above it and its icon well) rolls over | — |
 | Right side | Today's date chip (viewer's locale, browser-only), divider, owner avatar (ink → blue) with an online dot, name, role | — | — | — |
 | Page | — | — | Content fades and slides up after each navigation | — |
+| **Menu search** | Field under the brand: search icon, placeholder, `Ctrl K` hint (× to clear when typing) | — | `Ctrl/⌘ + K` focuses it (expands a collapsed sidebar); typing filters the menu by label; Enter opens the first match; Esc clears; "No matching pages" when nothing matches | Field lightens |
+| **Site status card** | Above Sign out: globe tile, "Public site", the real maintenance flag (amber dot `Maintenance mode` / green dot `Live`), and a `View site ↗` button (new tab). Collapsed: globe icon with a status dot and a tooltip | — | — | Button border/text turn accent |
 | Placeholder | White card with a gradient top rule, icon tile in a dashed ring, badge, three preview rows | Staggered entrance (title, text, card, tile spins in, badge, rows) | — | — |
 | Drawer, tooltips | shadcn Sheet / Tooltip | — | Enter/exit from `tw-animate-css` | — |
 
@@ -81,6 +83,8 @@ All shell text lives in `site_screens`, `_id: "studio-shell"` (schema `src/lib/s
 | `groups[]` | `Workspace`: dashboard, release, content · `Tools`: resume, chat, analytics |
 | `modules.<key>` | `label`, `title`, `description` for each module |
 | `placeholder` | `badge` (`Coming soon`), `body` |
+| `search` | `placeholder` (`Search menu`), `empty` (`No matching pages`), `shortcut` (`Ctrl K`), `clear` (`Clear search`) |
+| `siteStatus` | `title` (`Public site`), `maintenance` (`Maintenance mode`), `live` (`Live`), `viewSite` (`View site`) |
 | `actions` | `collapse`, `expand`, `openMenu`, `navigation` (drawer title), `signOut`, `signingOut`, `shortcut` |
 
 ## 5. Code layout

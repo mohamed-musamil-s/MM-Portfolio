@@ -25,7 +25,7 @@ type NavRowProps = {
 };
 
 const ROW =
-  "group/row relative flex h-12 w-full items-center gap-3 rounded-xl px-1.5 text-left text-[0.9375rem] outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-60";
+  "group/row relative flex h-10 w-full items-center gap-2.5 rounded-lg px-1 text-left text-sm outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-60";
 const BAR_SPRING = { type: "spring", stiffness: 520, damping: 38 } as const;
 
 /**
@@ -70,15 +70,15 @@ export const NavRow = ({
         <motion.span
           layoutId={barId}
           aria-hidden
-          className="absolute top-2 bottom-2 -left-3 w-1 rounded-r-full bg-linear-to-b from-primary to-aurora-indigo"
+          className="absolute top-2 bottom-2 -left-2.5 w-[3px] rounded-r-full bg-linear-to-b from-primary to-aurora-indigo"
           transition={BAR_SPRING}
         />
       ) : null}
-      <span className="relative overflow-hidden rounded-xl">
+      <span className="relative overflow-hidden rounded-lg">
         <motion.span
           key={active ? "active" : "idle"}
           className={cn(
-            "grid size-10 place-items-center rounded-xl transition-colors duration-200",
+            "grid size-8 place-items-center rounded-lg transition-colors duration-200",
             active
               ? "bg-linear-to-br from-primary to-aurora-indigo text-primary-foreground shadow-md shadow-primary/30"
               : "text-muted-foreground group-hover/row:bg-card group-hover/row:text-foreground group-hover/row:shadow-xs",
@@ -88,7 +88,7 @@ export const NavRow = ({
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 520, damping: 16 }}
         >
-          <MagicIcon name={icon} size={22} state={active ? "active" : hover ? "hover" : "idle"} />
+          <MagicIcon name={icon} size={18} state={active ? "active" : hover ? "hover" : "idle"} />
         </motion.span>
       </span>
       <motion.span
@@ -134,7 +134,7 @@ export const NavRow = ({
   return (
     <Tooltip>
       <TooltipTrigger asChild>{row}</TooltipTrigger>
-      <TooltipContent side="right" sideOffset={14}>
+      <TooltipContent side="right" sideOffset={12}>
         {label}
       </TooltipContent>
     </Tooltip>

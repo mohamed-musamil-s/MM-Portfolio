@@ -23,14 +23,14 @@ Version 1.4, 2026-11-23 (clean topbar with account menu). Screenshots: [desktop]
 
 | Group | Key | Label (default) | Route | Icon |
 | --- | --- | --- | --- | --- |
-| Workspace | `dashboard` | Dashboard | `/studio/dashboard` | `dashboard` |
-| Workspace | `release` | Release Version | `/studio/release` | `release` |
-| Workspace | `content` | Content Management | `/studio/content` | `content` |
-| Tools | `resume` | Resume Generator | `/studio/resume` | `resume` |
-| Tools | `chat` | Chats | `/studio/chat` | `chat` |
-| Tools | `analytics` | Analytics | `/studio/analytics` | `analytics` |
+| Workspace | `dashboard` | Mission Control | `/studio/dashboard` | `dashboard` |
+| Workspace | `release` | Launchpad | `/studio/release` | `release` |
+| Workspace | `content` | Content Forge | `/studio/content` | `content` |
+| Tools | `resume` | Resume Lab | `/studio/resume` | `resume` |
+| Tools | `chat` | Inbox | `/studio/chat` | `chat` |
+| Tools | `analytics` | Pulse | `/studio/analytics` | `analytics` |
 
-- Every module page stays a **"Coming soon" placeholder** inside the shell. No module internals are built.
+- Module pages are **"Coming soon" placeholders** inside the shell, except Content Forge ([spec](CONTENT_FORGE_BUSINESS.md)).
 - The active item is the one whose route matches the current path (or a sub-path of it).
 - `/studio` redirects to `/studio/dashboard` (unchanged). `/studio/login` renders without the shell.
 

@@ -29,4 +29,10 @@ export const SCREEN_SCHEMAS: { [S in ScreenSlug]: z.ZodType<ScreenContentMap[S]>
   "studio-shell": studioShellContentSchema,
 };
 
+/**
+ * Screens of the public portfolio site: the only ones Content Forge edits.
+ * Studio screens (login, shell) stay in the database but are not listed there.
+ */
+export const PORTFOLIO_SCREENS = ["maintenance", "not-found"] as const satisfies readonly ScreenSlug[];
+
 export const isScreenSlug = (value: string): value is ScreenSlug => Object.hasOwn(SCREEN_SCHEMAS, value);

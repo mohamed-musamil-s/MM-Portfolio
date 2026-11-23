@@ -34,6 +34,36 @@ export const studioShellContentSchema = z.object({
   search: z.object({ placeholder: text(32), empty: text(48), shortcut: text(12), clear: text(24) }),
   /** Public-site status card at the bottom of the sidebar (reads the maintenance flag). */
   siteStatus: z.object({ title: text(24), maintenance: text(32), live: text(32), viewSite: text(24) }),
+  /** Content Forge (the content editor page). */
+  editor: z.object({
+    screensTitle: text(32),
+    searchFields: text(32),
+    /** Placeholders: {time} {who}. */
+    lastSaved: text(64),
+    /** Placeholder: {n}. */
+    version: text(24),
+    preview: text(24),
+    unsaved: text(32),
+    discard: text(24),
+    save: text(24),
+    saving: text(24),
+    saved: text(48),
+    conflict: text(160),
+    reload: text(24),
+    invalid: text(120),
+    failed: text(120),
+    noFields: text(64),
+    addItem: text(24),
+    removeItem: text(24),
+    characters: text(24),
+    required: text(64),
+    /** Placeholder: {max}. */
+    tooLong: text(64),
+    /** Placeholder: {min}. */
+    tooShort: text(64),
+    siteMode: z.object({ title: text(32), maintenance: text(120), live: text(120), toggle: text(32), updated: text(64) }),
+    screens: z.record(z.string(), z.object({ name: text(40), description: text(140) })),
+  }),
   actions: z.object({
     collapse: text(32),
     expand: text(32),

@@ -278,6 +278,12 @@ Verified with a production build (`next start`) connected to Atlas:
 - [x] Topbar simplified: one-line breadcrumb (group / page), date with a calendar icon, and an account menu (shadcn DropdownMenu) with who is signed in, View site and Sign out. `actions.accountMenu` added (DB version 6).
 - [x] Verified: menu opens with the right items, Sign out from the menu → /studio/login and protected pages redirect, phone topbar (menu, page name, avatar), no horizontal scroll.
 
+## 2026-11-23: Module names and Content Forge
+
+- [x] Modules renamed (DB and seed): Mission Control, Launchpad, Content Forge, Resume Lab, Inbox, Pulse.
+- [x] Content Forge (`/studio/content`, [spec](components/CONTENT_FORGE_BUSINESS.md)): form generated from the stored content, field search, section chips, sticky save bar with Ctrl/⌘ S, plain-language validation messages, version-conflict banner, site-mode switch. Lists portfolio screens only (Maintenance page, 404 page); studio screens are not edited there.
+- [x] Verified: edit → save → live on /maintenance; empty field → field error; value restored.
+
 ## Open items
 
 - [ ] Set the real upgrade window: `timeline.windowStart` and `timeline.targetAt` currently hold a placeholder of 22 Nov → 31 Dec 2026 UTC.
@@ -289,5 +295,5 @@ Verified with a production build (`next start`) connected to Atlas:
 ## On hold (waiting for instructions)
 
 - Public portfolio
-- All studio modules: dashboard, release, content, resume, chat, analytics
+- Studio modules other than Content Forge: dashboard, release, resume, chat, analytics
 - UI design and styling for the studio modules (the login is done)

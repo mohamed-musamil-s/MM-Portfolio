@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/studio/ui/tooltip";
 import type { StudioShellContent } from "@/lib/shared/content/studio-shell-schema";
 import { ShellBackdrop } from "./ShellBackdrop";
@@ -44,6 +45,15 @@ export const StudioShell = ({ content, initialCollapsed, maintenance, children }
             </main>
           </div>
         </div>
+        <Toaster
+          position="bottom-right"
+          toastOptions={{
+            classNames: {
+              toast: "!rounded-xl !border-border !bg-card !text-foreground !shadow-xl !font-ui",
+              description: "!text-muted-foreground",
+            },
+          }}
+        />
       </SidebarStateProvider>
     </TooltipProvider>
   );

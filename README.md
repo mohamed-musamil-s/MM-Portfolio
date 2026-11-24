@@ -10,7 +10,7 @@ The project currently contains only the foundation: routing, authentication, ses
 npm install
 cp .env.development.example .env.development   # then fill in the values (see docs/deployment.md)
 npm run seed:screens         # one-time: default page content into MongoDB
-npm run dev                  # http://localhost:5000 (turn off macOS AirPlay Receiver, which also uses 5000)
+npm run dev                  # http://localhost:5100
 ```
 
 Generate `SESSION_SECRET` with `openssl rand -base64 48`.
@@ -19,7 +19,7 @@ Generate `SESSION_SECRET` with `openssl rand -base64 48`.
 | --- | --- |
 | `npm run dev` | dev server |
 | `npm run build` | production build |
-| `npm start` | serve the production build on http://localhost:5000 |
+| `npm start` | serve the production build on http://localhost:5100 |
 | `npm run lint` | ESLint |
 | `npm run format` | Prettier (also sorts Tailwind classes) |
 | `npm run seed:screens` | Insert default screen content into MongoDB (`-- --force` to replace) |

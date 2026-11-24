@@ -10,7 +10,7 @@ The project currently contains only the foundation: routing, authentication, ses
 npm install
 cp .env.development.example .env.development   # then fill in the values (see docs/deployment.md)
 npm run seed:screens         # one-time: default page content into MongoDB
-npm run dev                  # http://localhost:3000
+npm run dev                  # http://localhost:5000 (turn off macOS AirPlay Receiver, which also uses 5000)
 ```
 
 Generate `SESSION_SECRET` with `openssl rand -base64 48`.

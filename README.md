@@ -19,7 +19,7 @@ Generate `SESSION_SECRET` with `openssl rand -base64 48`.
 | --- | --- |
 | `npm run dev` | dev server |
 | `npm run build` | production build |
-| `npm start` | serve the production build |
+| `npm start` | serve the production build on http://localhost:5000 |
 | `npm run lint` | ESLint |
 | `npm run format` | Prettier (also sorts Tailwind classes) |
 | `npm run seed:screens` | Insert default screen content into MongoDB (`-- --force` to replace) |

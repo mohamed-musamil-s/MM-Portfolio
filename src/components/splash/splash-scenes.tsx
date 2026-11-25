@@ -139,15 +139,43 @@ const HookScene = ({ content, bind }: SceneProps) => (
       {/* Both words share one grid cell, so the stack is as wide as the wider one. */}
       <div ref={bind("stack")} className="relative grid leading-none font-extrabold tracking-tighter">
         <Rolling id="hello" word={content.hello} bind={bind} className="col-start-1 row-start-1 justify-self-center" />
-        <Rolling
-          id="name"
-          word={content.name.first}
-          bind={bind}
-          className="col-start-1 row-start-1 justify-self-center"
-        />
+        <ShrinkingName words={[content.name.first, content.name.last]} bind={bind} />
       </div>
     </div>
+    <div ref={bind("hook-logo")} style={HIDDEN} className="absolute top-0 left-0">
+      <Monogram />
+    </div>
   </>
+);
+
+/**
+ * The full name, letter by letter. Each letter sits in its own clipping box
+ * whose width the paint shrinks to zero as the letter leaves (`nm-<word>-<i>`);
+ * the letter itself rolls in and out inside it (`nml-<word>-<i>`).
+ */
+const ShrinkingName = ({ words, bind }: { words: string[]; bind: Bind }) => (
+  <span
+    ref={bind("name-row")}
+    className="col-start-1 row-start-1 flex items-baseline justify-center justify-self-center overflow-hidden py-[0.06em] whitespace-pre"
+  >
+    {words.map((word, w) => (
+      <span key={`${word}-${w}`} className="contents">
+        {w > 0 ? (
+          <span ref={bind(`nm-space-${w}`)} className="inline-block overflow-hidden">
+            {" "}
+          </span>
+        ) : null}
+        {Array.from(word).map((letter, i) => (
+          <span key={`${letter}-${i}`} ref={bind(`nm-${w}-${i}`)} className="inline-block overflow-hidden">
+            <span ref={bind(`nml-${w}-${i}`)} style={BELOW} className="inline-block">
+              {letter}
+            </span>
+          </span>
+        ))}
+      </span>
+    ))}
+    <span ref={bind("name-end")} className="inline-block size-0" />
+  </span>
 );
 
 const LoadingScene = ({ content, bind }: SceneProps) => (

@@ -14,75 +14,77 @@ export const BEAT = 0.5;
 
 /** Every scene's cues, in seconds. Outgoing things leave before incoming ones arrive. */
 export const T = {
-  // Hook
+  // Hook: "Hello.", then the full name shrinks letter by letter into "MM."
   introIn: 0.12,
   introOut: 0.38,
   helloIn: 0.5,
   bracketIn: 1,
   helloOut: 1.25,
   nameIn: 1.35,
-  bracketOut: 3.55,
-  nameOut: 3.7,
+  shrink: 2.75,
+  bracketOut: 4.3,
+  morph: 4.6,
+  hookOut: 5.55,
   // Loading
-  loadIn: 4,
-  countFrom: 4.15,
-  countTo: 5.5,
-  loadOut: 5.7,
+  loadIn: 6,
+  countFrom: 6.15,
+  countTo: 7.5,
+  loadOut: 7.7,
   // Floods: orange, ink, paper (moments), ink (statements), paper (end card)
-  floods: [6, 6.5, 7, 22, 25.5],
-  momentsIn: [6.18, 6.68, 7.18],
-  momentsOut: [6.4, 6.9, 7.5],
+  floods: [8, 8.5, 9, 24, 27.5],
+  momentsIn: [8.18, 8.68, 9.18],
+  momentsOut: [8.4, 8.9, 9.5],
   // Design
-  windowIn: 7.65,
-  designCaption: 7.9,
-  blocks: 8,
-  swatches: 9,
-  cursorDesign: 9.3,
-  grab: 9.75,
-  drop: 10.3,
-  designOut: 10.75,
+  windowIn: 9.65,
+  designCaption: 9.9,
+  blocks: 10,
+  swatches: 11,
+  cursorDesign: 11.3,
+  grab: 11.75,
+  drop: 12.3,
+  designOut: 12.75,
   // Code
-  terminalIn: 11,
-  codeCaption: 11.1,
-  lines: [11.35, 11.95, 12.55],
-  liveIn: 12.85,
-  connect: 12.95,
-  ride: 13.1,
-  deployed: 13.65,
-  codeOut: 14.25,
+  terminalIn: 13,
+  codeCaption: 13.1,
+  lines: [13.35, 13.95, 14.55],
+  liveIn: 14.85,
+  connect: 14.95,
+  ride: 15.1,
+  deployed: 15.65,
+  codeOut: 16.25,
   // Motion (dot matrix)
-  gridIn: 14.5,
-  wave: 15,
-  sphere: 15.6,
-  monogram: 16.4,
-  detailIn: 16.5,
-  condense: 17.3,
-  detailOut: 18.1,
+  gridIn: 16.5,
+  wave: 17,
+  sphere: 17.6,
+  monogram: 18.4,
+  detailIn: 18.5,
+  condense: 19.3,
+  detailOut: 20.1,
   // Stack
-  hubIn: 18.5,
-  stackTitle: 18.65,
-  chipsIn: 18.85,
-  linksIn: 19,
-  pulses: 19.6,
-  stackPill: 20.2,
-  stackOut: 21.7,
+  hubIn: 20.5,
+  stackTitle: 20.65,
+  chipsIn: 20.85,
+  linksIn: 21,
+  pulses: 21.6,
+  stackPill: 22.2,
+  stackOut: 23.7,
   // Statements
-  tagsIn: 22.15,
-  ruleIn: 22.3,
-  statementsIn: 22.5,
-  statementsOut: 25.1,
+  tagsIn: 24.15,
+  ruleIn: 24.3,
+  statementsIn: 24.5,
+  statementsOut: 27.1,
   // End card
-  markIn: 25.7,
-  orbitCollapse: 26.7,
-  markSettle: 27,
-  nameRowIn: 27.1,
-  taglineIn: 27.6,
-  ctaIn: 28,
-  labelIn: 28.2,
-  cursorEnd: 28.1,
-  click: 28.9,
+  markIn: 27.7,
+  orbitCollapse: 28.7,
+  markSettle: 29,
+  nameRowIn: 29.1,
+  taglineIn: 29.6,
+  ctaIn: 30,
+  labelIn: 30.2,
+  cursorEnd: 30.1,
+  click: 30.9,
   // Exit: the splash fades while the mark flies to the page's navbar.
-  exit: 29.5,
+  exit: 31.5,
 } as const;
 
 export const EXIT_AT = T.exit;
@@ -104,12 +106,16 @@ export type GridDot = {
   seed: number;
 };
 
+/** The hook's full name: natural letter widths per word, the space between words, the row's centre and baseline. */
+export type NameLayout = { letters: number[][]; space: number; centerX: number; baseline: number; fs: number };
+
 export type SplashLayout = {
   width: number;
   height: number;
   intro: WordLayout;
   hello: WordLayout;
-  name: WordLayout;
+  /** The full name in the hook, as it shrinks into "MM." */
+  name: NameLayout;
   /** Progress bar track. */
   bar: Box;
   moments: readonly WordLayout[];
@@ -171,6 +177,55 @@ export const fullStop = (word: WordLayout): Point & { size: number } => {
   const r = STOP_RADIUS * word.fs;
   return { x: word.end.x + 0.05 * word.fs + r, y: word.end.y - r, size: 2 * r };
 };
+
+/* ---------- The shrinking name ---------- */
+
+/** One letter goes from the end of every word on each half-beat. */
+export const SHRINK_STEP = BEAT / 2;
+const CAP_RATIO = 0.73;
+
+const shrinkSteps = (name: NameLayout): number => Math.max(...name.letters.map((word) => word.length)) - 1;
+
+/** 0..1: how far letter `index` of word `word` has gone (the last letter goes first, the first letter stays). */
+export const letterGoneAt = (t: number, name: NameLayout, word: number, index: number): number => {
+  const length = name.letters[word]?.length ?? 0;
+  if (index === 0) {
+    return 0;
+  }
+  return expoInOut(progress(t, T.shrink + (length - index - 1) * SHRINK_STEP, 0.22));
+};
+
+/** 0..1: how far the space between the words has closed ("M M" becomes "MM"). */
+export const spaceGoneAt = (t: number, name: NameLayout): number =>
+  expoInOut(progress(t, T.shrink + shrinkSteps(name) * SHRINK_STEP, 0.3));
+
+/** Current width of the name row as its letters go. */
+const nameWidthAt = (t: number, name: NameLayout): number => {
+  const letters = name.letters.reduce(
+    (sum, word, w) => sum + word.reduce((total, width, i) => total + width * (1 - letterGoneAt(t, name, w, i)), 0),
+    0,
+  );
+  return letters + name.space * (name.letters.length - 1) * (1 - spaceGoneAt(t, name));
+};
+
+/** The full stop right after the shrinking name. */
+const nameStopAt = (t: number, name: NameLayout): Point & { size: number } => {
+  const r = STOP_RADIUS * name.fs;
+  return { x: name.centerX + nameWidthAt(t, name) / 2 + 0.05 * name.fs + r, y: name.baseline - r, size: 2 * r };
+};
+
+/** The monogram the remaining "MM" turns into: cap height, centred on the row, on its baseline. */
+export const hookLogoOf = (name: NameLayout): Box => {
+  const h = CAP_RATIO * name.fs;
+  const w = (h * MONOGRAM_VIEWBOX.width) / MONOGRAM_VIEWBOX.height;
+  return { x: name.centerX - w / 2, y: name.baseline - h, w, h };
+};
+
+/** 0..1: the text "MM" giving way to the monogram. */
+export const morphAt = (t: number): number => expoInOut(progress(t, T.morph, 0.3));
+
+/** 0..1: the hook's logo leaving before the loading scene. */
+export const hookOutAt = (t: number): number => expoInOut(progress(t, T.hookOut, 0.35));
 
 /* ---------- Text motion ---------- */
 
@@ -512,7 +567,8 @@ export const dotAt = (t: number, layout: SplashLayout): DotState => {
   const bullet = { x: intro.box.x - 0.8 * intro.fs, y: intro.end.y - 0.36 * intro.fs, size: 0.55 * intro.fs };
   let dot: DotState = { ...bullet, size: bullet.size * spring(progress(t, 0, 0.35)), ink: 0 };
   dot = hop(dot, fullStop(hello), t, T.helloIn, 0.45, 0.25 * hello.fs);
-  dot = hop(dot, fullStop(name), t, T.nameIn + 0.1, 0.42, 0.2 * name.fs);
+  dot = hop(dot, nameStopAt(t, name), t, T.nameIn + 0.1, 0.42, 0.2 * name.fs);
+  dot = hop(dot, periodOf(hookLogoOf(name)), t, T.morph, 0.4);
 
   const tip = { x: bar.x + bar.w * loadAt(t), y: bar.y + bar.h / 2, size: bar.h * 2.2 };
   dot = hop(dot, tip, t, T.loadIn, 0.4, 0.1 * layout.height);

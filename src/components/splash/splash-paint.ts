@@ -37,7 +37,10 @@ import {
   exitFadeAt,
   exitFlightAt,
   growAt,
+  hookLogoOf,
+  hookOutAt,
   letterAt,
+  letterGoneAt,
   linkAt,
   linkCurve,
   loadAt,
@@ -45,6 +48,7 @@ import {
   markAt,
   matrixAt,
   mixBox,
+  morphAt,
   orbitAt,
   periodOf,
   pillAt,
@@ -52,6 +56,7 @@ import {
   rand,
   revealAt,
   riseAt,
+  spaceGoneAt,
   statementAt,
   tagAt,
   terminalAt,
@@ -59,6 +64,7 @@ import {
   typedAt,
   windowAt,
   type GridDot,
+  type NameLayout,
   type SplashLayout,
 } from "./splash-timeline";
 
@@ -123,6 +129,19 @@ const buildGrid = (width: number, height: number, logo: Box, origin: Point, lett
 
 const lightOf = (nodes: Nodes, root: HTMLElement, key: string): Point => center(boxIn(html(nodes, key), root));
 
+/** Natural widths of the name's letters and spaces, the row's centre and its baseline. */
+const nameLayoutOf = (nodes: Nodes, root: HTMLElement, words: readonly string[], fs: number): NameLayout => {
+  const row = boxIn(html(nodes, "name-row"), root);
+  const width = (key: string) => (nodes.get(key) instanceof HTMLElement ? html(nodes, key).offsetWidth : 0);
+  return {
+    letters: words.map((word, w) => Array.from(word).map((_, i) => width(`nm-${w}-${i}`))),
+    space: width("nm-space-1"),
+    centerX: row.x + row.w / 2,
+    baseline: boxIn(html(nodes, "name-end"), root).y,
+    fs,
+  };
+};
+
 const curvePath = ({ from, c1, c2, to }: { from: Point; c1: Point; c2: Point; to: Point }) =>
   `M${from.x} ${from.y}C${c1.x} ${c1.y} ${c2.x} ${c2.y} ${to.x} ${to.y}`;
 
@@ -136,16 +155,22 @@ const setPath = (nodes: Nodes, key: string, d: string): number => {
   return path.getTotalLength();
 };
 
-export const measure = (nodes: Nodes, chipCount: number, statementCount: number): Stage => {
+export const measure = (nodes: Nodes, chipCount: number, statementCount: number, words: readonly string[]): Stage => {
   const root = html(nodes, "camera");
   const width = root.offsetWidth;
   const height = root.offsetHeight;
   const phone = width < 640;
   root.style.fontSize = `${Math.min(20, Math.max(13, 0.014 * width))}px`;
 
+  // Natural letter widths: clear the shrink before measuring anything in the name row.
+  nodes.forEach((node, key) => {
+    if (/^nm-/.test(key) && node instanceof HTMLElement) {
+      node.style.maxWidth = "";
+    }
+  });
   const bigFs = fitFont(
     html(nodes, "stack"),
-    [html(nodes, "hello"), html(nodes, "name")],
+    [html(nodes, "hello"), html(nodes, "name-row")],
     Math.min(0.2 * width, 0.28 * height),
     0.84 * width,
   );
@@ -217,7 +242,7 @@ export const measure = (nodes: Nodes, chipCount: number, statementCount: number)
     height,
     intro: wordIn(nodes, root, "intro", Number.parseFloat(root.style.fontSize)),
     hello: wordIn(nodes, root, "hello", bigFs),
-    name: wordIn(nodes, root, "name", bigFs),
+    name: nameLayoutOf(nodes, root, words, bigFs),
     bar: boxIn(html(nodes, "bar"), root),
     moments: [0, 1, 2].map((index) => wordIn(nodes, root, `moment-${index}`, momentFs[index])),
     window: designWindow,
@@ -253,8 +278,12 @@ export const measure = (nodes: Nodes, chipCount: number, statementCount: number)
 };
 
 /** Null while the markup is not (or no longer) mounted, e.g. a resize callback after unmount. */
-export const measureIfMounted = (nodes: Nodes, chipCount: number, statementCount: number): Stage | null =>
-  nodes.get("camera")?.isConnected ? measure(nodes, chipCount, statementCount) : null;
+export const measureIfMounted = (
+  nodes: Nodes,
+  chipCount: number,
+  statementCount: number,
+  words: readonly string[],
+): Stage | null => (nodes.get("camera")?.isConnected ? measure(nodes, chipCount, statementCount, words) : null);
 
 /* ---------- Canvas: dot matrix, stack pulses, orbit ---------- */
 
@@ -330,17 +359,55 @@ const setDrawn = (nodes: Nodes, key: string, length: number, drawn: number) => {
 
 export type ExitState = { start: number; from: Box; target: Box };
 
-const paintHook = (nodes: Nodes, t: number) => {
+const paintHook = (nodes: Nodes, stage: Stage, t: number) => {
+  const { name } = stage.layout;
   setRise(nodes, "intro", riseAt(t, T.introIn, T.introOut));
   setRise(nodes, "bracket", riseAt(t, T.bracketIn, T.bracketOut));
   nodes.forEach((node, key) => {
-    const match = /^(hello|name)-(\d+)$/.exec(key);
-    if (match) {
-      const isHello = match[1] === "hello";
-      const offset = letterAt(t, Number(match[2]), isHello ? T.helloIn : T.nameIn, isHello ? T.helloOut : T.nameOut);
-      node.style.transform = `translate3d(0, ${offset.toFixed(2)}%, 0)`;
+    const hello = /^hello-(\d+)$/.exec(key);
+    if (hello) {
+      node.style.transform = `translate3d(0, ${letterAt(t, Number(hello[1]), T.helloIn, T.helloOut).toFixed(2)}%, 0)`;
     }
   });
+
+  // The full name rolls in, then loses one letter from the end of each word per half-beat.
+  const morph = morphAt(t);
+  let flat = 0;
+  name.letters.forEach((word, w) => {
+    word.forEach((natural, i) => {
+      const gone = letterGoneAt(t, name, w, i);
+      const box = styleOf(nodes, `nm-${w}-${i}`);
+      if (box) {
+        box.maxWidth = px(natural * (1 - gone));
+      }
+      const letter = styleOf(nodes, `nml-${w}-${i}`);
+      if (letter) {
+        // A leaving letter fades and blurs out as its box closes, rather than sliding out of the mask.
+        letter.transform = `translate3d(0, ${(letterAt(t, flat, T.nameIn) - gone * 20).toFixed(2)}%, 0)`;
+        letter.opacity = ((1 - morph) * (1 - Math.min(1, gone * 1.8))).toFixed(3);
+        letter.filter = gone > 0.01 ? `blur(${(gone * 8).toFixed(1)}px)` : "none";
+      }
+      flat += 1;
+    });
+    const space = styleOf(nodes, `nm-space-${w + 1}`);
+    if (space) {
+      space.maxWidth = px(name.space * (1 - spaceGoneAt(t, name)));
+    }
+  });
+
+  // "MM" becomes the monogram; the dot lands as its period. It holds a moment, then leaves.
+  const out = hookOutAt(t);
+  const logo = styleOf(nodes, "hook-logo");
+  if (logo) {
+    const box = hookLogoOf(name);
+    logo.visibility = morph > 0.001 && out < 0.999 ? "visible" : "hidden";
+    logo.opacity = (morph * (1 - out)).toFixed(3);
+    logo.filter = out > 0.01 ? `blur(${(out * 10).toFixed(1)}px)` : "none";
+    logo.width = px(box.w);
+    logo.height = px(box.h);
+    logo.transformOrigin = "50% 100%";
+    logo.transform = `translate(${box.x}px, ${box.y - out * box.h * 0.4}px) scale(${(1.08 - 0.08 * morph).toFixed(4)})`;
+  }
 };
 
 const paintLoading = (nodes: Nodes, t: number) => {
@@ -573,7 +640,7 @@ export const paint = (
     cameraStyle.transform = `translate(${layout.width / 2 - camera.focus.x * camera.scale}px, ${layout.height / 2 - camera.focus.y * camera.scale}px) scale(${camera.scale.toFixed(4)})`;
   }
   paintFloods(nodes, stage, t, camera);
-  paintHook(nodes, t);
+  paintHook(nodes, stage, t);
   paintLoading(nodes, t);
   paintDesign(nodes, stage, t);
   paintCode(nodes, stage, t, content.lines);

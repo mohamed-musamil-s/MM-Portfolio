@@ -322,7 +322,7 @@ Verified with a production build (`next start`) connected to Atlas:
 
 ## 2026-11-23: Name splash
 
-- New screen `site_screens/splash` ([spec](screens/SPLASH_BUSINESS.md)), redesigned on 2026-11-25 from the three reference videos (`docs/reference/splash-1..3.mp4`) into a 31-second showreel: hook, loading counter, colour floods, a browser window built with a dragged card, a terminal deploying to a live card, a dot matrix (wave, halftone sphere, monogram), a skills node graph, stacked statements, and a new end card. It ends with the logo flying into the page's navbar.
+- New screen `site_screens/splash` ([spec](screens/SPLASH_BUSINESS.md)), redesigned on 2026-11-25 from the three reference videos (`docs/reference/splash-1..3.mp4`) into a 33-second showreel: hook (the full name shrinks letter by letter into "MM."), loading counter, colour floods, a browser window built with a dragged card, a terminal deploying to a live card, a dot matrix (wave, halftone sphere, monogram), a skills node graph, stacked statements, and a new end card. It ends with the logo flying into the page's navbar.
 - Every style is computed from time (`src/components/splash/splash-timeline.ts`); springs and expo easing in `src/lib/shared/motion/time-easing.ts`; the dot matrix, pulses and orbit are drawn on one canvas.
 - Plays on every visit to `/` only (not other pages, no studio preview). Skip intro pill, Esc, or the call to action open the page; off for reduced motion. While maintenance is on, `/` moves on to `/maintenance` underneath the splash (the proxy no longer redirects `/`).
 - Words editable in Content Forge (no live preview for this screen).

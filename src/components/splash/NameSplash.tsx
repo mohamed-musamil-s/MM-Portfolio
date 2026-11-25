@@ -37,17 +37,19 @@ export const NameSplash = ({ content, onFinished }: NameSplashProps) => {
   const finished = useRef(onFinished);
   const chipCount = content.stack.skills.length;
   const statementCount = content.statements.length;
+  const words = useRef([content.name.first, content.name.last]);
   const counts = useRef({ lines: content.code.lines, statements: statementCount, tags: content.tags.length });
 
   useEffect(() => {
     finished.current = onFinished;
     counts.current = { lines: content.code.lines, statements: statementCount, tags: content.tags.length };
+    words.current = [content.name.first, content.name.last];
   }, [onFinished, content, statementCount]);
 
   // Re-measure if the words change.
   useLayoutEffect(() => {
     if (stage.current) {
-      stage.current = measureIfMounted(nodes, chipCount, statementCount);
+      stage.current = measureIfMounted(nodes, chipCount, statementCount, words.current);
     }
   }, [content, nodes, chipCount, statementCount]);
 
@@ -73,7 +75,7 @@ export const NameSplash = ({ content, onFinished }: NameSplashProps) => {
 
     const resize = new ResizeObserver(() => {
       if (stage.current) {
-        stage.current = measureIfMounted(nodes, chipCount, statementCount);
+        stage.current = measureIfMounted(nodes, chipCount, statementCount, words.current);
       }
     });
     const tick = (now: number) => {
@@ -112,7 +114,7 @@ export const NameSplash = ({ content, onFinished }: NameSplashProps) => {
       if (cancelled) {
         return;
       }
-      stage.current = measureIfMounted(nodes, chipCount, statementCount);
+      stage.current = measureIfMounted(nodes, chipCount, statementCount, words.current);
       if (root instanceof HTMLElement) {
         resize.observe(root);
       }

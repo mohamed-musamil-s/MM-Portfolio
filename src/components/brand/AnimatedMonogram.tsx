@@ -68,6 +68,8 @@ export const AnimatedMonogram = ({ label, className }: AnimatedMonogramProps) =>
       role={label ? "img" : undefined}
       aria-label={label}
       aria-hidden={label ? undefined : true}
+      // Where the name splash's logo lands when it hands over to the page (components/splash).
+      data-brand-mark=""
       className={cn("block h-auto overflow-visible text-ink", className)}
       onPointerEnter={() => setHovered(true)}
       onPointerLeave={() => setHovered(false)}

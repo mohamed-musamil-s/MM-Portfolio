@@ -1,6 +1,6 @@
 # Screen: Name splash (intro on `/`), Business Spec
 
-Version 3.0, 2026-11-25. **An 8.5-second editorial intro, cut to a 120 BPM beat, that plays every time a visitor opens `/`.** Paper surface, the site's three typefaces, signal orange as the only accent. Modelled on the reference videos in `docs/reference/` (giant words with an orange full stop, bracketed mono captions, dot matrices, colour floods, brush lettering, a clicked call to action). One through-line object, the orange full stop of the "MM." monogram, carries every scene and lands as the logo's period on the end card.
+Version 4.0, 2026-11-25. **A 31-second showreel, cut to a 120 BPM beat, that plays every time a visitor opens `/`, and hands over to the page by flying the logo into its navbar.** Paper surface, the site's three typefaces, signal orange as the only accent. Modelled on the reference videos in `docs/reference/`. One through-line object, the orange full stop of the "MM." monogram, carries every scene.
 
 ---
 
@@ -30,19 +30,24 @@ The splash has no live preview in Content Forge; its words are edited there and 
 
 ## 3. Content model (`site_screens/splash`)
 
-| Field                                         | Use                                                  | Seed default                                        |
-| --------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------- |
-| `enabled`                                     | Master switch                                        | `true`                                              |
-| `intro.lead`, `intro.key`                     | Opening mono caption beside the dot; `key` in orange | `Let's talk`, `craft.`                              |
-| `hello`                                       | First giant word (the dot is its full stop)          | `Hello`                                             |
-| `bracket`                                     | `[ … ]` caption over the name                        | `You found the portfolio of`                        |
-| `moments.lead`, `.first`, `.second`, `.third` | "I DESIGN. / I BUILD. / I ANIMATE."                  | `I`, `Design`, `Build`, `Animate`                   |
-| `detail.lead`, `detail.key`                   | `[ … ]` caption under the dot-matrix monogram        | `Every detail,`, `on purpose.`                      |
-| `name.first`, `name.last`                     | Giant first name; full name as the brush signature   | `Your`, `Name` (set the real name in Content Forge) |
-| `role`                                        | On the orange banner                                 | `Designer & Developer`                              |
-| `cta`                                         | The button the cursor clicks                         | `Enter portfolio`                                   |
-| `skip`                                        | Skip button text                                     | `Skip intro`                                        |
-| `srLabel`                                     | Accessible name of the intro                         | `Intro animation`                                   |
+| Field                                             | Use                                                    | Seed default                                                         |
+| ------------------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------- |
+| `enabled`                                         | Master switch                                          | `true`                                                               |
+| `intro.lead`, `intro.key`                         | Opening caption beside the dot (`key` in orange)       | `Let's talk`, `craft.`                                               |
+| `hello`                                           | First giant word                                       | `Hello`                                                              |
+| `bracket`                                         | `[ … ]` caption over the name                          | `You found the portfolio of`                                         |
+| `loading`                                         | `[ … ]` caption over the 0–100% counter                | `Loading the good stuff`                                             |
+| `moments.lead`, `.first`, `.second`, `.third`     | "I DESIGN. / I BUILD. / I ANIMATE."                    | `I`, `Design`, `Build`, `Animate`                                    |
+| `design.lead`, `design.key`                       | Caption of the browser-window scene                    | `Interfaces,`, `pixel-perfect.`                                      |
+| `code.caption`, `code.lines` (1–3), `code.status` | Terminal scene: caption, typed lines, live site status | `Code that ships.`, three commands, `Deployed`                       |
+| `detail.lead`, `detail.key`                       | Caption under the dot-matrix monogram                  | `Every detail,`, `on purpose.`                                       |
+| `stack.title`, `stack.skills` (2–6), `stack.note` | Node graph: title, chips around the hub, note pill     | `Built with the tools I trust.`, six tools, `Design · Code · Motion` |
+| `statements` (2–4)                                | Stacked lines on ink                                   | `Big ideas.` … `Real results.`                                       |
+| `tags` (0–8)                                      | Tags drifting behind the statements                    | `wireframes`, `prototypes`, …                                        |
+| `name.first`, `name.last`                         | Giant first name; full name on the end card            | `Your`, `Name` (set the real name in Content Forge)                  |
+| `tagline.lead`, `tagline.key`                     | Line under the name                                    | `Designer & developer crafting`, `interfaces that feel alive.`       |
+| `cta`, `label`                                    | The button the cursor clicks, the note beside it       | `Enter portfolio`, `Est. 2026`                                       |
+| `skip`, `srLabel`                                 | Skip button, accessible name                           | `Skip intro`, `Intro animation`                                      |
 
 Seeds stay generic: no personal details in code or seed files.
 
@@ -50,28 +55,22 @@ Seeds stay generic: no personal details in code or seed files.
 
 Through-line object: **the orange dot** (the monogram's period, `--signal`).
 
-| Beats | Time    | What happens                                                                                                                             |
-| ----- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| 0     | 0.0     | The dot grows beside a small mono caption, "Let's talk **craft.**"                                                                       |
-| 1     | 0.5     | The caption leaves; "Hello" rolls up letter by letter and the dot hops in as its full stop.                                              |
-| 2     | 1.0     | "[ You found the portfolio of ]" rises above it.                                                                                         |
-| 3–4   | 1.5–2.5 | "Hello." rolls out; the first name rolls in, the dot hops to its full stop.                                                              |
-| 5     | 2.5     | An orange flood grows from the dot past every corner; "I DESIGN." rises in ink, the dot (now ink) is its full stop.                      |
-| 6     | 3.0     | An ink flood grows from that full stop; "I BUILD." in paper, the dot orange again.                                                       |
-| 7     | 3.5     | A paper flood; "I ANIMATE." in ink.                                                                                                      |
-| 8     | 4.0     | The dot ripples out into a dot grid covering the frame.                                                                                  |
-| 9     | 4.5     | The grid rides a wave.                                                                                                                   |
-| 10    | 5.0     | The dots inside "MM" swell and darken, the rest fade; the dot takes the period's place. "[ Every detail, **on purpose.** ]" rises below. |
-| 11    | 5.5     | The letter dots swell until they merge into the solid monogram.                                                                          |
-| 13    | 6.5     | Biggest beat (camera kick): the mark moves up; the full name writes in as a brush signature.                                             |
-| 14    | 7.0     | An orange banner sweeps across with the role.                                                                                            |
-| 15    | 7.5     | The "Enter portfolio →" pill grows; a cursor glides in.                                                                                  |
-| 16    | 8.0     | The cursor clicks; the pill turns orange.                                                                                                |
-| —     | 8.5–9.1 | A circle opens from the pill, revealing the page.                                                                                        |
+| Time        | Scene      | What happens                                                                                                                                                                                                   |
+| ----------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0–4 s       | Hook       | The dot beside "Let's talk **craft.**"; it becomes the full stop of a giant "Hello.", which rolls out letter by letter as the first name rolls in under "[ You found the portfolio of ]".                      |
+| 4–6 s       | Loading    | A giant 0→100% counter and a progress bar; the dot rides the bar's tip.                                                                                                                                        |
+| 6–7.5 s     | Floods     | "I DESIGN." on orange, "I BUILD." on ink, "I ANIMATE." on paper, each flood grown from the previous full stop.                                                                                                 |
+| 7.5–11 s    | Design     | A browser window unfolds from the dot (now its first window control); the wireframe, type specimen and swatches assemble; the camera zooms while a cursor drags a card into a dashed slot.                     |
+| 11–14.5 s   | Code       | A terminal unfolds and types its lines; a line draws to a live site card and the dot rides it to become the "Deployed" status light.                                                                           |
+| 14.5–18.5 s | Motion     | The dot ripples out into a dot grid that waves, becomes a lit halftone sphere, lights up as "MM." and condenses into the solid mark.                                                                           |
+| 18.5–22 s   | Stack      | The mark shrinks to a hub; skill chips pop in around it, curved links draw, orange pulses run into the hub.                                                                                                    |
+| 22–25.5 s   | Statements | An ink flood; the statements stack up one per beat beside an orange rule, the dot as their bullet; tags drift behind.                                                                                          |
+| 25.5–29.5 s | End card   | A paper flood; the mark grows with an orbit of dots that spiral into its period, then sits beside the full name; tagline, the orange-on-click "Enter portfolio →" pill (clicked by a cursor) and a small note. |
+| 29.5–31 s   | Exit       | The splash fades and blurs away while the mark flies to the navbar logo of the page beneath (`[data-brand-mark]`, top left when none) and lands on it.                                                         |
 
 ## 5. Motion
 
-- Every style is computed from time in one `paint(t)` (`src/components/splash/`): no CSS animations, no timers, no state carried between frames. A `requestAnimationFrame` loop only supplies `t`; the dot matrix is drawn on one canvas from the same `t`.
+- Every style is computed from time in one `paint(t)` (`src/components/splash/`: timeline, scenes, paint): no CSS animations, no timers, no state carried between frames. A `requestAnimationFrame` loop only supplies `t`; the dot matrix, stack pulses and orbit are drawn on one canvas from the same `t`.
 - Springs with a small overshoot, exponential ease-in-out. Text rises through masks; giant words roll letter by letter; outgoing and incoming words have separate timing.
 - The camera pushes in about 3% per scene and kicks on the payoff beat. Floods are drawn in screen space and scaled past all four corners.
 - Typefaces: Inter Tight (giant words), JetBrains Mono (captions, Skip), Permanent Marker (signature).

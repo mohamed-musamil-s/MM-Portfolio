@@ -395,7 +395,7 @@ As of 2026-11-23 (v1.7) this is **one viewport (`h-svh`) with no scrolling**, on
 
 ### 6.4b Name splash
 
-Spec: [screens/SPLASH_BUSINESS.md](screens/SPLASH_BUSINESS.md). Plays once per visit before the portfolio: a dark, warm-lit cinematic intro (its own look; the page underneath keeps the paper theme), signal orange as the only light colour. All words come from the database (`site_screens`, `_id: "splash"`).
+Spec: [screens/SPLASH_BUSINESS.md](screens/SPLASH_BUSINESS.md). Plays on every visit to `/`, on the paper surface with the three public typefaces (grotesk, technical, brush); signal orange is the through-line dot and the only accent. All words come from the database (`site_screens`, `_id: "splash"`).
 
 ### 6.5 404 screen
 

@@ -11,8 +11,9 @@ import { ROUTES, isStudioPath } from "@/lib/shared/routes";
  *
  * 1. Tags the request with an `x-request-id` used by all server logs.
  * 2. Maintenance flag (set from the admin panel, cached ~10s):
- *      ON:  `/` -> 302 `/maintenance`
  *      OFF: `/maintenance` -> 302 `/`
+ *      ON:  `/` is not redirected here: the home page plays the name splash
+ *           first and then moves on to `/maintenance` itself.
  * 3. `/studio/**` (except login) requires a validly signed session cookie,
  *    otherwise 302 -> `/studio/login`. This is the optimistic check; pages
  *    re-verify the session against MongoDB via `requireSession()`.
@@ -106,14 +107,8 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
 
   try {
-    if (pathname === ROUTES.home || pathname === ROUTES.maintenance) {
-      const maintenance = await isMaintenanceEnabled();
-      if (maintenance && pathname === ROUTES.home) {
-        return redirect302(request, ROUTES.maintenance, requestId);
-      }
-      if (!maintenance && pathname === ROUTES.maintenance) {
-        return redirect302(request, ROUTES.home, requestId);
-      }
+    if (pathname === ROUTES.maintenance && !(await isMaintenanceEnabled())) {
+      return redirect302(request, ROUTES.home, requestId);
     }
     if (pathname.startsWith("/api/")) {
       return gateApi(request, requestId);

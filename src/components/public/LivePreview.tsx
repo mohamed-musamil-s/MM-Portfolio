@@ -3,7 +3,6 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { MaintenanceScreen } from "@/components/maintenance/MaintenanceScreen";
 import { NotFoundScreen } from "@/components/not-found/NotFoundScreen";
-import { NameSplash } from "@/components/splash/NameSplash";
 import { maintenanceContentSchema, type MaintenanceContent } from "@/lib/shared/content/maintenance-schema";
 import { notFoundContentSchema, type NotFoundContent } from "@/lib/shared/content/not-found-schema";
 import {
@@ -12,12 +11,10 @@ import {
   type PreviewableScreen,
 } from "@/lib/shared/content/preview-protocol";
 import { sharedContentSchema, type SharedContent } from "@/lib/shared/content/shared-schema";
-import { splashContentSchema, type SplashContent } from "@/lib/shared/content/splash-schema";
 import { formatDateUtc } from "@/lib/shared/format";
 import { PreviewModeContext } from "./preview-mode";
 
 type Rendered =
-  | { slug: "splash"; content: SplashContent; shared: SharedContent }
   | { slug: "maintenance"; content: MaintenanceContent; shared: SharedContent }
   | { slug: "not-found"; content: NotFoundContent; shared: SharedContent };
 
@@ -26,10 +23,6 @@ const parseDraft = (slug: PreviewableScreen, content: unknown, shared: unknown):
   const sharedResult = sharedContentSchema.safeParse(shared);
   if (!sharedResult.success) {
     return null;
-  }
-  if (slug === "splash") {
-    const result = splashContentSchema.safeParse(content);
-    return result.success ? { slug, content: result.data, shared: sharedResult.data } : null;
   }
   if (slug === "maintenance") {
     const result = maintenanceContentSchema.safeParse(content);
@@ -121,11 +114,7 @@ export const LivePreview = ({
   return (
     <PreviewModeContext value>
       <style>{`[${HIT}]{outline:2px solid #2563eb!important;outline-offset:6px;border-radius:3px;background-color:rgb(37 99 235 / 0.08)}`}</style>
-      {rendered.slug === "splash" ? (
-        <main>
-          <NameSplash content={rendered.content} variant="preview" />
-        </main>
-      ) : rendered.slug === "maintenance" ? (
+      {rendered.slug === "maintenance" ? (
         <MaintenanceScreen
           content={rendered.content}
           shared={rendered.shared}

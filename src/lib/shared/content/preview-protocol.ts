@@ -7,7 +7,7 @@ import { z } from "zod";
  */
 
 /** Portfolio screens that render as a page (the shared record has no page of its own). */
-export const PREVIEWABLE_SCREENS = ["splash", "maintenance", "not-found"] as const;
+export const PREVIEWABLE_SCREENS = ["maintenance", "not-found"] as const;
 export type PreviewableScreen = (typeof PREVIEWABLE_SCREENS)[number];
 
 /** Pages that read the shared record: its preview shows these. */

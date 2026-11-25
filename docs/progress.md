@@ -322,10 +322,10 @@ Verified with a production build (`next start`) connected to Atlas:
 
 ## 2026-11-23: Name splash
 
-- New screen `site_screens/splash` ([spec](screens/SPLASH_BUSINESS.md)): a 10-second cinematic intro at 120 BPM, modelled on `docs/reference/splash-1.mp4`. Macro shot of the rim-lit monogram, "MM. = Two letters" struck and dissolved into "?", glass cards that multiply, a star field converging into the lit monogram, then the end card. The monogram's orange period is the through-line.
-- Every style is computed from time (`src/components/splash/splash-timeline.ts`); springs and expo easing in `src/lib/shared/motion/time-easing.ts`; particles drawn on one canvas.
-- Plays once per browser session over the first public page (session cookie `mm_splash_seen`); Skip button and Esc; off for reduced motion and in the preview frame.
-- Editable and previewable (looping) in Content Forge.
+- New screen `site_screens/splash` ([spec](screens/SPLASH_BUSINESS.md)), redesigned on 2026-11-25 from the three reference videos (`docs/reference/splash-1..3.mp4`): an 8.5-second editorial intro at 120 BPM on the paper surface. "Hello." rolls into the first name, "I DESIGN. / I BUILD. / I ANIMATE." each on a colour flood, a dot matrix that waves and lights up as the monogram, then the brush signature, an orange banner and a call to action the cursor clicks. The monogram's orange period is the through-line.
+- Every style is computed from time (`src/components/splash/splash-timeline.ts`); springs and expo easing in `src/lib/shared/motion/time-easing.ts`; the dot matrix is drawn on one canvas.
+- Plays on every visit to `/` only (not other pages, no studio preview). Skip intro pill, Esc, or the call to action open the page; off for reduced motion. While maintenance is on, `/` moves on to `/maintenance` underneath the splash (the proxy no longer redirects `/`).
+- Words editable in Content Forge (no live preview for this screen).
 
 ## Open items
 

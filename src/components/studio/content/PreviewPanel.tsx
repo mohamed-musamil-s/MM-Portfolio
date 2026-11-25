@@ -42,8 +42,6 @@ const useIsPhone = () =>
   );
 
 const PAGE_ROUTES: Record<PreviewableScreen, string> = {
-  // The splash plays once per visit over the first page, so its own preview is the page to open.
-  splash: `${ROUTES.preview}/splash`,
   maintenance: ROUTES.maintenance,
   "not-found": ROUTES.notFound,
 };

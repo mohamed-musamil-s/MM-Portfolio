@@ -94,7 +94,7 @@ src/
 Browser
   -> proxy.ts
        - adds x-request-id
-       - "/"            -> 302 /maintenance
+       - "/maintenance" -> 302 "/" while the maintenance flag is OFF
        - "/studio/**"   -> no valid signed cookie: 302 /studio/login?next=...
   -> App Router
        - page:  requireSession() checks the session in MongoDB (authoritative)
@@ -105,25 +105,24 @@ Browser
 
 ## Routes
 
-| Path                                                        | Access               | Behaviour                                                                                                                                |
-| ----------------------------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`                                                         | public               | 302 to `/maintenance` while the maintenance flag is ON. When it's OFF: the home page (not built yet, so it shows the 404 screen).        |
-| `/maintenance`                                              | public               | System-upgrade screen from database content, 200 (see [screens/MAINTENANCE_BUSINESS.md](screens/MAINTENANCE_BUSINESS.md))                |
-| (first public page of a visit)                              | public               | Name splash overlay from the DB (`site_screens/splash`), once per session (see [screens/SPLASH_BUSINESS.md](screens/SPLASH_BUSINESS.md)) |
-| `/404`                                                      | public               | 404 screen from the DB (`site_screens/not-found`), status 404, auto-redirect to `/` after 10s                                            |
-| any unknown path                                            | public               | 302 to `/404`                                                                                                                            |
-| `/studio`                                                   | protected            | 302 to `/studio/dashboard` (or to login)                                                                                                 |
-| `/studio/login`                                             | public               | two-step sign-in (email → access code); already signed in: redirect to dashboard                                                         |
-| `/studio/{dashboard,release,content,resume,chat,analytics}` | protected            | placeholders                                                                                                                             |
-| `POST /api/auth/initiate-login`                             | public, same-origin  | step 1: issue the login challenge (same answer for any valid email)                                                                      |
-| `POST /api/auth/login`                                      | public, same-origin  | step 2; see [auth-security.md](auth-security.md)                                                                                         |
-| `POST /api/auth/logout`                                     | session              | revokes the session                                                                                                                      |
-| `GET /api/health`                                           | public               | 200 when MongoDB answers a ping, else 500                                                                                                |
-| `GET /api/studio/screens/:slug`                             | session              | Screen content + version (backend for the admin panel)                                                                                   |
-| `PUT /api/studio/screens/:slug`                             | session, same-origin | Save validated content; 409 on a version conflict                                                                                        |
-| `GET /api/status`                                           | public               | `{ maintenance, checkedAt }`, uncached. The maintenance page polls it every minute.                                                      |
-| `GET /api/studio/settings/maintenance`                      | session              | `{ enabled, updatedAt, updatedBy }`                                                                                                      |
-| `PUT /api/studio/settings/maintenance`                      | session, same-origin | `{ enabled: boolean }`: the admin maintenance switch                                                                                     |
+| Path                                                        | Access               | Behaviour                                                                                                                                                                                                             |
+| ----------------------------------------------------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                                                         | public               | Home. The name splash plays over it on every visit; while the maintenance flag is ON the page moves on to `/maintenance` underneath the splash. When it's OFF: the home page (not built yet, empty under the splash). |
+| `/maintenance`                                              | public               | System-upgrade screen from database content, 200 (see [screens/MAINTENANCE_BUSINESS.md](screens/MAINTENANCE_BUSINESS.md))                                                                                             |
+| `/404`                                                      | public               | 404 screen from the DB (`site_screens/not-found`), status 404, auto-redirect to `/` after 10s                                                                                                                         |
+| any unknown path                                            | public               | 302 to `/404`                                                                                                                                                                                                         |
+| `/studio`                                                   | protected            | 302 to `/studio/dashboard` (or to login)                                                                                                                                                                              |
+| `/studio/login`                                             | public               | two-step sign-in (email → access code); already signed in: redirect to dashboard                                                                                                                                      |
+| `/studio/{dashboard,release,content,resume,chat,analytics}` | protected            | placeholders                                                                                                                                                                                                          |
+| `POST /api/auth/initiate-login`                             | public, same-origin  | step 1: issue the login challenge (same answer for any valid email)                                                                                                                                                   |
+| `POST /api/auth/login`                                      | public, same-origin  | step 2; see [auth-security.md](auth-security.md)                                                                                                                                                                      |
+| `POST /api/auth/logout`                                     | session              | revokes the session                                                                                                                                                                                                   |
+| `GET /api/health`                                           | public               | 200 when MongoDB answers a ping, else 500                                                                                                                                                                             |
+| `GET /api/studio/screens/:slug`                             | session              | Screen content + version (backend for the admin panel)                                                                                                                                                                |
+| `PUT /api/studio/screens/:slug`                             | session, same-origin | Save validated content; 409 on a version conflict                                                                                                                                                                     |
+| `GET /api/status`                                           | public               | `{ maintenance, checkedAt }`, uncached. The maintenance page polls it every minute.                                                                                                                                   |
+| `GET /api/studio/settings/maintenance`                      | session              | `{ enabled, updatedAt, updatedBy }`                                                                                                                                                                                   |
+| `PUT /api/studio/settings/maintenance`                      | session, same-origin | `{ enabled: boolean }`: the admin maintenance switch                                                                                                                                                                  |
 
 ## MongoDB
 

@@ -23,7 +23,7 @@ A broken link shouldn't lose the visitor. The page turns a dead end into a two-s
 | Any unknown path, e.g. `/abc` | `302 → /404` (catch-all route handler, logged). |
 | `/404` | Renders this screen with a real `404` status (`notFound()` → `app/not-found.tsx`). |
 | Unknown `/api/*` path | JSON `404`, never this page. |
-| Countdown reaches 0, or the button is pressed | Client navigation to `/`. While maintenance is on, the proxy then sends `/` on to `/maintenance` (302). |
+| Countdown reaches 0, or the button is pressed | Client navigation to `/`: the name splash plays, then (while maintenance is on) the visitor lands on `/maintenance`. |
 
 ## 3. Content source: database only
 

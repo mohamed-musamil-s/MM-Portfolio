@@ -186,7 +186,7 @@ export const SectionHeader = ({
     <h2
       className={cn(
         "font-wide leading-[0.92] font-semibold tracking-[-0.02em] uppercase",
-        compact ? "text-[clamp(2.2rem,min(5vw,9svh),4.6rem)]" : "text-[clamp(2.6rem,8vw,7.5rem)]",
+        compact ? "text-[clamp(2.2rem,min(5vw,9svh),4.6rem)]" : "text-[clamp(1.9rem,8vw,7.5rem)]",
       )}
     >
       <MaskRise>{header.title}</MaskRise>

@@ -369,7 +369,7 @@ Verified with a production build (`next start`) connected to Atlas:
 
 ## Open items
 
-- [ ] Production, before deploying this code: the `studio-shell` content needs `inbox`, `launchpad`, `missionControl` and `editor.allSections` (plus the updated `modules.release.description` and `editor.screens.home.description`), or the studio pages fail validation. Same copy as the seed.
+- [ ] Production, before deploying this code: the `studio-shell` content needs `inbox`, `launchpad` (with `versions`), `missionControl` and `editor.sections` (the old `editor.allSections` is gone) (plus the updated `modules.release.description` and `editor.screens.home.description`), or the studio pages fail validation. Same copy as the seed.
 - [ ] Production: the home content needs the `education` section (moved out of `recognition`, whose `education` and `educationLabel` are gone), renumbered header indices (education 03 … contact 07), the Education link in `nav.links` and `footer.links`, and `contact.form.prompts`. It also needs `contact.form` and the new footer fields (`wordmark`, `clock`, `linksLabel`, `socialsLabel`); the `contact_conversations` indexes are created on first use.
 - [ ] Seed the home screen on production (`npm run seed:screens:prod -- --only=home`, plus its studio-shell `editor.screens` entry) once development is complete.
 - [ ] Seed the name splash on production (`npm run seed:screens:prod -- --only=splash`) and add its entry to the production studio-shell `editor.screens`; until then production shows no splash.

@@ -267,6 +267,10 @@ export const TechChip = ({
         width={16}
         height={16}
         unoptimized
+        // Loaded up front (at low priority): the chips live in pinned, 3D-turned cards, where the browser's
+        // lazy loading can fail to notice them coming on screen and leave the icons empty.
+        loading="eager"
+        fetchPriority="low"
         className={cn("object-contain", small ? "size-3.5" : "size-4", tech.ink && dark && "invert")}
       />
     ) : (

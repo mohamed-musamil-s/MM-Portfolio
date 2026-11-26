@@ -143,9 +143,20 @@ export const studioShellContentSchema = z.object({
     shown: text(64),
     hiddenToast: text(64),
     failed: text(120),
+    /** The status strip at the top. Placeholders: {screen} {time}. */
+    status: z.object({ sections: text(32), lastSave: text(32), lastSaveOn: text(48), viewSite: text(24) }),
+    /** The page outline: a miniature of the home page whose section blocks switch on and off. */
+    outline: z.object({
+      address: text(40),
+      fixed: text(32),
+      nav: text(24),
+      hero: text(24),
+      footer: text(24),
+    }),
     /** Version history. Placeholders: {n} {m} {time} {who} {list}. */
     versions: z.object({
       title: text(40),
+      changedLabel: text(24),
       hint: text(200),
       version: text(24),
       current: text(16),

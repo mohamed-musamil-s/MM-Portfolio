@@ -2,18 +2,8 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import {
-  Award,
-  BriefcaseBusiness,
   Eye,
   FileQuestion,
-  FolderKanban,
-  GraduationCap,
-  Menu,
-  MessageSquare,
-  PanelBottom,
-  Sparkles,
-  Tags,
-  UserRound,
   LoaderCircle,
   PanelLeftClose,
   PanelLeftOpen,
@@ -34,6 +24,7 @@ import { formatDateUtc } from "@/lib/shared/format";
 import type { StudioShellContent } from "@/lib/shared/content/studio-shell-schema";
 import { cn } from "@/lib/shared/cn";
 import { ContentField, countFields } from "./ContentField";
+import { SECTION_ICONS } from "./section-icons";
 import {
   fill,
   getAt,
@@ -72,19 +63,6 @@ const SCREEN_ICONS: Record<string, typeof Wrench> = {
 };
 
 /** Icons for the sections of a split screen (the home page). */
-const SECTION_ICONS: Record<string, typeof Wrench> = {
-  meta: Tags,
-  nav: Menu,
-  hero: Sparkles,
-  about: UserRound,
-  experience: BriefcaseBusiness,
-  education: GraduationCap,
-  skills: Wrench,
-  work: FolderKanban,
-  recognition: Award,
-  contact: MessageSquare,
-  footer: PanelBottom,
-};
 
 type Issue = { path: (string | number)[]; message: string; code?: string; minimum?: number; maximum?: number };
 type SaveResponse =

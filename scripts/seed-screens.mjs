@@ -527,8 +527,22 @@ const SCREENS = {
       shown: "{section} is now visible.",
       hiddenToast: "{section} is now hidden.",
       failed: "Couldn't save that change. Try again.",
+      status: {
+        sections: "Sections showing",
+        lastSave: "Last save",
+        lastSaveOn: "{screen}, {time}",
+        viewSite: "View site",
+      },
+      outline: {
+        address: "Home page",
+        fixed: "Always shown",
+        nav: "Navbar",
+        hero: "Hero",
+        footer: "Footer",
+      },
       versions: {
         title: "Version history",
+        changedLabel: "Differs in",
         hint: "Every save in Content Forge is kept as a version. Restore one to roll a page back; the restore is saved as a new version, so nothing is lost.",
         version: "Version {n}",
         current: "Current",

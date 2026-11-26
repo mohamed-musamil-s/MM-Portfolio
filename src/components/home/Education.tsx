@@ -1,75 +1,230 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "motion/react";
-import { useRef } from "react";
-import { useMotionTheme } from "@/hooks/useMotionTheme";
+import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/shared/cn";
 import type { HomeContent } from "@/lib/shared/content/home-schema";
 import { EASE_PRINT } from "@/lib/motion/tokens";
-import { Reveal, Section, SectionHeader } from "./section-kit";
+import { Section, SectionHeader } from "./section-kit";
 
 /*
- * Education (docs/screens/HOME_BUSINESS.md §6.3): one full-width row per
- * qualification. The year range is set huge and outlined on its own line and
- * scrubs sideways with the scroll (alternate rows in opposite directions);
- * under it, on the right, sit the badge, the degree and the school. Each row's hairline draws across on the
- * way in; hovering a row fills its years with ink.
+ * Education (docs/screens/HOME_BUSINESS.md §6.3), a year odometer split.
+ * Large screens: on the left a giant sticky year that rolls digit by digit
+ * like an odometer; on the right the qualifications as cards, oldest first.
+ * The card nearest the middle of the screen is in focus (ink), and the
+ * odometer rolls to its years. Phones: the cards stacked, each showing its
+ * own years large.
  */
 
 type Education = HomeContent["education"];
 type Item = Education["items"][number];
 
-/** How far the years travel sideways across a row's pass through the screen. */
-const DRIFT_VW = 7;
+const ROLL = { type: "spring", stiffness: 80, damping: 17, mass: 1 } as const;
 
-const Row = ({ item, index }: { item: Item; index: number }) => {
-  const row = useRef<HTMLLIElement>(null);
-  const { reducedMotion } = useMotionTheme();
-  const { scrollYProgress } = useScroll({ target: row, offset: ["start end", "end start"] });
-  const direction = index % 2 === 0 ? 1 : -1;
-  const x = useTransform(
-    scrollYProgress,
-    [0, 1],
-    reducedMotion ? ["0vw", "0vw"] : [`${direction * DRIFT_VW}vw`, `${-direction * DRIFT_VW}vw`],
-  );
+const pad = (value: number) => String(value).padStart(2, "0");
 
+/** The four-digit years in a range ("2018 — 2021" → ["2018", "2021"]). */
+const yearsOf = (range: string) => range.match(/\d{4}/g) ?? [];
+
+/** One odometer wheel: the digits 0–9 stacked, rolled so the value shows. */
+const Wheel = ({ digit, delay }: { digit: number; delay: number }) => (
+  <span className="relative inline-block h-[1em] overflow-hidden">
+    <motion.span
+      className="flex flex-col"
+      initial={false}
+      animate={{ y: `${-digit}em` }}
+      transition={{ ...ROLL, delay }}
+    >
+      {Array.from({ length: 10 }, (_, value) => (
+        <span key={value} className="block h-[1em] leading-none">
+          {value}
+        </span>
+      ))}
+    </motion.span>
+  </span>
+);
+
+/** A year on wheels; each wheel starts a beat after the one to its right, like a real counter. */
+const Odometer = ({ value, className }: { value: string; className?: string }) => {
+  const characters = Array.from(value);
   return (
-    <li ref={row} className="group relative py-[clamp(2rem,6svh,3.5rem)]">
-      <motion.span
-        aria-hidden
-        initial={{ scaleX: 0 }}
-        whileInView={{ scaleX: 1 }}
-        viewport={{ once: true, margin: "0px 0px -10% 0px" }}
-        transition={{ duration: 1.1, delay: index * 0.1, ease: EASE_PRINT }}
-        className="absolute inset-x-0 top-0 h-px origin-left bg-ink/20"
-      />
-      <div className="flex flex-col gap-5">
-        <motion.span
-          style={{ x }}
-          className="block font-wide text-[clamp(2.6rem,9vw,9rem)] leading-[0.85] font-semibold whitespace-nowrap text-transparent tabular-nums transition-colors duration-700 ease-print [-webkit-text-stroke:1.5px_var(--text-primary)] group-hover:text-ink"
-        >
-          {item.year}
-        </motion.span>
-        <Reveal delay={0.15 + index * 0.1} className="flex items-start gap-4 sm:max-w-[28rem] sm:self-end">
-          <span className="grid size-14 shrink-0 place-items-center rounded-full bg-signal font-wide text-sm font-semibold text-paper transition-transform duration-500 ease-print group-hover:-rotate-12">
-            {item.badge}
+    <span aria-label={value} className={cn("inline-flex leading-none tabular-nums", className)}>
+      {characters.map((character, index) => {
+        const digit = Number.parseInt(character, 10);
+        return Number.isNaN(digit) ? (
+          <span key={index} aria-hidden>
+            {character}
           </span>
-          <span className="flex min-w-0 flex-col gap-1.5">
-            <span className="font-wide text-[1.2rem] leading-tight font-semibold uppercase">{item.title}</span>
-            <span className="font-glyph text-[0.95rem] text-graphite">{item.org}</span>
+        ) : (
+          <span key={index} aria-hidden>
+            <Wheel digit={digit} delay={(characters.length - 1 - index) * 0.06} />
           </span>
-        </Reveal>
-      </div>
-    </li>
+        );
+      })}
+    </span>
   );
 };
 
-export const Education = ({ education }: { education: Education }) => (
-  <Section id="education">
-    <SectionHeader header={education.header} />
-    <ol className="relative border-b border-ink/20">
-      {education.items.map((item, index) => (
-        <Row key={`${item.title}-${index}`} item={item} index={index} />
-      ))}
-    </ol>
-  </Section>
+/** Index of the card whose centre is nearest the middle of the screen, from the scroll position. */
+const useFocusedCard = (count: number) => {
+  const cards = useRef<(HTMLLIElement | null)[]>([]);
+  const [focused, setFocused] = useState(0);
+  useEffect(() => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const middle = window.innerHeight / 2;
+      let best = 0;
+      let bestDistance = Number.POSITIVE_INFINITY;
+      cards.current.slice(0, count).forEach((card, index) => {
+        if (!card) return;
+        const box = card.getBoundingClientRect();
+        const distance = Math.abs(box.top + box.height / 2 - middle);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          best = index;
+        }
+      });
+      setFocused(best);
+    };
+    const onScroll = () => {
+      frame ||= window.requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [count]);
+  return { cards, focused };
+};
+
+const Card = ({
+  item,
+  index,
+  total,
+  focused,
+  register,
+}: {
+  item: Item;
+  index: number;
+  total: number;
+  focused: boolean;
+  register: (element: HTMLLIElement | null) => void;
+}) => (
+  <motion.li
+    ref={register}
+    initial={{ opacity: 0, x: 60 }}
+    whileInView={{ opacity: 1, x: 0 }}
+    viewport={{ once: true, margin: "0px 0px -10% 0px" }}
+    transition={{ duration: 0.9, ease: EASE_PRINT }}
+    className={cn(
+      "relative flex min-h-[clamp(20rem,46svh,28rem)] flex-col gap-5 overflow-hidden rounded-[2rem] border p-7 transition-colors duration-700 ease-print sm:p-9",
+      focused ? "border-ink bg-ink text-paper" : "border-ink/10 bg-paper text-ink",
+    )}
+  >
+    <div
+      className={cn(
+        "flex items-center justify-between font-technical text-micro uppercase transition-colors duration-700",
+        focused ? "text-paper/60" : "text-graphite",
+      )}
+    >
+      <span>
+        {pad(index + 1)} / {pad(total)}
+      </span>
+      <span>{item.year}</span>
+    </div>
+    {/* Phones: the years large on the card itself (large screens have the odometer). */}
+    <span className="font-wide text-[clamp(2.6rem,12vw,4rem)] leading-none font-semibold text-transparent tabular-nums [-webkit-text-stroke:1.5px_var(--signal)] lg:hidden">
+      {item.year}
+    </span>
+    <span
+      className={cn(
+        "mt-auto grid size-16 place-items-center rounded-full font-wide text-base font-semibold transition-colors duration-700",
+        focused ? "bg-signal text-paper" : "border-2 border-signal text-signal",
+      )}
+    >
+      {item.badge}
+    </span>
+    <span className="font-wide text-[clamp(1.5rem,2.6vw,2.4rem)] leading-[1] font-semibold tracking-[-0.01em] uppercase">
+      {item.title}
+    </span>
+    <span
+      className={cn(
+        "font-glyph text-[1rem] transition-colors duration-700",
+        focused ? "text-paper/70" : "text-graphite",
+      )}
+    >
+      {item.org}
+    </span>
+  </motion.li>
 );
+
+export const Education = ({ education }: { education: Education }) => {
+  // Oldest first, so the odometer counts forward.
+  const items = [...education.items].sort((a, b) => Number(yearsOf(a.year)[0] ?? 0) - Number(yearsOf(b.year)[0] ?? 0));
+  const { cards, focused } = useFocusedCard(items.length);
+  const current = items[focused] ?? items[0];
+  const [start, end] = current ? yearsOf(current.year) : [];
+
+  return (
+    <Section id="education">
+      <SectionHeader header={education.header} />
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-16">
+        {/* The odometer, held while the cards pass. */}
+        <div className="hidden lg:block">
+          <div className="sticky top-[24svh] flex flex-col gap-4">
+            {start ? (
+              <Odometer
+                value={start}
+                className="font-wide text-[clamp(6rem,14vw,13rem)] font-semibold tracking-[-0.04em]"
+              />
+            ) : (
+              <span className="font-wide text-[clamp(3rem,7vw,6rem)] leading-none font-semibold uppercase">
+                {current?.year}
+              </span>
+            )}
+            {end ? (
+              <span className="flex items-center gap-4 font-wide text-[clamp(2rem,4.4vw,4rem)] leading-none font-semibold text-transparent [-webkit-text-stroke:1.5px_var(--text-primary)]">
+                <span aria-hidden className="h-[0.08em] w-[1.2em] bg-signal" />
+                <Odometer value={end} />
+              </span>
+            ) : null}
+            <div className="relative mt-4 h-6 overflow-hidden font-technical text-micro text-graphite uppercase">
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.span
+                  key={focused}
+                  initial={{ y: "100%", opacity: 0 }}
+                  animate={{ y: "0%", opacity: 1 }}
+                  exit={{ y: "-100%", opacity: 0 }}
+                  transition={{ duration: 0.45, ease: EASE_PRINT }}
+                  className="absolute inset-0"
+                >
+                  {current?.badge} · {current?.org}
+                </motion.span>
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+
+        <ol className="flex flex-col gap-6 lg:gap-[22svh] lg:py-[16svh]">
+          {items.map((item, index) => (
+            <Card
+              key={`${item.title}-${index}`}
+              item={item}
+              index={index}
+              total={items.length}
+              focused={index === focused}
+              register={(element) => {
+                cards.current[index] = element;
+              }}
+            />
+          ))}
+        </ol>
+      </div>
+    </Section>
+  );
+};

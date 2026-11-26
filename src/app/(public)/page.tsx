@@ -58,7 +58,7 @@ export default async function HomePage() {
         <Skills skills={home.skills} />
         <Work work={home.work} />
         <Recognition recognition={home.recognition} />
-        <Contact contact={home.contact} />
+        <Contact contact={home.contact} owner={home.nav.name} />
       </main>
       <SiteFooter footer={home.footer} />
     </>

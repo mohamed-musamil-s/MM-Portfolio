@@ -70,7 +70,17 @@ const BubbleView = ({ bubble }: { bubble: Bubble }) => (
   </motion.div>
 );
 
-export const ChatForm = ({ form }: { form: Form }) => {
+/** Up to two initials from a name ("Ada Lovelace" → "AL"). */
+const initialsOf = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+
+/** `host` is the site owner's name (from the content), shown as who the visitor is talking to. */
+export const ChatForm = ({ form, host }: { form: Form; host: string }) => {
   const hasTopics = form.topics.length > 0;
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
   const [typing, setTyping] = useState(false);
@@ -227,29 +237,41 @@ export const ChatForm = ({ form }: { form: Form }) => {
       ref={frame}
       className="flex h-[min(40rem,82svh)] flex-col overflow-hidden rounded-[2rem] border border-ink/10 bg-paper shadow-[0_40px_80px_-50px_rgb(0_0_0/0.45)]"
     >
-      {/* The header bar. */}
+      {/* The header bar: who the visitor is talking to, with their initials as the avatar. */}
       <div className="flex items-center justify-between gap-4 border-b border-ink/10 px-5 py-4">
         <span className="flex items-center gap-3">
           <span
             aria-hidden
-            className="grid size-9 place-items-center rounded-full bg-ink font-wide text-lg leading-none text-signal"
+            className="relative grid size-11 shrink-0 place-items-center rounded-full bg-ink font-wide text-[0.8rem] font-semibold text-paper"
           >
-            “
+            <span>
+              {initialsOf(host)}
+              <span className="text-signal">.</span>
+            </span>
+            {/* Online: the live dot, ringed in paper. */}
+            <span className="absolute -right-1 -bottom-1 grid place-items-center rounded-full bg-paper p-[3px]">
+              <StatusDot />
+            </span>
           </span>
-          <span className="flex flex-col">
-            <span className="text-label font-bold">{form.label}</span>
-            {form.replyNote ? (
-              <span className="flex items-center gap-1.5 font-technical text-[0.65rem] text-graphite uppercase">
-                <StatusDot />
-                {form.replyNote}
-              </span>
-            ) : null}
+          <span className="flex min-w-0 flex-col gap-0.5">
+            <span className="truncate text-label font-bold">{host}</span>
+            <span className="flex flex-wrap items-center gap-x-1.5 font-technical text-[0.65rem] text-graphite uppercase">
+              <span className="hidden sm:inline">{form.label}</span>
+              {form.replyNote ? (
+                <>
+                  <span aria-hidden className="hidden sm:inline">
+                    ·
+                  </span>
+                  <span>{form.replyNote}</span>
+                </>
+              ) : null}
+            </span>
           </span>
         </span>
         <button
           type="button"
           onClick={restart}
-          className="font-technical text-micro text-graphite uppercase underline-offset-4 hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-signal"
+          className="shrink-0 font-technical text-micro whitespace-nowrap text-graphite uppercase underline-offset-4 hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-signal"
         >
           {form.prompts.restart}
         </button>

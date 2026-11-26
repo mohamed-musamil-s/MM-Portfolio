@@ -14,7 +14,8 @@ import { MaskRise, Reveal, Section, SectionHeader, isExternal } from "./section-
 
 type Contact = HomeContent["contact"];
 
-export const Contact = ({ contact }: { contact: Contact }) => (
+/** `owner` is the site owner's name, shown as who the chat is with. */
+export const Contact = ({ contact, owner }: { contact: Contact; owner: string }) => (
   <Section id="contact">
     <SectionHeader header={contact.header} />
     <div className="mb-[clamp(2.5rem,7svh,4.5rem)] flex flex-col gap-6">
@@ -28,7 +29,7 @@ export const Contact = ({ contact }: { contact: Contact }) => (
 
     <div className="grid gap-12 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)] lg:gap-16">
       <Reveal y={40}>
-        <ChatForm form={contact.form} />
+        <ChatForm form={contact.form} host={owner} />
       </Reveal>
       <div className="flex flex-col gap-8">
         {contact.email ? (

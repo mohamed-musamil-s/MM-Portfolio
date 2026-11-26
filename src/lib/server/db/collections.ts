@@ -59,6 +59,18 @@ export type MaintenanceSettingDocument = {
 export const siteSettingsCollection = (db: Db): Collection<MaintenanceSettingDocument> =>
   db.collection<MaintenanceSettingDocument>(COLLECTIONS.siteSettings);
 
+/** Which portfolio sections show (`_id: "sections"`, docs/screens/STUDIO_LAUNCHPAD_BUSINESS.md). */
+export type SectionVisibilityDocument = {
+  _id: "sections";
+  /** Missing keys mean visible. */
+  visible: Partial<Record<string, boolean>>;
+  updatedAt: Date;
+  updatedBy: string;
+};
+
+export const sectionVisibilityCollection = (db: Db): Collection<SectionVisibilityDocument> =>
+  db.collection<SectionVisibilityDocument>(COLLECTIONS.siteSettings);
+
 /**
  * One conversation per contact-form submission (docs/features/CONTACT_MESSAGES.md).
  * Shaped for the studio's chat module: replies are appended to `messages`.

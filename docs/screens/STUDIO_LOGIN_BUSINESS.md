@@ -8,9 +8,9 @@ Let the single admin into the studio quickly, without making the login an easy t
 
 ## 2. Flow
 
-| Step | User sees | Request | Outcomes |
-| --- | --- | --- | --- |
-| 1. Email | "Admin Access", email field, **Continue** | `POST /api/auth/initiate-login { email }` | 200 → step 2 (sets the 10-minute `mm_login_challenge` cookie). 400 invalid email. 429 locked out (button disabled until it expires). |
+| Step           | User sees                                                                                                                                                                                                                                                                                          | Request                                      | Outcomes                                                                                                                                                                                                                                                      |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Email       | "Admin Access", email field, **Continue**                                                                                                                                                                                                                                                          | `POST /api/auth/initiate-login { email }`    | 200 → step 2 (sets the 10-minute `mm_login_challenge` cookie). 400 invalid email. 429 locked out (button disabled until it expires).                                                                                                                          |
 | 2. Access code | Key icon tile, "Enter your access code", an identity chip (avatar initial, email, a **pencil icon button** to change the email, with a "Change email" tooltip and label), one masked box per digit with show/hide (boxes tint as they fill; submits by itself on the last digit), **Authenticate** | `POST /api/auth/login { email, accessCode }` | 200 → session cookie → redirect to `/studio/dashboard` (or the safe `?next=`). 401 "email or access code is incorrect": stays on step 2, clears the boxes and focuses the first one. 400 `challenge_expired` → back to step 1 with a message. 429 locked out. |
 
 - **No account enumeration.** Step 1 answers the same for every well-formed email; whether it's the admin's is only decided at step 2, together with the code, and the error never says which part was wrong. (The brief also mentioned an "email not authorised" error at step 1; that would reveal the admin address, so it's deliberately not shown.)
@@ -22,22 +22,22 @@ Let the single admin into the studio quickly, without making the login an easy t
 
 Every visible string, including validation and error messages, comes from `site_screens`, `_id: "studio-login"` (schema `src/lib/shared/content/studio-login-schema.ts`).
 
-| Field | Default |
-| --- | --- |
-| `meta.title` | `Studio sign in` |
-| `brand.name` | `Studio` (next to the monogram) |
-| `steps` | `Email` · `Access code` (the two step pills) |
-| `showcase` | status `All systems online` · `illustration`: overview (`Overview`, `This week`, `Visitors`, `12.4k`, `+8.2%`, days `Mon`–`Sun`) · uptime (`Uptime`, `99.9%`) · activity (`Recent activity`: `Deploy succeeded` 2m, `Page updated` 1h, `Backup completed` 3h) · toggle (`Auto-sync`, `On`) · security (`Secure session`, `End-to-end encrypted`). Generic illustration copy, not live data (DB version 7). |
-| `emailStep` | `Welcome back` · "Sign in with your authorized email address to continue." · `Email address` · `name@example.com` · `Continue` · `Checking…` |
-| `codeStep` | `Enter your access code` · "Type your access code to finish signing in." · `Access code` · `Authenticate` · `Verifying…` · `Change email` · `Signed in. Opening the studio…` · `Show access code` / `Hide access code` |
-| `errors` | `Couldn't sign in` (alert title); email required / invalid; code required / too short; invalid credentials; locked (`{minutes}`); challenge expired; network; generic |
-| `footer.note` | "Restricted area. Sign-in attempts are logged and rate limited." |
+| Field         | Default                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `meta.title`  | `Studio sign in`                                                                                                                                                                                                                                                                                                                                                                                           |
+| `brand.name`  | `Studio` (next to the monogram)                                                                                                                                                                                                                                                                                                                                                                            |
+| `steps`       | `Email` · `Access code` (the two step pills)                                                                                                                                                                                                                                                                                                                                                               |
+| `showcase`    | status `All systems online` · `illustration`: overview (`Overview`, `This week`, `Visitors`, `12.4k`, `+8.2%`, days `Mon`–`Sun`) · uptime (`Uptime`, `99.9%`) · activity (`Recent activity`: `Deploy succeeded` 2m, `Page updated` 1h, `Backup completed` 3h) · toggle (`Auto-sync`, `On`) · security (`Secure session`, `End-to-end encrypted`). Generic illustration copy, not live data (DB version 7). |
+| `emailStep`   | `Welcome back` · "Sign in with your authorized email address to continue." · `Email address` · `name@example.com` · `Continue` · `Checking…`                                                                                                                                                                                                                                                               |
+| `codeStep`    | `Enter your access code` · "Type your access code to finish signing in." · `Access code` · `Authenticate` · `Verifying…` · `Change email` · `Signed in. Opening the studio…` · `Show access code` / `Hide access code`                                                                                                                                                                                     |
+| `errors`      | `Couldn't sign in` (alert title); email required / invalid; code required / too short; invalid credentials; locked (`{minutes}`); challenge expired; network; generic                                                                                                                                                                                                                                      |
+| `footer.note` | "Restricted area. Sign-in attempts are logged and rate limited."                                                                                                                                                                                                                                                                                                                                           |
 
 ## 4. Validation (before any request)
 
-| Field | Rules |
-| --- | --- |
-| Email | required, ≤ 254 characters, valid email format (zod) |
+| Field       | Rules                                                                         |
+| ----------- | ----------------------------------------------------------------------------- |
+| Email       | required, ≤ 254 characters, valid email format (zod)                          |
 | Access code | required, 4–64 characters. The real code length is never sent to the browser. |
 
 The same limits are enforced again on the server (`src/lib/shared/auth/login-input.ts`).

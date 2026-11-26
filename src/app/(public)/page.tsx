@@ -13,6 +13,8 @@ import { SiteNav } from "@/components/home/SiteNav";
 import { ReplaceRoute } from "@/components/public/ReplaceRoute";
 import { getScreenContent } from "@/lib/server/content/screens";
 import { isMaintenanceEnabled } from "@/lib/server/settings/maintenance-flag";
+import { getSectionVisibility } from "@/lib/server/settings/section-visibility";
+import { linkIsShown } from "@/lib/shared/content/home-sections";
 import { ROUTES } from "@/lib/shared/routes";
 
 // Content and the maintenance flag change at any time from the studio.
@@ -39,28 +41,31 @@ export default async function HomePage() {
       </main>
     );
   }
-  const home = await readHome();
+  const [home, { visible }] = await Promise.all([readHome(), getSectionVisibility()]);
   if (!home) {
     notFound();
   }
+  // Sections hidden from Launchpad leave the page, and so do their navbar and footer links.
+  const nav = { ...home.nav, links: home.nav.links.filter((link) => linkIsShown(link.href, visible)) };
+  const footer = { ...home.footer, links: home.footer.links.filter((link) => linkIsShown(link.href, visible)) };
   return (
     <>
-      <SiteNav nav={home.nav} />
+      <SiteNav nav={nav} />
       {/* Above the footer, which sits fixed underneath and is uncovered as the page lifts off it. */}
       <main
         id="top"
         className="relative z-10 overflow-clip rounded-b-[2.5rem] bg-paper shadow-[0_40px_80px_-30px_rgb(0_0_0/0.5)]"
       >
         <Hero hero={home.hero} />
-        <About about={home.about} />
-        <Experience experience={home.experience} />
-        <Education education={home.education} />
-        <Skills skills={home.skills} />
-        <Work work={home.work} />
-        <Recognition recognition={home.recognition} />
-        <Contact contact={home.contact} owner={home.nav.name} />
+        {visible.about ? <About about={home.about} /> : null}
+        {visible.experience ? <Experience experience={home.experience} /> : null}
+        {visible.education ? <Education education={home.education} /> : null}
+        {visible.skills ? <Skills skills={home.skills} /> : null}
+        {visible.work ? <Work work={home.work} /> : null}
+        {visible.recognition ? <Recognition recognition={home.recognition} /> : null}
+        {visible.contact ? <Contact contact={home.contact} owner={home.nav.name} /> : null}
       </main>
-      <SiteFooter footer={home.footer} />
+      <SiteFooter footer={footer} />
     </>
   );
 }

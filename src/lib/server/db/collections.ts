@@ -6,6 +6,7 @@ export const COLLECTIONS = {
   siteScreens: "site_screens",
   siteSettings: "site_settings",
   contactConversations: "contact_conversations",
+  siteScreenVersions: "site_screen_versions",
 } as const;
 
 export type SessionDocument = {
@@ -97,3 +98,19 @@ export type ContactConversationDocument = {
 
 export const contactConversationsCollection = (db: Db): Collection<ContactConversationDocument> =>
   db.collection<ContactConversationDocument>(COLLECTIONS.contactConversations);
+
+/**
+ * A saved version of a database-managed screen (Launchpad's version history,
+ * docs/screens/STUDIO_LAUNCHPAD_BUSINESS.md): the content as it was at `version`.
+ */
+export type ScreenVersionDocument = {
+  _id?: ObjectId;
+  slug: string;
+  version: number;
+  content: unknown;
+  savedAt: Date;
+  savedBy: string;
+};
+
+export const screenVersionsCollection = (db: Db): Collection<ScreenVersionDocument> =>
+  db.collection<ScreenVersionDocument>(COLLECTIONS.siteScreenVersions);

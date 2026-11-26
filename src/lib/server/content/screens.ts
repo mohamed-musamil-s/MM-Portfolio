@@ -3,6 +3,7 @@ import { cache } from "react";
 import { getDb } from "../db/mongodb";
 import { siteScreensCollection } from "../db/collections";
 import { getLogger } from "../logger";
+import { recordVersions } from "./versions";
 import { SCREEN_SCHEMAS, type ScreenContent, type ScreenSlug } from "@/lib/shared/content/screens";
 
 const log = getLogger("db");
@@ -62,15 +63,27 @@ export const saveScreenContent = async <S extends ScreenSlug>(
 ): Promise<SaveResult> => {
   const db = await getDb();
   const screens = siteScreensCollection(db);
-  const updated = await screens.findOneAndUpdate(
+  const savedAt = new Date();
+  const previous = await screens.findOneAndUpdate(
     { _id: slug, version: expectedVersion },
-    { $set: { content, updatedAt: new Date(), updatedBy }, $inc: { version: 1 } },
-    { returnDocument: "after", projection: { version: 1 } },
+    { $set: { content, updatedAt: savedAt, updatedBy }, $inc: { version: 1 } },
+    { returnDocument: "before" },
   );
 
-  if (updated) {
-    log.info({ slug, version: updated.version }, "screen content saved");
-    return { ok: true, version: updated.version };
+  if (previous) {
+    const version = previous.version + 1;
+    // Version history: keep the version this save replaced (if history started after it) and the new one.
+    await recordVersions(slug, [
+      {
+        version: previous.version,
+        content: previous.content,
+        savedAt: previous.updatedAt,
+        savedBy: previous.updatedBy,
+      },
+      { version, content, savedAt, savedBy: updatedBy },
+    ]);
+    log.info({ slug, version }, "screen content saved");
+    return { ok: true, version };
   }
 
   const exists = await screens.countDocuments({ _id: slug }, { limit: 1 });

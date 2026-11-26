@@ -18,6 +18,7 @@ export const HTTP_STATUS = {
   conflict: 409,
   payloadTooLarge: 413,
   unsupportedMediaType: 415,
+  unprocessable: 422,
   tooManyRequests: 429,
   internalServerError: 500,
 } as const;

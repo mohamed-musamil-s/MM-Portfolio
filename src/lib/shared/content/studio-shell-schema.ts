@@ -135,6 +135,23 @@ export const studioShellContentSchema = z.object({
     shown: text(64),
     hiddenToast: text(64),
     failed: text(120),
+    /** Version history. Placeholders: {n} {m} {time} {who} {list}. */
+    versions: z.object({
+      title: text(40),
+      hint: text(200),
+      version: text(24),
+      current: text(16),
+      savedBy: text(48),
+      changed: text(48),
+      same: text(64),
+      restore: text(24),
+      confirm: text(24),
+      restored: text(80),
+      conflict: text(120),
+      incompatible: text(120),
+      failed: text(120),
+      empty: text(140),
+    }),
     sections: z.object(
       Object.fromEntries(
         HOME_SECTIONS.map((section) => [section, z.object({ name: text(32), description: text(120) })]),

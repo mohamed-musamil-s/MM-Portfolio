@@ -6,6 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { SiteModeCard } from "@/components/studio/content/SiteModeCard";
 import { Switch } from "@/components/studio/ui/switch";
+import { VersionHistory } from "./VersionHistory";
 import { useRelativeTime } from "@/hooks/useRelativeTime";
 import { cn } from "@/lib/shared/cn";
 import { HOME_SECTIONS, type HomeSection, type SectionVisibility } from "@/lib/shared/content/home-sections";
@@ -24,6 +25,11 @@ type LaunchpadProps = {
   updatedAt: string | null;
   updatedBy: string | null;
   maintenance: boolean;
+  history: {
+    screens: { slug: string; name: string }[];
+    initialSlug: string;
+    initial: { current: number; versions: { version: number; savedAt: string; savedBy: string; changed: string[] }[] };
+  };
 };
 
 const ENTER =
@@ -37,7 +43,7 @@ const LastChange = ({ template, iso, who }: { template: string; iso: string; who
   return <span>{fill(template, { time, who })}</span>;
 };
 
-export const Launchpad = ({ shell, initial, updatedAt, updatedBy, maintenance }: LaunchpadProps) => {
+export const Launchpad = ({ shell, initial, updatedAt, updatedBy, maintenance, history }: LaunchpadProps) => {
   const copy = shell.launchpad;
   const page = shell.modules.release;
   const router = useRouter();
@@ -134,6 +140,18 @@ export const Launchpad = ({ shell, initial, updatedAt, updatedBy, maintenance }:
           })}
         </ul>
       </section>
+
+      <div className={ENTER} style={{ animationDelay: "180ms" }}>
+        <VersionHistory
+          copy={copy.versions}
+          screens={history.screens}
+          sectionNames={Object.fromEntries(
+            Object.entries(shell.editor.sections).map(([key, entry]) => [key, entry.name]),
+          )}
+          initialSlug={history.initialSlug}
+          initial={history.initial}
+        />
+      </div>
     </div>
   );
 };

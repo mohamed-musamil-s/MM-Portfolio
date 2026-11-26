@@ -95,3 +95,18 @@ export const readVersionForRestore = async (slug: ScreenSlug, version: number): 
   const parsed = SCREEN_SCHEMAS[slug].safeParse(doc.content);
   return parsed.success ? { ok: true, content: parsed.data } : { ok: false, reason: "incompatible" };
 };
+
+export type RecentSave = { slug: string; version: number; savedAt: string; savedBy: string };
+
+/** The newest saves across the given screens (Mission Control's activity feed); content is not read. */
+export const listRecentSaves = async (slugs: readonly ScreenSlug[], limit: number): Promise<RecentSave[]> => {
+  const docs = await screenVersionsCollection(await getDb())
+    .find({ slug: { $in: [...slugs] } }, { projection: { content: 0 }, sort: { savedAt: -1 }, limit })
+    .toArray();
+  return docs.map((doc) => ({
+    slug: doc.slug,
+    version: doc.version,
+    savedAt: doc.savedAt.toISOString(),
+    savedBy: doc.savedBy,
+  }));
+};

@@ -11,7 +11,7 @@ import type { DailyPoint } from "@/lib/server/analytics/vercel-analytics";
 
 type Labels = { visitors: string; pageviews: string };
 
-const HEIGHT = 240;
+const DEFAULT_HEIGHT = 240;
 const PAD = { top: 12, right: 12, bottom: 28, left: 44 };
 const GRID_LINES = 4;
 
@@ -27,7 +27,17 @@ const niceMax = (value: number) => {
   return Math.ceil(value / (step * magnitude)) * step * magnitude;
 };
 
-export const TrafficChart = ({ points, labels }: { points: DailyPoint[]; labels: Labels }) => {
+export const TrafficChart = ({
+  points,
+  labels,
+  height = DEFAULT_HEIGHT,
+}: {
+  points: DailyPoint[];
+  labels: Labels;
+  /** Total height in px (axis labels included). */
+  height?: number;
+}) => {
+  const HEIGHT = height;
   const frame = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
   const [hover, setHover] = useState<number | null>(null);

@@ -244,6 +244,23 @@ export const studioShellContentSchema = z.object({
     recentEmpty: text(120),
     viewAll: text(24),
     soon: text(16),
+    /** The banner's status line. Placeholder: {n}. */
+    attention: text(64),
+    attentionOne: text(64),
+    allClear: text(64),
+    traffic: z.object({ title: text(40), open: text(24), setup: text(120), error: text(120) }),
+    /** Placeholders: {n} {total}. */
+    checklist: z.object({
+      title: text(32),
+      score: text(32),
+      live: text(48),
+      sections: text(48),
+      analytics: text(48),
+      inbox: text(48),
+      fresh: text(48),
+    }),
+    /** Placeholders: {who} {screen} {n} {name}. */
+    activity: z.object({ title: text(32), saved: text(80), message: text(80), empty: text(80) }),
   }),
   actions: z.object({
     collapse: text(32),

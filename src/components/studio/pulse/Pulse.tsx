@@ -2,6 +2,7 @@ import { AlertTriangle, BarChart3, Eye, KeyRound, Layers, Users } from "lucide-r
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/shared/cn";
+import { percentChange } from "@/lib/shared/format";
 import type { StudioShellContent } from "@/lib/shared/content/studio-shell-schema";
 import { ROUTES } from "@/lib/shared/routes";
 import {
@@ -44,13 +45,6 @@ const Card = ({ children, className, order = 0 }: { children: ReactNode; classNa
     {children}
   </section>
 );
-
-/** "+12%" / "−8%", or null without an earlier figure. */
-const change = (now: number, before: number): string | null => {
-  if (before <= 0) return null;
-  const percent = Math.round(((now - before) / before) * 100);
-  return `${percent > 0 ? "+" : percent < 0 ? "−" : ""}${Math.abs(percent)}%`;
-};
 
 const Stat = ({
   label,
@@ -132,7 +126,7 @@ const BreakdownList = ({
 
 const Totals = ({ totals, previous, days, copy }: { totals: Totals; previous: Totals; days: number; copy: Copy }) => {
   const note = (now: number, before: number) => {
-    const delta = change(now, before);
+    const delta = percentChange(now, before);
     return delta ? fill(copy.stats.change, { change: delta, days }) : copy.stats.noPrevious;
   };
   const perVisitor = totals.visitors > 0 ? (totals.pageviews / totals.visitors).toFixed(1) : "0";

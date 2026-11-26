@@ -1,6 +1,6 @@
 # Screen: Home (`/`) — navbar and hero, Business Spec
 
-Version 1.0, 2026-11-26. The first two pieces of the portfolio home: a floating navbar and a pinned, multi-layer hero. Public surface, poster language from [STYLE.md](../STYLE.md) (paper, ink, signal orange on marks only), motion from [ANIMATION_UI.md](../ANIMATION_UI.md). The name splash ([SPLASH_BUSINESS.md](SPLASH_BUSINESS.md)) plays over this page first and lands its logo on the navbar's monogram.
+Version 1.1, 2026-11-26. The first two pieces of the portfolio home: a floating navbar and a pinned, multi-layer hero. Public surface, poster language from [STYLE.md](../STYLE.md) (paper, ink, signal orange on marks only), motion from [ANIMATION_UI.md](../ANIMATION_UI.md). The name splash ([SPLASH_BUSINESS.md](SPLASH_BUSINESS.md)) plays over this page first and lands its logo on the navbar's monogram.
 
 ---
 
@@ -43,28 +43,30 @@ Seeds stay generic: no personal details in code or seed files.
 
 ## 4. Navbar
 
-- Fixed at the top. **Left:** the animated monogram (links to `/`; `data-brand-mark`, where the splash logo lands). **Centre (≥ md):** a floating glass pill of links; an ink pill slides under the hovered link, its label turning paper. **Right:** a status chip with a pulsing dot and the call-to-action pill (magnetic on fine pointers).
-- Scrolling down hides it, scrolling up brings it back; past the hero's top it condenses (tighter padding, soft shadow).
+- Fixed at the top. **Left:** the animated monogram (links to `/`; `data-brand-mark`, where the splash logo lands). **Centre (≥ md):** poster-style labels separated by slashes (`WORK / ABOUT / SERVICES / CONTACT`); on hover the letters roll up one after another and an orange dot slides under the link. **Right:** a status line with a pulsing dot and the call-to-action pill (magnetic on fine pointers).
+- At the top of the page the row is transparent. Scrolling down hides it; scrolling back up brings it back as a **blurred paper bar** (backdrop blur, hairline border, soft shadow) with tighter padding.
 - **Phone:** monogram + `MENU`. The menu is a full-screen paper overlay: links stacked massive, rising one by one through masks, crosshairs in the corners. `Esc` closes it and focus returns to the button.
 - Entrance (after the splash): items drop in one by one.
 
 ## 5. Hero
 
-A 220 svh section with a sticky 100 svh stage, so scrolling plays a sequence before the page moves on.
+A clean two-column stage where **nothing overlaps**, inside a 200 svh section with a sticky 100 svh stage, so scrolling plays a sequence before the page moves on.
 
-| Layer (back to front)                         | Entrance                      | Scroll (0 → 1 through the section)                   | Pointer  |
-| --------------------------------------------- | ----------------------------- | ---------------------------------------------------- | -------- |
-| Faint 12-column grid + giant outline monogram | fades up                      | the monogram drifts down slower than the page        | −12 px   |
-| Halftone sphere (orange meridian)             | grows from 0.7                | scales up, rises, rotates                            | +24 px   |
-| Statement lines                               | rise through masks, staggered | lines slide apart sideways (alternating directions)  | —        |
-| Brush signature                               | wipes in left to right        | rises faster and tilts                               | +14 px   |
-| Floating chips                                | pop in, staggered             | float up at different speeds                         | ±8–30 px |
-| Intro, calls to action, facts                 | fade up                       | fade out by the middle                               | —        |
-| Whole stage                                   | —                             | shrinks to a rounded card on ink as the section ends | —        |
+- **Left (7 of 11 columns):** eyebrow; the statement (massive, the middle line in outline); the name in brush lettering on its own line with an orange stroke; the intro; the two calls to action.
+- **Right (4 of 11, ≥ lg):** a framed card (crop marks) holding the halftone sphere; the tags in a neat row under it.
+- **Bottom:** the facts on a hairline rule, in three columns.
+- **Phone:** one column (eyebrow, statement, signature, intro, calls to action); the sphere, tags and facts are left out.
 
-Under the hero, an ink marquee band moves with the scroll speed (skews with velocity).
+| Layer                         | Entrance                          | Scroll (0 → 1 through the section)            | Pointer                   |
+| ----------------------------- | --------------------------------- | --------------------------------------------- | ------------------------- |
+| Statement lines               | rise through masks, staggered     | each line rises at its own speed              | —                         |
+| Signature                     | wipes in; the orange stroke draws | moves with the left column                    | —                         |
+| Intro, calls to action, facts | fade up                           | fade out by the middle                        | —                         |
+| Sphere card                   | grows from 0.92                   | rises; the sphere inside swells and turns     | +18 px (inside its frame) |
+| Tags                          | rise one by one                   | move with the card                            | —                         |
+| Whole stage                   | —                                 | shrinks into a rounded card on ink at the end | —                         |
 
-Large type also skews slightly with scroll speed (±4°). Entrances wait for the splash to finish (or start at once when it doesn't play).
+Under the hero, an ink marquee band moves with the scroll speed (skews with velocity). Large type also skews slightly with scroll speed. Entrances wait for the splash to start leaving (or start at once when it doesn't play).
 
 ## 6. Accessibility and reduced motion
 

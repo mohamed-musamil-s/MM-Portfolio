@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { AnimatedMonogram } from "@/components/brand/AnimatedMonogram";
 import { RegistrationMark } from "@/components/motion/RegistrationMark";
 import { StatusDot } from "@/components/motion/StatusDot";
@@ -14,78 +14,71 @@ import type { HomeContent } from "@/lib/shared/content/home-schema";
 import { EASE_PRINT } from "@/lib/motion/tokens";
 
 /*
- * The portfolio navbar (docs/screens/HOME_BUSINESS.md §4): monogram left (the
- * splash lands its logo here), a floating glass pill of links with a sliding
- * ink highlight, an availability chip and a magnetic call to action. Hides
- * while scrolling down, returns on the way up, condenses once the page moves.
+ * The portfolio navbar (docs/screens/HOME_BUSINESS.md §4). At the top of the
+ * page it is a transparent row; scrolling down hides it, scrolling back up
+ * brings it back as a blurred paper bar. Links are poster-style labels
+ * separated by slashes: on hover the letters roll up and an orange dot marks
+ * the link. The monogram on the left is where the splash lands its logo.
  */
 
 type Nav = HomeContent["nav"];
 
 const HIDE_AFTER = 160;
-const CONDENSE_AFTER = 40;
-const PILL_SPRING = { type: "spring", stiffness: 420, damping: 36 } as const;
+const BAR_AFTER = 24;
+const LETTER_STAGGER = 0.018;
+const DOT_SPRING = { type: "spring", stiffness: 420, damping: 34 } as const;
 
 /** Items drop in one by one once the splash has started leaving. */
 const useDropIn = (index: number) => {
   const ready = useIntroReady();
   return {
-    initial: { y: -28, opacity: 0 },
-    animate: ready ? { y: 0, opacity: 1 } : { y: -28, opacity: 0 },
+    initial: { y: -24, opacity: 0 },
+    animate: ready ? { y: 0, opacity: 1 } : { y: -24, opacity: 0 },
     transition: { delay: 0.2 + index * 0.07, duration: 0.7, ease: EASE_PRINT },
   };
 };
 
-const Arrow = ({ className }: { className?: string }) => (
-  <span aria-hidden className={cn("relative inline-block size-[1em] overflow-hidden", className)}>
-    <span className="absolute inset-0 grid place-items-center transition-transform duration-500 ease-print group-hover:translate-x-full group-hover:-translate-y-full">
-      ↗
-    </span>
-    <span className="absolute inset-0 grid -translate-x-full translate-y-full place-items-center transition-transform duration-500 ease-print group-hover:translate-x-0 group-hover:translate-y-0">
-      ↗
+/** A label whose letters roll up one after another on hover (the second copy rolls in from below). */
+const RollingLabel = ({ text, active }: { text: string; active: boolean }) => (
+  <span aria-hidden className="relative block overflow-hidden">
+    <span className="flex">
+      {Array.from(text).map((letter, index) => (
+        <span key={`${letter}-${index}`} className="relative block whitespace-pre">
+          <motion.span
+            className="block"
+            animate={{ y: active ? "-110%" : "0%" }}
+            transition={{ delay: index * LETTER_STAGGER, duration: 0.45, ease: EASE_PRINT }}
+          >
+            {letter}
+          </motion.span>
+          <motion.span
+            className="absolute inset-0 block"
+            initial={{ y: "110%" }}
+            animate={{ y: active ? "0%" : "110%" }}
+            transition={{ delay: index * LETTER_STAGGER, duration: 0.45, ease: EASE_PRINT }}
+          >
+            {letter}
+          </motion.span>
+        </span>
+      ))}
     </span>
   </span>
 );
 
-/** Ink pill that leans toward the cursor; its arrow flies out and back in on hover. */
-const MagneticCta = ({ cta, index }: { cta: Nav["cta"]; index: number }) => {
-  const { anchorRef, x, y } = useMagnetic<HTMLSpanElement>();
-  const drop = useDropIn(index);
-  return (
-    <motion.span {...drop} className="hidden sm:block">
-      <span ref={anchorRef} className="block">
-        <motion.a
-          href={cta.href}
-          style={{ x, y }}
-          className="group flex min-h-11 items-center gap-2 rounded-full bg-ink px-5 text-label font-bold text-paper uppercase transition-colors duration-200 hover:bg-ink/88 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ink"
-        >
-          {cta.label}
-          <Arrow />
-        </motion.a>
-      </span>
-    </motion.span>
-  );
-};
-
-const DesktopLinks = ({ links, condensed }: { links: Nav["links"]; condensed: boolean }) => {
+const DesktopLinks = ({ links }: { links: Nav["links"] }) => {
   const [active, setActive] = useState<number | null>(null);
   return (
     <nav aria-label="Primary" className="hidden md:block">
-      <ul
-        onPointerLeave={() => setActive(null)}
-        className={cn(
-          "relative flex items-center gap-1 rounded-full border border-ink/10 bg-paper/70 p-1.5 backdrop-blur-xl transition-shadow duration-500 ease-print",
-          condensed && "shadow-[0_18px_50px_-24px_rgb(0_0_0/0.45)]",
-        )}
-      >
+      <ul onPointerLeave={() => setActive(null)} className="flex items-center gap-1">
         {links.map((link, index) => (
-          <NavLink
-            key={`${link.href}-${index}`}
-            link={link}
-            index={index}
-            active={active === index}
-            onActive={setActive}
-          />
+          <Fragment key={`${link.href}-${index}`}>
+            {index > 0 ? (
+              <li aria-hidden className="px-1 text-label font-bold text-ink/25">
+                /
+              </li>
+            ) : null}
+            <NavLink link={link} index={index} active={active === index} onActive={setActive} />
+          </Fragment>
         ))}
       </ul>
     </nav>
@@ -108,19 +101,51 @@ const NavLink = ({
     <motion.li {...drop}>
       <a
         href={link.href}
+        aria-label={link.label}
         onPointerEnter={() => onActive(index)}
         onFocus={() => onActive(index)}
         onBlur={() => onActive(null)}
-        className="relative block rounded-full px-4 py-2 text-label font-bold uppercase focus-visible:outline-none"
+        className="relative flex flex-col items-center px-2 py-2 text-label font-bold uppercase focus-visible:outline-none"
       >
-        {active ? (
-          <motion.span layoutId="nav-pill" transition={PILL_SPRING} className="absolute inset-0 rounded-full bg-ink" />
-        ) : null}
-        <span className={cn("relative transition-colors duration-200", active ? "text-paper" : "text-ink")}>
-          {link.label}
+        <RollingLabel text={link.label} active={active} />
+        <span className="absolute -bottom-0.5 left-1/2 h-1.5 w-1.5 -translate-x-1/2">
+          {active ? (
+            <motion.span
+              layoutId="nav-dot"
+              transition={DOT_SPRING}
+              className="block size-full rounded-full bg-signal"
+            />
+          ) : null}
         </span>
       </a>
     </motion.li>
+  );
+};
+
+/** Ink pill that leans toward the cursor; its arrow flies out and back in on hover. */
+const MagneticCta = ({ cta, index }: { cta: Nav["cta"]; index: number }) => {
+  const { anchorRef, x, y } = useMagnetic<HTMLSpanElement>();
+  const drop = useDropIn(index);
+  return (
+    <motion.span {...drop} className="hidden sm:block">
+      <span ref={anchorRef} className="block">
+        <motion.a
+          href={cta.href}
+          style={{ x, y }}
+          className="group flex min-h-11 items-center gap-2 rounded-full bg-ink px-5 text-label font-bold text-paper uppercase transition-colors duration-200 hover:bg-ink/88 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ink"
+        >
+          {cta.label}
+          <span aria-hidden className="relative inline-block size-[1em] overflow-hidden">
+            <span className="absolute inset-0 grid place-items-center transition-transform duration-500 ease-print group-hover:translate-x-full group-hover:-translate-y-full">
+              ↗
+            </span>
+            <span className="absolute inset-0 grid -translate-x-full translate-y-full place-items-center transition-transform duration-500 ease-print group-hover:translate-x-0 group-hover:translate-y-0">
+              ↗
+            </span>
+          </span>
+        </motion.a>
+      </span>
+    </motion.span>
   );
 };
 
@@ -222,7 +247,7 @@ export const SiteNav = ({ nav }: { nav: Nav }) => {
   const { reducedMotion } = useMotionTheme();
   const { scrollY } = useScroll();
   const [hidden, setHidden] = useState(false);
-  const [condensed, setCondensed] = useState(false);
+  const [bar, setBar] = useState(false);
   const [open, setOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
   const status = useDropIn(nav.links.length + 1);
@@ -231,7 +256,7 @@ export const SiteNav = ({ nav }: { nav: Nav }) => {
   useMotionValueEvent(scrollY, "change", (y) => {
     const previous = scrollY.getPrevious() ?? 0;
     setHidden(y > previous && y > HIDE_AFTER);
-    setCondensed(y > CONDENSE_AFTER);
+    setBar(y > BAR_AFTER);
   });
 
   const close = () => {
@@ -242,14 +267,22 @@ export const SiteNav = ({ nav }: { nav: Nav }) => {
   return (
     <>
       <motion.header
-        animate={{ y: hidden && !open && !reducedMotion ? "-120%" : "0%" }}
+        animate={{ y: hidden && !open && !reducedMotion ? "-110%" : "0%" }}
         transition={{ duration: 0.55, ease: EASE_PRINT }}
         className="fixed inset-x-0 top-0 z-40"
       >
+        {/* The blurred bar fades in behind the row once the page has moved. */}
+        <motion.div
+          aria-hidden
+          initial={false}
+          animate={{ opacity: bar ? 1 : 0 }}
+          transition={{ duration: 0.4, ease: EASE_PRINT }}
+          className="absolute inset-0 border-b border-ink/10 bg-paper/70 shadow-[0_10px_40px_-24px_rgb(0_0_0/0.35)] backdrop-blur-xl backdrop-saturate-150"
+        />
         <div
           className={cn(
-            "flex items-center justify-between gap-4 px-page transition-[padding] duration-500 ease-print",
-            condensed ? "py-3" : "py-5 lg:py-7",
+            "relative flex items-center justify-between gap-4 px-page transition-[padding] duration-500 ease-print",
+            bar ? "py-3" : "py-5 lg:py-7",
           )}
         >
           <Link
@@ -259,12 +292,9 @@ export const SiteNav = ({ nav }: { nav: Nav }) => {
           >
             <AnimatedMonogram className="h-8 w-auto sm:h-10" />
           </Link>
-          <DesktopLinks links={nav.links} condensed={condensed} />
-          <div className="flex items-center gap-3">
-            <motion.span
-              {...status}
-              className="hidden items-center gap-2 rounded-full border border-ink/10 bg-paper/70 px-3.5 py-2.5 font-technical text-micro uppercase backdrop-blur-xl lg:flex"
-            >
+          <DesktopLinks links={nav.links} />
+          <div className="flex items-center gap-5">
+            <motion.span {...status} className="hidden items-center gap-2 font-technical text-micro uppercase lg:flex">
               <StatusDot />
               {nav.status}
             </motion.span>

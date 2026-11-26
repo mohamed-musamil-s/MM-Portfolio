@@ -1,4 +1,4 @@
-# Screen: Home (`/`) — navbar and hero, Business Spec
+# Screen: Home (`/`) — the full portfolio page, Business Spec
 
 Version 2.0, 2026-11-26. Redesigned after the previous portfolio (`mm.s-portfolio`, "MM·2050 Signal"): wide display name, ink portrait, stats rail, glass capsule navbar. The first two pieces of the portfolio home: a floating navbar and a pinned, multi-layer hero. Public surface, poster language from [STYLE.md](../STYLE.md) (paper, ink, signal orange on marks only), motion from [ANIMATION_UI.md](../ANIMATION_UI.md). The name splash ([SPLASH_BUSINESS.md](SPLASH_BUSINESS.md)) plays over this page first and lands its logo on the navbar's monogram.
 
@@ -56,6 +56,22 @@ Seeds stay generic: no personal details in code or seed files.
 - **Phone and tablet:** one column; the portrait sits in the flow under the buttons; no pinning.
 - **Motion (≥ lg):** a 180 svh section with a sticky stage. Entrance: the name rises through masks, the portrait wipes up from the bottom, the rest fades up, the numbers count. Scroll: the name lines slide apart sideways, the portrait rises and swells slowly, the text and rail fade by the middle, the stage shrinks into a card on ink. Pointer: the portrait moves with depth.
 - Under the hero, an ink marquee band moves with the scroll speed.
+
+## 6. Sections under the hero
+
+Content for each lives in `site_screens/home` (`about`, `experience`, `skills`, `work`, `recognition`, `contact`, `footer`; schema in `src/lib/shared/content/home-sections-schema.ts`), first filled from the previous portfolio and the owner's profile. Every section opens with the same header (number, eyebrow on a hairline, the title massive in the wide face rising through its mask, a count). Elements reveal once as they enter the viewport. Sections clip sideways so sliding cards never widen the page. Icons, logos and project illustrations live in `public/portfolio/`.
+
+| #   | Section (`id`)              | Layout                                                                                                                                                                       | Motion                                                                                                                               |
+| --- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 6.1 | About (`about`)             | Statement left, story and two pills right; a facts strip; "the road so far" timeline.                                                                                        | The statement inks in word by word with the scroll; the timeline's signal line draws with the scroll.                                |
+| 6.2 | Experience (`experience`)   | Roles down a timeline: company, logo, period, place on the left; title, highlights (`**bold**` key phrases), tech chips on the right. Live dot on the current role.          | The signal line draws down as you scroll; each role rises in.                                                                        |
+| 6.3 | Skills (`skills`)           | Bento grid (wide groups span two columns, one dark module); legend for core skills (signal ring).                                                                            | Cards assemble from alternating sides.                                                                                               |
+| 6.4 | Work (`work`)               | Project cards: illustration with crop marks, category, number, title, period, summary, tags.                                                                                 | Large screens: the section pins and the cards travel horizontally with the scroll (travel measured from the track). Phones: stacked. |
+| 6.5 | Recognition (`recognition`) | Award cards with a signal badge; education list; kind words as large quotes.                                                                                                 | Awards come in diagonally.                                                                                                           |
+| 6.6 | Contact (`contact`)         | Headline, note, the email big (mailto, a signal line traces under it on hover), details as label / value rows.                                                               | Headline rises; rows reveal in turn.                                                                                                 |
+| 6.7 | Footer (`footer`, ink)      | Manifesto words (middle one outlined) with their lines, the quote, the closing line in brush and a call to action, links, socials, a giant monogram, copyright, back to top. | Words rise one by one; the monogram rises in.                                                                                        |
+
+The navbar's links jump to these anchors with Lenis smooth scrolling (offset for the bar).
 
 ## 6. Accessibility and reduced motion
 

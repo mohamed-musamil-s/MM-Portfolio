@@ -336,6 +336,13 @@ Verified with a production build (`next start`) connected to Atlas:
 - Navbar restyled: slash-separated labels with a letter-roll hover and an orange dot; transparent at the top, a blurred paper bar when it returns on scroll up.
 - Entrances wait for the splash to start leaving (`useIntroReady`, `src/components/splash/splash-state.ts`).
 
+## 2026-11-26: The full portfolio page
+
+- The home page now has every section under the hero: About, Experience, Skills, Work, Recognition, Contact and the footer ([spec](screens/HOME_BUSINESS.md) §6), in `src/components/home/`.
+- Content was filled from the previous portfolio's copy and the profile PDF (dev DB only); schema in `home-sections-schema.ts`; generic seed defaults.
+- Assets from the previous site: `public/portfolio/icons`, `logos`, `projects`.
+- Navbar anchors scroll smoothly (Lenis `anchors`).
+
 ## Open items
 
 - [ ] Seed the home screen on production (`npm run seed:screens:prod -- --only=home`, plus its studio-shell `editor.screens` entry) once development is complete.

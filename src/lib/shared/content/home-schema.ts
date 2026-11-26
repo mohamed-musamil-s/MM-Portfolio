@@ -1,8 +1,17 @@
 import { z } from "zod";
+import {
+  aboutSchema,
+  contactSchema,
+  experienceSchema,
+  footerSchema,
+  recognitionSchema,
+  skillsSchema,
+  workSchema,
+} from "./home-sections-schema";
 
 /**
  * Content model for the portfolio home (docs/screens/HOME_BUSINESS.md §3):
- * the navbar and the hero for now; sections are added as they are built.
+ * the navbar, the hero and every section under it (home-sections-schema.ts).
  */
 
 const text = (max: number) => z.string().trim().min(1).max(max);
@@ -34,6 +43,13 @@ export const homeContentSchema = z.object({
     portrait: z.object({ src: text(200), alt: text(160), caption: text(48) }),
     marquee: z.array(text(24)).min(2).max(8),
   }),
+  about: aboutSchema,
+  experience: experienceSchema,
+  skills: skillsSchema,
+  work: workSchema,
+  recognition: recognitionSchema,
+  contact: contactSchema,
+  footer: footerSchema,
 });
 
 export type HomeContent = z.infer<typeof homeContentSchema>;

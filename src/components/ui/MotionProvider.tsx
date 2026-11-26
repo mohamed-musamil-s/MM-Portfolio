@@ -24,7 +24,7 @@ const useSmoothScroll = (enabled: boolean) => {
     if (!enabled) {
       return;
     }
-    const lenis = new Lenis({ autoRaf: false, lerp: 0.1, smoothWheel: true });
+    const lenis = new Lenis({ autoRaf: false, lerp: 0.1, smoothWheel: true, anchors: { offset: -72 } });
     const tick = (seconds: number) => lenis.raf(seconds * 1000);
 
     lenis.on("scroll", ScrollTrigger.update);

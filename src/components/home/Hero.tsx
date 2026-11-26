@@ -13,6 +13,7 @@ import { useMotionTheme } from "@/hooks/useMotionTheme";
 import { cn } from "@/lib/shared/cn";
 import type { HomeContent } from "@/lib/shared/content/home-schema";
 import { EASE_PRINT } from "@/lib/motion/tokens";
+import { Pill } from "./section-kit";
 
 /*
  * The home hero (docs/screens/HOME_BUSINESS.md §5), after the previous
@@ -52,48 +53,6 @@ const useHeroScroll = (progress: MotionValue<number>) => ({
 });
 
 /* ---------- Pieces ---------- */
-
-/** A pill button whose label rolls on hover; the button itself never moves. */
-const Pill = ({
-  href,
-  tone,
-  icon,
-  children,
-}: {
-  href: string;
-  tone: "ink" | "line";
-  icon: string;
-  children: string;
-}) => (
-  <a
-    href={href}
-    className={cn(
-      "group inline-flex min-h-12 items-center gap-3 rounded-full py-1.5 pr-1.5 pl-6 text-label font-bold uppercase transition-colors duration-300 ease-print focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-signal",
-      tone === "ink" ? "bg-ink text-paper hover:bg-ink/88" : "border border-ink/20 text-ink hover:border-ink",
-    )}
-  >
-    <span className="relative block overflow-hidden">
-      <span className="block transition-transform duration-500 ease-print group-hover:-translate-y-full">
-        {children}
-      </span>
-      <span
-        aria-hidden
-        className="absolute inset-0 block translate-y-full transition-transform duration-500 ease-print group-hover:translate-y-0"
-      >
-        {children}
-      </span>
-    </span>
-    <span
-      aria-hidden
-      className={cn(
-        "grid size-9 place-items-center rounded-full text-sm transition-transform duration-500 ease-print group-hover:rotate-[-45deg]",
-        tone === "ink" ? "bg-signal text-paper" : "border border-ink/20",
-      )}
-    >
-      {icon}
-    </span>
-  </a>
-);
 
 /** Counts the number in a stat up from zero on entrance; prefix and suffix are marked in the accent. */
 const StatValue = ({ value, ready, delay }: { value: string; ready: boolean; delay: number }) => {

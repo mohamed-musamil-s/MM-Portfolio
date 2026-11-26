@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { About } from "@/components/home/About";
+import { Contact } from "@/components/home/Contact";
+import { Experience } from "@/components/home/Experience";
 import { Hero } from "@/components/home/Hero";
+import { Recognition } from "@/components/home/Recognition";
+import { SiteFooter } from "@/components/home/SiteFooter";
+import { Skills } from "@/components/home/Skills";
+import { Work } from "@/components/home/Work";
 import { SiteNav } from "@/components/home/SiteNav";
 import { ReplaceRoute } from "@/components/public/ReplaceRoute";
 import { getScreenContent } from "@/lib/server/content/screens";
@@ -38,9 +45,16 @@ export default async function HomePage() {
   return (
     <>
       <SiteNav nav={home.nav} />
-      <main>
+      <main id="top">
         <Hero hero={home.hero} />
+        <About about={home.about} />
+        <Experience experience={home.experience} />
+        <Skills skills={home.skills} />
+        <Work work={home.work} />
+        <Recognition recognition={home.recognition} />
+        <Contact contact={home.contact} />
       </main>
+      <SiteFooter footer={home.footer} />
     </>
   );
 }

@@ -234,7 +234,7 @@ const Quotes = ({ label, quotes }: { label: string; quotes: Quote[] }) => {
 };
 
 export const Recognition = ({ recognition }: { recognition: Recognition }) => (
-  <Section id="recognition" className="bg-newsprint/40">
+  <Section id="recognition">
     <SectionHeader header={recognition.header} />
 
     {recognition.awards.length > 0 ? (

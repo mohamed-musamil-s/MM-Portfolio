@@ -29,7 +29,7 @@ const TONES = [
     ghost: "[-webkit-text-stroke:1.5px_var(--signal)]",
   },
   {
-    card: "border-ink/10 bg-newsprint text-ink",
+    card: "border-ink/10 bg-paper text-ink",
     muted: "text-graphite",
     chip: "border-ink/15",
     ghost: "[-webkit-text-stroke:1.5px_var(--text-primary)]",
@@ -145,7 +145,7 @@ export const Work = ({ work }: { work: Work }) => {
   const total = work.projects.length;
 
   return (
-    <Section id="work">
+    <Section id="work" className="bg-newsprint">
       <SectionHeader header={work.header} />
       <div ref={deckRef} className={cn("relative", !stacked && "flex flex-col gap-6")}>
         {work.projects.map((project, index) =>

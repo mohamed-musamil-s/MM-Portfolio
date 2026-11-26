@@ -21,7 +21,10 @@ import { Pill } from "./section-kit";
  * role, the intro and two pill buttons on the left; the ink portrait bleeding
  * off the right edge; a stats rail along the bottom. On large screens the
  * section is 180svh with a sticky stage: scrolling moves each layer at its own
- * speed and shrinks the stage into a card on ink. Entrances wait for the splash.
+ * speed. From the first scroll the stage shrinks into a rounded box on ink,
+ * whose backdrop has its own design (grid, glow, the name huge in outline
+ * sliding apart); then the box tips back and lifts away into the ink marquee
+ * band. Entrances wait for the splash.
  */
 
 type HeroContent = HomeContent["hero"];
@@ -32,6 +35,9 @@ const rise = (ready: boolean, delay: number, distance = 28) => ({
   transition: { delay, duration: 0.9, ease: EASE_PRINT },
 });
 
+/** Perspective for the stage as it tips back on the way out. */
+const STAGE_PERSPECTIVE = 1400;
+
 const useHeroScroll = (progress: MotionValue<number>) => ({
   lines: [
     useTransform(progress, [0, 1], ["0vw", "-5vw"]),
@@ -39,18 +45,63 @@ const useHeroScroll = (progress: MotionValue<number>) => ({
     useTransform(progress, [0, 1], ["0vw", "-3vw"]),
   ],
   details: {
-    opacity: useTransform(progress, [0, 0.45], [1, 0]),
-    y: useTransform(progress, [0, 0.45], ["0svh", "-6svh"]),
+    opacity: useTransform(progress, [0, 0.35], [1, 0]),
+    y: useTransform(progress, [0, 0.35], ["0svh", "-6svh"]),
   },
   portrait: {
     y: useTransform(progress, [0, 1], ["0svh", "-10svh"]),
     scale: useTransform(progress, [0, 1], [1, 1.08]),
   },
+  // From the first scroll the stage shrinks into a rounded box; in the second half it tips back and lifts away.
   stage: {
-    scale: useTransform(progress, [0.62, 1], [1, 0.9]),
-    borderRadius: useTransform(progress, [0.62, 1], [0, 40]),
+    scale: useTransform(progress, [0, 0.5, 1], [1, 0.8, 0.72]),
+    y: useTransform(progress, [0, 0.5, 1], ["0svh", "-3svh", "-62svh"]),
+    rotateX: useTransform(progress, [0.5, 1], [0, 14]),
+    borderRadius: useTransform(progress, [0, 0.3], [0, 44]),
+    transformPerspective: STAGE_PERSPECTIVE,
+  },
+  // The ink backdrop's own design shows around the box: the name slides apart, the labels fade in.
+  backdrop: {
+    opacity: useTransform(progress, [0.04, 0.35], [0, 1]),
+    first: useTransform(progress, [0, 1], ["12vw", "-26vw"]),
+    second: useTransform(progress, [0, 1], ["-26vw", "12vw"]),
   },
 });
+
+/** Behind the box on ink: a fine grid, a signal glow, the name huge in outline sliding apart, role labels. */
+const Backdrop = ({
+  hero,
+  motionStyle,
+}: {
+  hero: HeroContent;
+  motionStyle: ReturnType<typeof useHeroScroll>["backdrop"];
+}) => (
+  <motion.div
+    aria-hidden
+    style={{ opacity: motionStyle.opacity }}
+    className="pointer-events-none absolute inset-0 hidden overflow-hidden text-paper lg:block"
+  >
+    <div className="absolute inset-0 bg-[linear-gradient(to_right,color-mix(in_srgb,var(--bg-primary)_7%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_srgb,var(--bg-primary)_7%,transparent)_1px,transparent_1px)] bg-size-[calc(100%/12)_calc(100%/8)]" />
+    <div className="absolute -bottom-[30%] left-1/2 size-[70vw] -translate-x-1/2 rounded-full bg-signal/20 blur-[140px]" />
+    <div className="absolute inset-x-0 top-6 flex justify-between px-page font-technical text-micro text-paper/50 uppercase">
+      <span>{hero.role}</span>
+      <span>{hero.roleMeta}</span>
+    </div>
+    <div className="absolute inset-x-0 bottom-[3svh] flex flex-col font-wide text-[17vw] leading-[0.8] font-semibold whitespace-nowrap uppercase">
+      <motion.span
+        style={{ x: motionStyle.first }}
+        className="text-transparent [-webkit-text-stroke:1.5px_color-mix(in_srgb,var(--bg-primary)_30%,transparent)]"
+      >
+        {hero.lines[0]}
+      </motion.span>
+      {hero.lines[1] ? (
+        <motion.span style={{ x: motionStyle.second }} className="self-end text-signal">
+          {hero.lines[1]}
+        </motion.span>
+      ) : null}
+    </div>
+  </motion.div>
+);
 
 /* ---------- Pieces ---------- */
 
@@ -220,9 +271,10 @@ export const Hero = ({ hero }: { hero: HeroContent }) => {
     <>
       <section ref={section} aria-label={hero.lines.join(" ")} className="relative bg-ink lg:h-[180svh]">
         <div className="lg:sticky lg:top-0 lg:h-svh lg:overflow-hidden">
+          {animated ? <Backdrop hero={hero} motionStyle={scroll.backdrop} /> : null}
           <motion.div
             style={animated ? scroll.stage : undefined}
-            className="relative overflow-hidden bg-paper lg:h-full"
+            className="relative origin-[50%_20%] overflow-hidden bg-paper shadow-[0_60px_120px_-50px_rgb(0_0_0/0.7)] lg:h-full"
           >
             {/* Depth field: a faint 12-column grid and a soft signal aura. */}
             <div

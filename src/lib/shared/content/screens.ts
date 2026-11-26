@@ -1,4 +1,5 @@
 import type { z } from "zod";
+import { homeContentSchema, type HomeContent } from "./home-schema";
 import { maintenanceContentSchema, type MaintenanceContent } from "./maintenance-schema";
 import { notFoundContentSchema, type NotFoundContent } from "./not-found-schema";
 import { sharedContentSchema, type SharedContent } from "./shared-schema";
@@ -9,6 +10,7 @@ import { studioShellContentSchema, type StudioShellContent } from "./studio-shel
 /** Content type of every database-managed screen, by slug (`site_screens._id`). */
 type ScreenContentMap = {
   shared: SharedContent;
+  home: HomeContent;
   splash: SplashContent;
   maintenance: MaintenanceContent;
   "not-found": NotFoundContent;
@@ -28,6 +30,7 @@ export type ScreenContent<S extends ScreenSlug> = ScreenContentMap[S];
  */
 export const SCREEN_SCHEMAS: { [S in ScreenSlug]: z.ZodType<ScreenContentMap[S]> } = {
   shared: sharedContentSchema,
+  home: homeContentSchema,
   splash: splashContentSchema,
   maintenance: maintenanceContentSchema,
   "not-found": notFoundContentSchema,
@@ -42,6 +45,7 @@ export const SCREEN_SCHEMAS: { [S in ScreenSlug]: z.ZodType<ScreenContentMap[S]>
 export const PORTFOLIO_SCREENS = [
   "shared",
   "splash",
+  "home",
   "maintenance",
   "not-found",
 ] as const satisfies readonly ScreenSlug[];

@@ -48,6 +48,39 @@ const SCREENS = {
     skip: "Skip intro",
     srLabel: "Intro animation",
   },
+  // Portfolio home: navbar and hero (docs/screens/HOME_BUSINESS.md). Generic: set real details in Content Forge.
+  home: {
+    meta: { title: "Portfolio", description: "Design, code and motion, crafted with care." },
+    nav: {
+      links: [
+        { label: "Work", href: "#work" },
+        { label: "About", href: "#about" },
+        { label: "Services", href: "#services" },
+        { label: "Contact", href: "#contact" },
+      ],
+      status: "Available for work",
+      cta: { label: "Let's talk", href: "#contact" },
+      menu: "Menu",
+      close: "Close",
+    },
+    hero: {
+      eyebrow: "Portfolio / 2026",
+      lines: ["Create.", "Inspire.", "Elevate."],
+      signature: "Your Name",
+      intro:
+        "I design and build digital products with clean code, careful motion and an eye for the details people feel.",
+      primary: { label: "View work", href: "#work" },
+      secondary: { label: "Get in touch", href: "#contact" },
+      meta: [
+        { label: "Role", value: "Designer & developer" },
+        { label: "Focus", value: "Interfaces & motion" },
+        { label: "Status", value: "Open to projects" },
+      ],
+      chips: ["Product design", "Next.js", "Design systems", "Motion", "TypeScript"],
+      marquee: ["Design", "Development", "Motion", "Brand", "Systems"],
+      scroll: "Scroll to explore",
+    },
+  },
   maintenance: {
     meta: {
       title: "System upgrade in progress",
@@ -255,6 +288,7 @@ const SCREENS = {
           name: "Shared content",
           description: "Text used on several pages, like the footer. Edit once, it changes everywhere.",
         },
+        home: { name: "Home", description: "The portfolio's first page: navbar and hero." },
         splash: { name: "Name splash", description: "The intro that plays once before the portfolio opens." },
         maintenance: { name: "Maintenance page", description: "What visitors see while the site is being upgraded." },
         "not-found": { name: "404 page", description: "Shown for any address that doesn't exist." },

@@ -34,4 +34,4 @@ Generate `SESSION_SECRET` with `openssl rand -base64 48`.
 - [Public design system](docs/STYLE.md) (public portfolio only)
 - [Studio design system](docs/ADMIN_STYLE.md) (placeholder, with provisional tokens)
 - [Animation and interactive UI](docs/ANIMATION_UI.md) (motion stack, MagicIcon, ActionButton)
-- Screen specs: [Maintenance](docs/screens/MAINTENANCE_BUSINESS.md), [Name splash](docs/screens/SPLASH_BUSINESS.md)
+- Screen specs: [Maintenance](docs/screens/MAINTENANCE_BUSINESS.md), [Name splash](docs/screens/SPLASH_BUSINESS.md), [Home](docs/screens/HOME_BUSINESS.md)

@@ -22,11 +22,13 @@ import { EXIT_AT, EXIT_SECONDS } from "./splash-timeline";
 
 type NameSplashProps = {
   content: SplashContent;
+  /** Called when the exit starts (the page underneath may begin its entrance). */
+  onExitStart?: () => void;
   /** Called once the exit has finished. */
   onFinished?: () => void;
 };
 
-export const NameSplash = ({ content, onFinished }: NameSplashProps) => {
+export const NameSplash = ({ content, onExitStart, onFinished }: NameSplashProps) => {
   const [{ nodes, bind }] = useState(createRegistry);
   const stage = useRef<Stage | null>(null);
   const start = useRef(0);
@@ -35,6 +37,7 @@ export const NameSplash = ({ content, onFinished }: NameSplashProps) => {
   const paused = useRef(false);
   const lastT = useRef(0);
   const finished = useRef(onFinished);
+  const exitStarted = useRef(onExitStart);
   const chipCount = content.stack.skills.length;
   const statementCount = content.statements.length;
   const words = useRef([content.name.first, content.name.last]);
@@ -42,9 +45,10 @@ export const NameSplash = ({ content, onFinished }: NameSplashProps) => {
 
   useEffect(() => {
     finished.current = onFinished;
+    exitStarted.current = onExitStart;
     counts.current = { lines: content.code.lines, statements: statementCount, tags: content.tags.length };
     words.current = [content.name.first, content.name.last];
-  }, [onFinished, content, statementCount]);
+  }, [onFinished, onExitStart, content, statementCount]);
 
   // Re-measure if the words change.
   useLayoutEffect(() => {
@@ -64,6 +68,7 @@ export const NameSplash = ({ content, onFinished }: NameSplashProps) => {
         return null;
       }
       if (exit.current?.start !== exitStart.current) {
+        exitStarted.current?.();
         exit.current = {
           start: exitStart.current,
           from: markOnScreen(stage.current, exitStart.current),

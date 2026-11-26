@@ -6,6 +6,7 @@ import { useMotionTheme } from "@/hooks/useMotionTheme";
 import type { SplashContent } from "@/lib/shared/content/splash-schema";
 import { ROUTES } from "@/lib/shared/routes";
 import { NameSplash } from "./NameSplash";
+import { markIntroReady } from "./splash-state";
 
 /**
  * Plays the name splash over the home page (`/`), on every visit
@@ -24,6 +25,7 @@ export const SplashGate = ({ content }: { content: SplashContent | null }) => {
 
   useEffect(() => {
     if (!show) {
+      markIntroReady();
       return;
     }
     const { style } = document.documentElement;
@@ -37,5 +39,5 @@ export const SplashGate = ({ content }: { content: SplashContent | null }) => {
   if (!show || !content) {
     return null;
   }
-  return <NameSplash content={content} onFinished={() => setDone(true)} />;
+  return <NameSplash content={content} onExitStart={markIntroReady} onFinished={() => setDone(true)} />;
 };

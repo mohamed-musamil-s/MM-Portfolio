@@ -327,8 +327,16 @@ Verified with a production build (`next start`) connected to Atlas:
 - Plays on every visit to `/` only (not other pages, no studio preview). Skip intro pill, Esc, or the call to action open the page; off for reduced motion. While maintenance is on, `/` moves on to `/maintenance` underneath the splash (the proxy no longer redirects `/`).
 - Words editable in Content Forge (no live preview for this screen).
 
+## 2026-11-26: Home — navbar and hero
+
+- New screen `site_screens/home` ([spec](screens/HOME_BUSINESS.md)), editable in Content Forge.
+- Navbar (`src/components/home/SiteNav.tsx`): monogram left (the splash lands its logo on it), floating glass pill of links with a sliding ink highlight, availability chip, magnetic call to action; hides on scroll down, returns on scroll up, condenses past the top; full-screen phone menu (Esc, focus trap, focus returns).
+- Hero (`src/components/home/Hero.tsx`): 220svh section with a sticky stage. Massive statement (outline middle line) with masked line reveals, brush signature with an orange stroke, halftone sphere, floating chips, giant monogram watermark, construction grid. Scroll drives every layer at its own speed (lines slide apart, sphere swells, stage shrinks into a card on ink); pointer depth on every layer; velocity skew; an ink velocity marquee under it.
+- Entrances wait for the splash to start leaving (`useIntroReady`, `src/components/splash/splash-state.ts`).
+
 ## Open items
 
+- [ ] Seed the home screen on production (`npm run seed:screens:prod -- --only=home`, plus its studio-shell `editor.screens` entry) once development is complete.
 - [ ] Seed the name splash on production (`npm run seed:screens:prod -- --only=splash`) and add its entry to the production studio-shell `editor.screens`; until then production shows no splash.
 
 - [ ] Delete the local `vercel-env/` folder after saving the production access code in a password manager.

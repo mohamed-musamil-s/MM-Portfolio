@@ -30,7 +30,7 @@ Version 1.4, 2026-11-23 (clean topbar with account menu). Screenshots: [desktop]
 | Tools     | `chat`      | Inbox           | `/studio/chat`      | `chat`      |
 | Tools     | `analytics` | Pulse           | `/studio/analytics` | `analytics` |
 
-- Built modules: Mission Control ([spec](../screens/STUDIO_MISSION_CONTROL_BUSINESS.md)), Launchpad ([spec](../screens/STUDIO_LAUNCHPAD_BUSINESS.md)), Content Forge ([spec](CONTENT_FORGE_BUSINESS.md)) and Inbox ([spec](../screens/STUDIO_INBOX_BUSINESS.md)). Resume Lab and Pulse are still **"Coming soon" placeholders** inside the shell.
+- Built modules: Mission Control ([spec](../screens/STUDIO_MISSION_CONTROL_BUSINESS.md)), Launchpad ([spec](../screens/STUDIO_LAUNCHPAD_BUSINESS.md)), Content Forge ([spec](CONTENT_FORGE_BUSINESS.md)) and Inbox ([spec](../screens/STUDIO_INBOX_BUSINESS.md)). Pulse ([spec](../screens/STUDIO_PULSE_BUSINESS.md)) is built too. Resume Lab is still a **"Coming soon" placeholder** inside the shell.
 - The active item is the one whose route matches the current path (or a sub-path of it).
 - `/studio` redirects to `/studio/dashboard` (unchanged). `/studio/login` renders without the shell.
 

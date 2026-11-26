@@ -158,6 +158,38 @@ export const studioShellContentSchema = z.object({
       ) as Record<HomeSection, z.ZodObject<{ name: z.ZodString; description: z.ZodString }>>,
     ),
   }),
+  /** Pulse, Vercel Web Analytics (docs/screens/STUDIO_PULSE_BUSINESS.md). Placeholders: {change} {days} {visitors} {pageviews}. */
+  pulse: z.object({
+    environment: z.object({
+      production: text(32),
+      preview: text(32),
+      productionHint: text(120),
+      previewHint: text(160),
+    }),
+    ranges: z.object({ week: text(16), month: text(16), quarter: text(16) }),
+    rangeLabel: text(24),
+    stats: z.object({
+      visitors: text(24),
+      pageviews: text(24),
+      perVisitor: text(32),
+      change: text(64),
+      noPrevious: text(64),
+    }),
+    chartTitle: text(48),
+    chartSummary: text(140),
+    tableCaption: text(64),
+    date: text(16),
+    breakdowns: z.object({
+      requestPath: text(32),
+      referrerHostname: text(32),
+      country: text(32),
+      deviceType: text(32),
+    }),
+    direct: text(32),
+    empty: text(120),
+    setup: z.object({ title: text(48), body: text(240), note: text(120) }),
+    errors: z.object({ auth: text(120), forbidden: text(120), plan: text(120), failed: text(120) }),
+  }),
   /** Mission Control, the dashboard (docs/screens/STUDIO_MISSION_CONTROL_BUSINESS.md). Placeholders: {name} {n} {total} {time} {who}. */
   missionControl: z.object({
     greeting: text(48),

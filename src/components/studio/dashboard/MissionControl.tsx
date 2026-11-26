@@ -138,7 +138,7 @@ export const MissionControl = ({
     { key: "inbox", href: ROUTES.studio.chat, Icon: Inbox },
     { key: "launchpad", href: ROUTES.studio.release, Icon: Rocket },
     { key: "resume", href: ROUTES.studio.resume, Icon: FileText, soon: true },
-    { key: "pulse", href: ROUTES.studio.analytics, Icon: BarChart3, soon: true },
+    { key: "pulse", href: ROUTES.studio.analytics, Icon: BarChart3 },
   ];
 
   return (

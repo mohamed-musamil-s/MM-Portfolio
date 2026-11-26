@@ -102,6 +102,9 @@
   --color-popover: var(--studio-card);
   --color-popover-foreground: var(--studio-card-foreground);
   --color-primary: var(--studio-primary);
+  /* Chart series (Pulse), validated for colour-blind separation and contrast (dataviz validator). */
+  --color-chart-1: var(--studio-chart-1);
+  --color-chart-2: var(--studio-chart-2);
   --color-primary-foreground: var(--studio-primary-foreground);
   --color-secondary: var(--studio-secondary);
   --color-secondary-foreground: var(--studio-secondary-foreground);
@@ -211,6 +214,8 @@
     --studio-destructive: #dc2626; /* 4.8:1 */
     --studio-destructive-surface: #fef2f2;
     --studio-success: #15803d; /* 5.0:1 */
+    --studio-chart-1: #2563eb; /* visitors */
+    --studio-chart-2: #0d9488; /* page views */
     --studio-warning: #d97706; /* status dots only (non-text, 3.2:1) */
     --studio-border: #e2e8f0; /* decorative hairlines */
     --studio-input: #7b8ba3; /* field boundary, 3.5:1 (WCAG 1.4.11) */
@@ -262,6 +267,8 @@
       --studio-destructive: #f87171; /* 5.3:1 on card */
       --studio-destructive-surface: #2a1215;
       --studio-success: #4ade80;
+      --studio-chart-1: #3b82f6;
+      --studio-chart-2: #0d9488;
       --studio-border: #334155;
       --studio-input: #64748b; /* 3.1:1 on card */
       --studio-ring: #60a5fa;

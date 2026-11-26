@@ -44,6 +44,6 @@ const globalForLogger = globalThis as unknown as { __mmLogger?: Logger };
 export const logger: Logger = globalForLogger.__mmLogger ?? createLogger();
 globalForLogger.__mmLogger = logger;
 
-export type LogScope = "db" | "api" | "auth" | "proxy" | "server";
+export type LogScope = "db" | "api" | "auth" | "proxy" | "server" | "analytics";
 
 export const getLogger = (scope: LogScope): Logger => logger.child({ scope });

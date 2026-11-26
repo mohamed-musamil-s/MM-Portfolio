@@ -78,6 +78,13 @@ Next.js picks the local file by command: `next dev` loads `.env.development`, `n
 - Secrets are read lazily on the server (`src/lib/server/env.ts`); nothing is prefixed `NEXT_PUBLIC_`, so no value reaches the browser bundle.
 - Before every commit: `git status` must not list any `.env.*` file other than the two templates.
 
+### Pulse (Vercel Web Analytics)
+
+1. In the Vercel project, open **Analytics** and enable **Web Analytics**. The public pages already include `<Analytics />`.
+2. Create an access token (Vercel **Account Settings → Tokens**) that can read the project.
+3. Add `VERCEL_ANALYTICS_TOKEN`, `VERCEL_ANALYTICS_PROJECT` (project id or name, e.g. the project's name) and `VERCEL_ANALYTICS_TEAM` (team id or slug) to `.env.development` and `.env.production`, and to Vercel **Preview** and **Production**.
+4. Pulse shows preview data locally and on the dev deployment, and production data only on production.
+
 ## 5. Checklist before the first production deploy
 
 - [ ] `develop` and `go-live` pushed to GitHub (`git push -u origin develop go-live`).

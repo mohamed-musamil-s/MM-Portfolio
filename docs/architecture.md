@@ -155,12 +155,17 @@ Browser
 
 Local files `.env.development` / `.env.production` (templates: `.env.*.example`); Vercel Preview and Production have their own values. Full setup: [deployment.md](deployment.md). Values are read lazily, so `next build` works without secrets. A missing value throws on first use, gets logged, and the request returns 500.
 
-| Variable               | Purpose                                              |
-| ---------------------- | ---------------------------------------------------- |
-| `MONGODB_URI`          | Atlas connection string                              |
-| `MONGODB_DB`           | database name (default `mm-portfolio`)               |
-| `ADMIN_EMAIL`          | studio admin email                                   |
-| `ADMIN_ACCESS_CODE`    | studio static access code                            |
-| `SESSION_SECRET`       | at least 32 characters, used to sign session cookies |
-| `LOG_LEVEL`            | pino level (default `info`)                          |
-| `CORS_ALLOWED_ORIGINS` | optional, origins allowed to read public GET APIs    |
+| Variable                   | Purpose                                                                    |
+| -------------------------- | -------------------------------------------------------------------------- |
+| `MONGODB_URI`              | Atlas connection string                                                    |
+| `MONGODB_DB`               | database name (default `mm-portfolio`)                                     |
+| `ADMIN_EMAIL`              | studio admin email                                                         |
+| `ADMIN_ACCESS_CODE`        | studio static access code                                                  |
+| `SESSION_SECRET`           | at least 32 characters, used to sign session cookies                       |
+| `LOG_LEVEL`                | pino level (default `info`)                                                |
+| `CORS_ALLOWED_ORIGINS`     | optional, origins allowed to read public GET APIs                          |
+| `VERCEL_ANALYTICS_TOKEN`   | optional, Vercel access token Pulse reads Web Analytics with (server only) |
+| `VERCEL_ANALYTICS_PROJECT` | optional, the Vercel project id or name for Pulse                          |
+| `VERCEL_ANALYTICS_TEAM`    | optional, the Vercel team id or slug for Pulse                             |
+
+**Analytics.** `@vercel/analytics` (`<Analytics />`) runs on the public pages only. Pulse reads the Vercel Web Analytics API on the server: production data on the production deployment (`VERCEL_ENV=production`), preview data everywhere else ([spec](screens/STUDIO_PULSE_BUSINESS.md)).

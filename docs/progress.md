@@ -367,9 +367,18 @@ Verified with a production build (`next start`) connected to Atlas:
 - Content Forge shows the home page's sections one at a time as tabs.
 - Dev DB: studio-shell has the new `inbox`, `launchpad`, `missionControl` and `editor.allSections` copy.
 
+## 2026-11-27: Content Forge section entries, Launchpad version control, Pulse
+
+- Content Forge lists each home section as its own entry (Page details, Navbar, Hero, About … Footer).
+- Launchpad keeps every screen save as a version (`site_screen_versions`, newest 50 per screen) and restores any of them as a new version.
+- Pulse reads Vercel Web Analytics: preview data locally and on dev, production data on production. `<Analytics />` collects visits on the public pages.
+- Dev DB: studio-shell has `editor.sections`, `launchpad.versions` and `pulse`.
+
 ## Open items
 
-- [ ] Production, before deploying this code: the `studio-shell` content needs `inbox`, `launchpad` (with `versions`), `missionControl` and `editor.sections` (the old `editor.allSections` is gone) (plus the updated `modules.release.description` and `editor.screens.home.description`), or the studio pages fail validation. Same copy as the seed.
+- [ ] Pulse: enable Web Analytics in the Vercel project, then add `VERCEL_ANALYTICS_TOKEN`, `VERCEL_ANALYTICS_PROJECT`, `VERCEL_ANALYTICS_TEAM` locally and in Vercel (Preview and Production). Until then Pulse shows its setup card; the live data path is untested.
+
+- [ ] Production, before deploying this code: the `studio-shell` content needs `inbox`, `launchpad` (with `versions`), `missionControl`, `pulse` and `editor.sections` (the old `editor.allSections` is gone) (plus the updated `modules.release.description` and `editor.screens.home.description`), or the studio pages fail validation. Same copy as the seed.
 - [ ] Production: the home content needs the `education` section (moved out of `recognition`, whose `education` and `educationLabel` are gone), renumbered header indices (education 03 … contact 07), the Education link in `nav.links` and `footer.links`, and `contact.form.prompts`. It also needs `contact.form` and the new footer fields (`wordmark`, `clock`, `linksLabel`, `socialsLabel`); the `contact_conversations` indexes are created on first use.
 - [ ] Seed the home screen on production (`npm run seed:screens:prod -- --only=home`, plus its studio-shell `editor.screens` entry) once development is complete.
 - [ ] Seed the name splash on production (`npm run seed:screens:prod -- --only=splash`) and add its entry to the production studio-shell `editor.screens`; until then production shows no splash.
@@ -384,5 +393,5 @@ Verified with a production build (`next start`) connected to Atlas:
 ## On hold (waiting for instructions)
 
 - Public portfolio
-- Studio modules still to build: Resume Lab, Pulse; replying to messages from the studio (email integration)
+- Studio modules still to build: Resume Lab; replying to messages from the studio (email integration)
 - UI design and styling for the studio modules (the login is done)

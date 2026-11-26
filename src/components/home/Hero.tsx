@@ -36,6 +36,13 @@ const rise = (ready: boolean, delay: number, distance = 28) => ({
   transition: { delay, duration: 0.9, ease: EASE_PRINT },
 });
 
+/**
+ * Resting styles when the scroll effect is off (phones, reduced motion). Explicit, because motion leaves the
+ * last scroll-driven inline styles in place when the effect switches off (a window resized from wide to narrow).
+ */
+const STAGE_REST = { scale: 1, y: "0svh", rotateX: 0, borderRadius: 0 } as const;
+const DETAILS_REST = { opacity: 1, y: "0svh" } as const;
+
 /** Perspective for the stage as it tips back on the way out. */
 const STAGE_PERSPECTIVE = 1400;
 
@@ -56,7 +63,8 @@ const useHeroScroll = (progress: MotionValue<number>) => ({
   // From the first scroll the stage shrinks into a rounded box; in the second half it tips back and lifts away.
   stage: {
     scale: useTransform(progress, [0, 0.5, 1], [1, 0.8, 0.72]),
-    y: useTransform(progress, [0, 0.5, 1], ["0svh", "-3svh", "-62svh"]),
+    // By the end the box has left the screen entirely, so no strip of it hangs at the top.
+    y: useTransform(progress, [0, 0.5, 1], ["0svh", "-3svh", "-96svh"]),
     rotateX: useTransform(progress, [0.5, 1], [0, 14]),
     borderRadius: useTransform(progress, [0, 0.3], [0, 44]),
     transformPerspective: STAGE_PERSPECTIVE,
@@ -65,8 +73,10 @@ const useHeroScroll = (progress: MotionValue<number>) => ({
   backdrop: {
     opacity: useTransform(progress, [0.04, 0.35], [0, 1]),
     dusk: useTransform(progress, [0.45, 1], [0, 1]),
-    first: useTransform(progress, [0, 1], ["12vw", "-26vw"]),
-    second: useTransform(progress, [0, 1], ["-26vw", "12vw"]),
+    // The name's lines slide together and the block rises to the middle once the box has gone.
+    first: useTransform(progress, [0, 1], ["-22vw", "0vw"]),
+    second: useTransform(progress, [0, 1], ["22vw", "0vw"]),
+    name: useTransform(progress, [0.5, 1], ["0svh", "-30svh"]),
   },
 });
 
@@ -87,13 +97,16 @@ const Backdrop = ({
     <motion.div style={{ opacity: motionStyle.dusk }} className="absolute inset-0 bg-ink" />
     <motion.div style={{ opacity: motionStyle.opacity }} className="absolute inset-0">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,color-mix(in_srgb,var(--text-primary)_7%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_srgb,var(--text-primary)_7%,transparent)_1px,transparent_1px)] bg-size-[calc(100%/12)_calc(100%/8)]" />
-      <div className="absolute -bottom-[30%] left-1/2 size-[70vw] -translate-x-1/2 rounded-full bg-signal/15 blur-[140px]" />
+      <div className="absolute top-1/2 left-1/2 h-[45vh] w-[60vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-signal/15 blur-[140px]" />
       {/* Labels and outline in a mid grey that reads on both the stone and the ink. */}
       <div className="absolute inset-x-0 top-6 flex justify-between px-page font-technical text-micro text-[color-mix(in_srgb,var(--text-primary)_38%,var(--bg-primary))] uppercase">
         <span>{hero.role}</span>
         <span>{hero.roleMeta}</span>
       </div>
-      <div className="absolute inset-x-0 bottom-[3svh] flex flex-col font-wide text-[17vw] leading-[0.8] font-semibold whitespace-nowrap uppercase">
+      <motion.div
+        style={{ y: motionStyle.name }}
+        className="absolute inset-x-0 bottom-[4svh] flex flex-col px-page font-wide text-[12.5vw] leading-[0.82] font-semibold whitespace-nowrap uppercase"
+      >
         <motion.span
           style={{ x: motionStyle.first }}
           className="text-transparent [-webkit-text-stroke:1.5px_color-mix(in_srgb,var(--text-primary)_38%,var(--bg-primary))]"
@@ -105,7 +118,7 @@ const Backdrop = ({
             {hero.lines[1]}
           </motion.span>
         ) : null}
-      </div>
+      </motion.div>
     </motion.div>
   </div>
 );
@@ -280,7 +293,7 @@ export const Hero = ({ hero }: { hero: HeroContent }) => {
         <div className="lg:sticky lg:top-0 lg:h-svh lg:overflow-hidden">
           {animated ? <Backdrop hero={hero} motionStyle={scroll.backdrop} /> : null}
           <motion.div
-            style={animated ? scroll.stage : undefined}
+            style={animated ? scroll.stage : STAGE_REST}
             className="relative origin-[50%_20%] overflow-hidden bg-paper shadow-[0_50px_100px_-50px_rgb(0_0_0/0.45)] ring-1 ring-ink/8 lg:h-full"
           >
             {/* Depth field: a faint 12-column grid and a soft signal aura. */}
@@ -308,7 +321,7 @@ export const Hero = ({ hero }: { hero: HeroContent }) => {
                   {hero.status}
                 </motion.span>
                 <Name lines={hero.lines} drift={animated ? scroll.lines : []} ready={ready} />
-                <motion.div style={animated ? scroll.details : undefined}>
+                <motion.div style={animated ? scroll.details : DETAILS_REST}>
                   <Details hero={hero} ready={ready} />
                 </motion.div>
               </div>
@@ -319,7 +332,7 @@ export const Hero = ({ hero }: { hero: HeroContent }) => {
               </div>
 
               <motion.div
-                style={animated ? scroll.details : undefined}
+                style={animated ? scroll.details : DETAILS_REST}
                 className="relative mt-6 lg:mt-0 lg:max-w-[52%]"
               >
                 <Stats stats={hero.stats} ready={ready} />
@@ -329,8 +342,8 @@ export const Hero = ({ hero }: { hero: HeroContent }) => {
         </div>
       </section>
 
-      {/* Velocity marquee band. */}
-      <div className="relative z-10 overflow-hidden bg-ink py-6 text-paper sm:py-8">
+      {/* Velocity marquee band; below the words the ink fades into the paper of About, so the colour never jumps. */}
+      <div className="relative z-10 overflow-hidden bg-[linear-gradient(to_bottom,var(--text-primary)_0%,var(--text-primary)_42%,var(--bg-primary)_100%)] pt-6 pb-[16svh] text-paper sm:pt-8">
         <VelocitySkew max={3}>
           <Marquee label={hero.marquee.join(", ")} baseSpeed={2.5}>
             {hero.marquee.map((word, index) => (

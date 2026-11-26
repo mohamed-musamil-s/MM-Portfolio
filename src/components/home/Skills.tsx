@@ -37,6 +37,12 @@ const RING_GAP = 70;
 /** Scroll (in svh) spent per group while the ring turns. */
 const SVH_PER_GROUP = 60;
 const TILT_DEG = 7;
+/** Vertical room kept for the header and the footer row when sizing the ring (px). */
+const RING_RESERVED_PX = 300;
+/** Viewport width that shows the ring at its base size (px); wider screens get a larger ring. */
+const RING_WIDTH_UNIT_PX = 1050;
+const RING_MIN_FIT = 0.7;
+const RING_MAX_FIT = 1.7;
 const TILT_SPRING = { stiffness: 140, damping: 18 } as const;
 
 const pad = (value: number) => String(value).padStart(2, "0");
@@ -108,7 +114,12 @@ const RingCard = ({
 const useRingFit = () => {
   const fit = useMotionValue(1);
   useEffect(() => {
-    const measure = () => fit.set(Math.min(1.08, Math.max(0.68, (window.innerHeight - 360) / CARD_H)));
+    // As large as both the height left under the header and the width allow.
+    const measure = () => {
+      const byHeight = (window.innerHeight - RING_RESERVED_PX) / CARD_H;
+      const byWidth = window.innerWidth / RING_WIDTH_UNIT_PX;
+      fit.set(Math.min(RING_MAX_FIT, Math.max(RING_MIN_FIT, Math.min(byHeight, byWidth))));
+    };
     measure();
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
@@ -175,7 +186,7 @@ const Stage = ({ skills }: { skills: Skills }) => {
       className="relative scroll-mt-20 bg-paper"
       style={{ height: `${100 + (total - 1) * SVH_PER_GROUP}svh` }}
     >
-      <div className="sticky top-0 flex h-svh flex-col overflow-clip px-page pt-[clamp(5rem,11svh,7rem)] pb-8">
+      <div className="sticky top-0 flex h-svh flex-col overflow-clip px-page pt-[clamp(1.25rem,3svh,2rem)] pb-6">
         <div className="relative z-10 mx-auto w-full max-w-[1440px]">
           <SectionHeader header={skills.header} compact />
         </div>
@@ -198,7 +209,7 @@ const Stage = ({ skills }: { skills: Skills }) => {
             className="absolute bottom-[4%] left-1/2 h-24 w-[46rem] -translate-x-1/2 rounded-[50%] bg-signal/25 blur-3xl"
           />
           <div
-            className="absolute top-1/2 left-1/2 [transform-style:preserve-3d]"
+            className="absolute top-[46%] left-1/2 [transform-style:preserve-3d]"
             style={{ width: CARD_W, height: CARD_H, marginLeft: -CARD_W / 2, marginTop: -CARD_H / 2 }}
           >
             <motion.div

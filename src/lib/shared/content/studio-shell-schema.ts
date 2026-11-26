@@ -96,8 +96,8 @@ export const studioShellContentSchema = z.object({
       updated: text(64),
     }),
     screens: z.record(z.string(), z.object({ name: text(40), description: text(140) })),
-    /** Tab that shows every section of a screen at once. */
-    allSections: text(24),
+    /** Names of the sections of a split screen (the home page), shown as separate entries. Keyed by section. */
+    sections: z.record(z.string(), z.object({ name: text(40), description: text(140) })),
   }),
   /** Inbox, the chat module (docs/screens/STUDIO_INBOX_BUSINESS.md). Placeholders: {n} {topic}. */
   inbox: z.object({

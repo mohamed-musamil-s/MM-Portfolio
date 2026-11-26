@@ -2,8 +2,18 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import {
+  Award,
+  BriefcaseBusiness,
   Eye,
   FileQuestion,
+  FolderKanban,
+  GraduationCap,
+  Menu,
+  MessageSquare,
+  PanelBottom,
+  Sparkles,
+  Tags,
+  UserRound,
   LoaderCircle,
   PanelLeftClose,
   PanelLeftOpen,
@@ -61,12 +71,30 @@ const SCREEN_ICONS: Record<string, typeof Wrench> = {
   "not-found": FileQuestion,
 };
 
+/** Icons for the sections of a split screen (the home page). */
+const SECTION_ICONS: Record<string, typeof Wrench> = {
+  meta: Tags,
+  nav: Menu,
+  hero: Sparkles,
+  about: UserRound,
+  experience: BriefcaseBusiness,
+  education: GraduationCap,
+  skills: Wrench,
+  work: FolderKanban,
+  recognition: Award,
+  contact: MessageSquare,
+  footer: PanelBottom,
+};
+
 type Issue = { path: (string | number)[]; message: string; code?: string; minimum?: number; maximum?: number };
 type SaveResponse =
   { ok: true; data: { version: number } } | { ok: false; error: { code: string; message: string; issues?: Issue[] } };
 
-/** Screens with more top-level sections than this show them one at a time, as tabs. */
-const TABBED_FROM = 5;
+/** Screens with more top-level sections than this are split: each section is its own entry in the screens list. */
+const SPLIT_FROM = 5;
+
+/** True when a screen's sections are listed as separate entries (the home page). */
+const isSplit = (content: JsonObject | undefined) => Object.keys(content ?? {}).length > SPLIT_FROM;
 
 const noopSubscribe = () => () => undefined;
 /** Local date-time, rendered only in the browser so server and client HTML match. */
@@ -111,8 +139,8 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
   const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
   /** The field being edited, for the preview outline. */
   const [focusPath, setFocusPath] = useState<Path | null>(null);
-  /** Big screens show one section at a time; null shows every section. Chosen per screen. */
-  const [sectionTab, setSectionTab] = useState<Record<string, string | null>>({});
+  /** On a split screen, the section being edited (null: its first section). */
+  const [section, setSection] = useState<string | null>(null);
 
   const screen = screens.find((item) => item.slug === selected);
   const draft = drafts[selected];
@@ -201,22 +229,29 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
   }, [save]);
 
   const allSections = draft ? Object.entries(draft) : [];
-  // Screens with many sections (the home page) open on their first section; a search always shows every match.
-  const tabbed = allSections.length > TABBED_FROM;
-  const activeTab = tabbed
-    ? sectionTab[selected] === undefined
-      ? (allSections[0]?.[0] ?? null)
-      : sectionTab[selected]
-    : null;
+  // A split screen (the home page) edits one section at a time; a search still finds matches in every section.
+  const split = isSplit(draft);
+  const focusSection = split ? (section ?? allSections[0]?.[0] ?? null) : null;
   const sections = allSections.filter(
-    ([key, value]) => matchesQuery(key, value, query) && (query || activeTab === null || key === activeTab),
+    ([key, value]) => matchesQuery(key, value, query) && (query || focusSection === null || key === focusSection),
+  );
+  /** Sections with unsaved edits, as "slug:section", for the dots in the screens list. */
+  const dirtySections = new Set(
+    screens.flatMap((item) =>
+      isSplit(drafts[item.slug])
+        ? Object.keys(drafts[item.slug] ?? {})
+            .filter((key) => !same(drafts[item.slug]?.[key], item.content[key]))
+            .map((key) => `${item.slug}:${key}`)
+        : [],
+    ),
   );
   const targets: PreviewableScreen[] =
     selected === "shared" ? [...SHARED_CONSUMERS] : isPreviewableScreen(selected) ? [selected] : [];
   const focusValue = focusPath ? getAt(draft, focusPath) : undefined;
 
-  const selectScreen = (slug: string) => {
+  const selectScreen = (slug: string, nextSection: string | null = null) => {
     setSelected(slug);
+    setSection(nextSection);
     setErrors({});
     setConflict(false);
     setFocusPath(null);
@@ -253,7 +288,10 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
             copy={copy}
             screens={screens}
             selected={selected}
+            selectedSection={focusSection}
+            drafts={drafts}
             dirty={dirty}
+            dirtySections={dirtySections}
             open={screensOpen}
             onToggle={() => setScreensOpen((open) => !open)}
             onSelect={selectScreen}
@@ -306,7 +344,7 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
             )}
           >
             <div className="@container flex min-w-0 animate-in flex-col gap-4 duration-300 fade-in slide-in-from-bottom-2 motion-reduce:animate-none xl:-mx-2 xl:min-h-0 xl:flex-1 xl:[scrollbar-width:thin] xl:overflow-y-auto xl:px-2 xl:pb-2">
-              <ScreenHeader screen={screen} copy={copy} query={query} onQuery={setQuery} />
+              <ScreenHeader screen={screen} section={focusSection} copy={copy} query={query} onQuery={setQuery} />
 
               {conflict ? (
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-warning/40 bg-warning/10 px-4 py-3 text-sm">
@@ -318,33 +356,7 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
                 </div>
               ) : null}
 
-              {tabbed && !query ? (
-                // One section at a time: tabs for each, plus one that shows them all.
-                <div role="tablist" aria-label={copy.screensTitle} className="flex flex-wrap gap-1.5">
-                  {[null, ...allSections.map(([key]) => key)].map((key) => {
-                    const active = key === activeTab;
-                    const edited = key !== null && !same(draft?.[key], screen.content[key]);
-                    return (
-                      <button
-                        key={key ?? "all"}
-                        type="button"
-                        role="tab"
-                        aria-selected={active}
-                        onClick={() => setSectionTab((current) => ({ ...current, [selected]: key }))}
-                        className={cn(
-                          "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none",
-                          active
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-primary",
-                        )}
-                      >
-                        {key === null ? copy.allSections : humanize(key)}
-                        {edited ? <span aria-hidden className="size-1.5 rounded-full bg-warning" /> : null}
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : !tabbed && sections.length > 1 && !query ? (
+              {!split && sections.length > 1 && !query ? (
                 <nav aria-label={copy.screensTitle} className="flex flex-wrap gap-1.5">
                   {sections.map(([key]) => (
                     <a
@@ -490,7 +502,10 @@ const ScreensList = ({
   copy,
   screens,
   selected,
+  selectedSection,
+  drafts,
   dirty,
+  dirtySections,
   open,
   onToggle,
   onSelect,
@@ -498,10 +513,13 @@ const ScreensList = ({
   copy: StudioShellContent["editor"];
   screens: EditableScreen[];
   selected: string;
+  selectedSection: string | null;
+  drafts: Record<string, JsonObject>;
   dirty: Set<string>;
+  dirtySections: Set<string>;
   open: boolean;
   onToggle: () => void;
-  onSelect: (slug: string) => void;
+  onSelect: (slug: string, section?: string | null) => void;
 }) => {
   const toggleLabel = open ? copy.previewPanel.hideScreens : copy.previewPanel.showScreens;
   const ToggleIcon = open ? PanelLeftClose : PanelLeftOpen;
@@ -530,59 +548,73 @@ const ScreensList = ({
         </Tooltip>
       </div>
       <ul className="flex [scrollbar-width:none] gap-1.5 overflow-x-auto lg:flex-col lg:gap-1 lg:overflow-visible">
-        {screens.map((item) => {
-          const Icon = SCREEN_ICONS[item.slug] ?? PanelsTopLeft;
-          const meta = copy.screens[item.slug];
-          const name = meta?.name ?? humanize(item.slug);
-          const active = item.slug === selected;
-          const button = (
-            <button
-              type="button"
-              onClick={() => onSelect(item.slug)}
-              aria-current={active ? "true" : undefined}
-              aria-label={open ? undefined : name}
-              className={cn(
-                "relative flex items-center gap-2.5 rounded-xl py-1.5 pr-3 pl-1.5 text-left whitespace-nowrap transition-colors duration-200 lg:w-full lg:whitespace-normal",
-                open ? "lg:items-start lg:gap-3 lg:p-2.5" : "lg:justify-center lg:p-1.5",
-                active ? "bg-primary/[0.07]" : "hover:bg-muted/70",
-              )}
-            >
-              <span
+        {screens.flatMap((item) => {
+          const parts = isSplit(drafts[item.slug]) ? Object.keys(drafts[item.slug] ?? {}) : [null];
+          const group =
+            parts[0] !== null && open ? (
+              <li
+                key={`${item.slug}-group`}
+                className="hidden px-2.5 pt-3 pb-1 text-[0.625rem] font-semibold tracking-[0.12em] text-muted-foreground/70 uppercase lg:block"
+              >
+                {copy.screens[item.slug]?.name ?? humanize(item.slug)}
+              </li>
+            ) : null;
+          const entries = parts.map((part) => {
+            const Icon = part ? (SECTION_ICONS[part] ?? PanelsTopLeft) : (SCREEN_ICONS[item.slug] ?? PanelsTopLeft);
+            const meta = part ? copy.sections[part] : copy.screens[item.slug];
+            const name = meta?.name ?? humanize(part ?? item.slug);
+            const active = item.slug === selected && (part === null || part === selectedSection);
+            const changed = part ? dirtySections.has(`${item.slug}:${part}`) : dirty.has(item.slug);
+            const button = (
+              <button
+                type="button"
+                onClick={() => onSelect(item.slug, part)}
+                aria-current={active ? "true" : undefined}
+                aria-label={open ? undefined : name}
                 className={cn(
-                  "grid size-8 shrink-0 place-items-center rounded-lg transition-colors lg:size-9",
-                  active
-                    ? "bg-linear-to-br from-primary to-aurora-indigo text-primary-foreground shadow-sm shadow-primary/30"
-                    : "bg-muted text-muted-foreground",
+                  "relative flex items-center gap-2.5 rounded-xl py-1.5 pr-3 pl-1.5 text-left whitespace-nowrap transition-colors duration-200 lg:w-full lg:whitespace-normal",
+                  open ? "lg:items-start lg:gap-3 lg:p-2.5" : "lg:justify-center lg:p-1.5",
+                  active ? "bg-primary/[0.07]" : "hover:bg-muted/70",
                 )}
               >
-                <Icon aria-hidden className="size-4" />
-              </span>
-              <span className={cn("flex min-w-0 flex-col lg:flex-1", !open && "lg:hidden")}>
-                <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-                  <span className="truncate">{name}</span>
-                  {dirty.has(item.slug) ? <span className="size-1.5 shrink-0 rounded-full bg-warning" /> : null}
+                <span
+                  className={cn(
+                    "grid size-8 shrink-0 place-items-center rounded-lg transition-colors lg:size-9",
+                    active
+                      ? "bg-linear-to-br from-primary to-aurora-indigo text-primary-foreground shadow-sm shadow-primary/30"
+                      : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  <Icon aria-hidden className="size-4" />
                 </span>
-                <span className="hidden text-xs leading-snug text-muted-foreground lg:line-clamp-2">
-                  {meta?.description}
+                <span className={cn("flex min-w-0 flex-col lg:flex-1", !open && "lg:hidden")}>
+                  <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <span className="truncate">{name}</span>
+                    {changed ? <span className="size-1.5 shrink-0 rounded-full bg-warning" /> : null}
+                  </span>
+                  <span className="hidden text-xs leading-snug text-muted-foreground lg:line-clamp-2">
+                    {meta?.description}
+                  </span>
                 </span>
-              </span>
-              {!open && dirty.has(item.slug) ? (
-                <span className="absolute top-1.5 right-1.5 hidden size-2 rounded-full bg-warning ring-2 ring-card lg:block" />
-              ) : null}
-            </button>
-          );
-          return (
-            <li key={item.slug} className="shrink-0 lg:shrink">
-              {open ? (
-                button
-              ) : (
-                <Tooltip>
-                  <TooltipTrigger asChild>{button}</TooltipTrigger>
-                  <TooltipContent side="right">{name}</TooltipContent>
-                </Tooltip>
-              )}
-            </li>
-          );
+                {!open && changed ? (
+                  <span className="absolute top-1.5 right-1.5 hidden size-2 rounded-full bg-warning ring-2 ring-card lg:block" />
+                ) : null}
+              </button>
+            );
+            return (
+              <li key={`${item.slug}-${part ?? "screen"}`} className="shrink-0 lg:shrink">
+                {open ? (
+                  button
+                ) : (
+                  <Tooltip>
+                    <TooltipTrigger asChild>{button}</TooltipTrigger>
+                    <TooltipContent side="right">{name}</TooltipContent>
+                  </Tooltip>
+                )}
+              </li>
+            );
+          });
+          return group ? [group, ...entries] : entries;
         })}
       </ul>
     </section>
@@ -591,21 +623,33 @@ const ScreensList = ({
 
 const ScreenHeader = ({
   screen,
+  section,
   copy,
   query,
   onQuery,
 }: {
   screen: EditableScreen;
+  /** On a split screen, the section being edited: its name and description lead, with the screen's name as a kicker. */
+  section: string | null;
   copy: StudioShellContent["editor"];
   query: string;
   onQuery: (value: string) => void;
 }) => {
   const time = useFormattedTime(screen.updatedAt);
   const meta = copy.screens[screen.slug];
+  const part = section ? copy.sections[section] : undefined;
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-xs @2xl:flex-row @2xl:items-center @2xl:justify-between @2xl:p-5">
       <div className="flex min-w-0 flex-col gap-1">
-        <h2 className="text-lg font-semibold tracking-tight">{meta?.name ?? humanize(screen.slug)}</h2>
+        {section ? (
+          <span className="text-[0.625rem] font-semibold tracking-[0.12em] text-muted-foreground/80 uppercase">
+            {meta?.name ?? humanize(screen.slug)}
+          </span>
+        ) : null}
+        <h2 className="text-lg font-semibold tracking-tight">
+          {section ? (part?.name ?? humanize(section)) : (meta?.name ?? humanize(screen.slug))}
+        </h2>
+        {part ? <p className="text-xs text-muted-foreground">{part.description}</p> : null}
         <p className="text-xs text-muted-foreground">
           <span className="rounded-md bg-muted px-1.5 py-0.5 font-medium text-foreground tabular-nums">
             {fill(copy.version, { n: screen.version })}

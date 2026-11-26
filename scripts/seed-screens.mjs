@@ -434,7 +434,52 @@ const SCREENS = {
         maintenance: { name: "Maintenance page", description: "What visitors see while the site is being upgraded." },
         "not-found": { name: "404 page", description: "Shown for any address that doesn't exist." },
       },
-      allSections: "All sections",
+      sections: {
+        meta: {
+          name: "Page details",
+          description: "The browser tab title and the search engine description.",
+        },
+        nav: {
+          name: "Navbar",
+          description: "Name beside the logo, menu links, status and the call to action.",
+        },
+        hero: {
+          name: "Hero",
+          description: "Name, role, intro, buttons, stats, portrait and the marquee.",
+        },
+        about: {
+          name: "About",
+          description: "Statement, story, facts and the road so far.",
+        },
+        experience: {
+          name: "Experience",
+          description: "Roles, highlights and stacks.",
+        },
+        education: {
+          name: "Education",
+          description: "Degrees and qualifications.",
+        },
+        skills: {
+          name: "Skills",
+          description: "Skill groups, tools and the legend.",
+        },
+        work: {
+          name: "Selected work",
+          description: "Project case cards.",
+        },
+        recognition: {
+          name: "Recognition",
+          description: "Awards and kind words.",
+        },
+        contact: {
+          name: "Contact",
+          description: "Details, and the chat form's questions and replies.",
+        },
+        footer: {
+          name: "Footer",
+          description: "Quote, call to action, links, clock and the name.",
+        },
+      },
     },
     inbox: {
       search: "Search messages",

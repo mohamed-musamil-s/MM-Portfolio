@@ -1,297 +1,244 @@
 "use client";
 
-import { AnimatePresence, motion, useMotionValue, useSpring } from "motion/react";
-import { useId, useRef, useState, type PointerEvent } from "react";
+import { motion, useSpring } from "motion/react";
+import { useState, type PointerEvent, type ReactNode } from "react";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useMotionTheme } from "@/hooks/useMotionTheme";
 import { cn } from "@/lib/shared/cn";
 import type { HomeContent } from "@/lib/shared/content/home-schema";
 import { EASE_PRINT } from "@/lib/motion/tokens";
-import { MaskRise, Reveal, ScrollInk, Section, SectionHeader } from "./section-kit";
+import { Section, SectionHeader } from "./section-kit";
 
 /*
- * Recognition (docs/screens/HOME_BUSINESS.md §6.5), an editorial index.
- * Awards: numbered rows with the titles huge. On the way in each row's
- * hairline draws across and its title rises through a mask. Hovering (fine
- * pointers), focusing or tapping a row floods it ink from the bottom, slides
- * the title over and opens what the award was for; on desktop a round badge
- * sticker with a turning ring of text follows the cursor over the list.
- * Education: the same rows, led by the years. Kind words: each quote full
- * width and huge, inking in word by word with the scroll.
+ * Recognition (docs/screens/HOME_BUSINESS.md §6.5), a bento wall of tiles in
+ * mixed sizes: one large featured award (ink), the other awards as smaller
+ * tiles, education tiles, and the kind words as two wide quote tiles (one in
+ * signal). On the way in the tiles assemble from depth, tipping up from
+ * behind the page one after another. Under a mouse each tile tilts in 3D
+ * toward the pointer while a soft sheen follows it.
  */
 
 type Recognition = HomeContent["recognition"];
+type Award = Recognition["awards"][number];
+type School = Recognition["education"][number];
+type Quote = Recognition["quotes"][number];
 
-type Row = {
-  key: string;
-  lead: string;
-  title: string;
-  meta: string;
-  tail: string;
-  badge: string;
-  detail: string;
-};
+type Tone = "ink" | "signal" | "paper" | "stone";
 
-const FOLLOW_SPRING = { stiffness: 260, damping: 26, mass: 0.6 } as const;
-/** Where the sticker sits relative to the pointer (px). */
-const STICKER_OFFSET = 28;
-/** The sticker's diameter (px), matching size-24. */
-const STICKER_SIZE = 96;
+const TILT_MAX_DEG = 7;
+const TILT_SPRING = { stiffness: 220, damping: 20 } as const;
+const STAGGER_S = 0.07;
 
 const pad = (value: number) => String(value).padStart(2, "0");
 
-const Label = ({ children }: { children: string }) => (
-  <Reveal y={0} className="mb-4 flex items-center gap-3 font-technical text-micro text-graphite uppercase">
-    <span aria-hidden className="h-px w-8 bg-signal" />
-    {children}
-  </Reveal>
-);
-
-/** The round sticker that follows the pointer: the badge, and a ring of text turning around it. */
-const Sticker = ({ row }: { row: Row }) => {
-  const ring = useId();
-  return (
-    <span className="relative grid size-24 place-items-center rounded-full bg-signal text-paper shadow-[0_20px_40px_-20px_rgb(0_0_0/0.5)]">
-      <svg viewBox="0 0 100 100" className="absolute inset-0 size-full animate-[spin_12s_linear_infinite]">
-        <defs>
-          <path id={ring} d="M50,50 m-38,0 a38,38 0 1,1 76,0 a38,38 0 1,1 -76,0" />
-        </defs>
-        <text className="fill-current font-technical text-[7px] uppercase" letterSpacing="1.4">
-          <textPath href={`#${ring}`} textLength="236">
-            {`${row.meta} • ${row.tail || row.title} • `}
-          </textPath>
-        </text>
-      </svg>
-      <span className="font-wide text-xl font-semibold">{row.badge}</span>
-    </span>
-  );
+const TONE_CLASS: Record<Tone, string> = {
+  ink: "bg-ink text-paper",
+  signal: "bg-signal text-paper",
+  paper: "border border-ink/10 bg-paper text-ink",
+  stone: "bg-newsprint text-ink",
 };
 
-const IndexRow = ({
-  row,
-  index,
-  open,
-  onOpen,
-  onToggle,
+/** The sheen under the pointer: white on dark tiles, a warm tint on light ones. */
+const SHEEN_CLASS: Record<Tone, string> = {
+  ink: "bg-[radial-gradient(circle_at_var(--sheen-x)_var(--sheen-y),rgb(255_255_255/0.16),transparent_45%)]",
+  signal: "bg-[radial-gradient(circle_at_var(--sheen-x)_var(--sheen-y),rgb(255_255_255/0.3),transparent_45%)]",
+  paper:
+    "bg-[radial-gradient(circle_at_var(--sheen-x)_var(--sheen-y),color-mix(in_srgb,var(--signal)_14%,transparent),transparent_45%)]",
+  stone:
+    "bg-[radial-gradient(circle_at_var(--sheen-x)_var(--sheen-y),color-mix(in_srgb,var(--signal)_14%,transparent),transparent_45%)]",
+};
+
+const muted = (tone: Tone) => (tone === "paper" || tone === "stone" ? "text-graphite" : "text-paper/65");
+
+/**
+ * One tile: assembles from depth on the way in; under a mouse it tilts toward the pointer with a sheen.
+ * The entrance and the tilt live on separate layers so their transforms never fight.
+ */
+const Tile = ({
+  tone,
+  order,
+  className,
+  children,
 }: {
-  row: Row;
-  index: number;
-  open: boolean;
-  onOpen: (index: number) => void;
-  onToggle: (index: number) => void;
+  tone: Tone;
+  order: number;
+  className?: string;
+  children: ReactNode;
 }) => {
-  const detailId = `${row.key}-detail`;
-  // A mouse opens rows by hovering, so its click only keeps the row open; a tap or a key toggles it.
-  const lastPointer = useRef("");
-  const hasDetail = row.detail.length > 0;
-  return (
-    <li className="relative">
-      {/* The hairline draws across on the way in. */}
-      <motion.span
-        aria-hidden
-        initial={{ scaleX: 0 }}
-        whileInView={{ scaleX: 1 }}
-        viewport={{ once: true, margin: "0px 0px -8% 0px" }}
-        transition={{ delay: index * 0.07, duration: 1, ease: EASE_PRINT }}
-        className="absolute inset-x-0 top-0 h-px origin-left bg-ink/20"
-      />
-      {/* The flood: ink rising from the bottom of the open row. */}
-      <motion.span
-        aria-hidden
-        initial={false}
-        animate={{ scaleY: open ? 1 : 0 }}
-        transition={{ duration: 0.55, ease: EASE_PRINT }}
-        className="absolute inset-0 origin-bottom bg-ink"
-      />
-      <button
-        type="button"
-        aria-expanded={hasDetail ? open : undefined}
-        aria-controls={hasDetail ? detailId : undefined}
-        onPointerEnter={(event) => event.pointerType === "mouse" && onOpen(index)}
-        onPointerDown={(event) => {
-          lastPointer.current = event.pointerType;
-        }}
-        onFocus={(event) => event.currentTarget.matches(":focus-visible") && onOpen(index)}
-        onClick={() => {
-          if (lastPointer.current === "mouse") {
-            onOpen(index);
-          } else {
-            onToggle(index);
-          }
-          lastPointer.current = "";
-        }}
-        className={cn(
-          "relative grid w-full grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 px-2 py-6 text-left transition-colors duration-500 ease-print focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-signal sm:px-4 lg:grid-cols-[4rem_minmax(0,1fr)_16rem_7rem]",
-          open ? "text-paper" : "text-ink",
-        )}
-      >
-        <span className="font-technical text-micro text-signal">{row.lead}</span>
-        <motion.span
-          animate={{ x: open ? 16 : 0 }}
-          transition={{ duration: 0.5, ease: EASE_PRINT }}
-          className="font-wide text-[clamp(1.25rem,3.2vw,3rem)] leading-[1] font-semibold tracking-[-0.01em] uppercase"
-        >
-          <MaskRise delay={index * 0.07 + 0.1}>{row.title}</MaskRise>
-        </motion.span>
-        <span
-          className={cn(
-            "hidden font-technical text-micro uppercase lg:block",
-            open ? "text-paper/60" : "text-graphite",
-          )}
-        >
-          {row.meta}
-        </span>
-        <span className="flex items-center justify-end gap-3">
-          <span className={cn("font-technical text-micro", open ? "text-paper/60" : "text-graphite")}>{row.tail}</span>
-          {hasDetail ? (
-            <motion.span
-              aria-hidden
-              animate={{ rotate: open ? 45 : 0 }}
-              transition={{ duration: 0.4, ease: EASE_PRINT }}
-              className="text-xl leading-none"
-            >
-              +
-            </motion.span>
-          ) : null}
-        </span>
-      </button>
-      <AnimatePresence initial={false}>
-        {open && hasDetail ? (
-          <motion.div
-            id={detailId}
-            key="detail"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.45, ease: EASE_PRINT }}
-            className="relative overflow-hidden"
-          >
-            <p className="grid gap-4 px-2 pb-7 text-paper/70 sm:px-4 lg:grid-cols-[4rem_minmax(0,1fr)_16rem_7rem]">
-              <span aria-hidden className="hidden lg:block" />
-              <span className="max-w-[60ch] pl-4 font-glyph text-[1.05rem] leading-relaxed">
-                <span className="mr-3 font-technical text-micro text-signal uppercase lg:hidden">{row.meta}</span>
-                {row.detail}
-              </span>
-            </p>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
-    </li>
-  );
-};
-
-/** A list of index rows; one opens at a time. On fine pointers a sticker follows the cursor over it. */
-const IndexList = ({ rows }: { rows: Row[] }) => {
-  const [open, setOpen] = useState<number | null>(null);
   const fine = useMediaQuery("(hover: hover) and (pointer: fine)");
-  const pointerX = useMotionValue(0);
-  const pointerY = useMotionValue(0);
-  const x = useSpring(pointerX, FOLLOW_SPRING);
-  const y = useSpring(pointerY, FOLLOW_SPRING);
-  const current = open === null ? null : rows[open];
+  const { reducedMotion } = useMotionTheme();
+  const tilts = fine && !reducedMotion;
+  const rotateX = useSpring(0, TILT_SPRING);
+  const rotateY = useSpring(0, TILT_SPRING);
+  const [lit, setLit] = useState(false);
 
-  const onPointerMove = (event: PointerEvent<HTMLUListElement>) => {
-    // Above and to the right of the cursor, so it never sits on the title being read.
-    pointerX.set(event.clientX + STICKER_OFFSET);
-    pointerY.set(event.clientY - STICKER_OFFSET - STICKER_SIZE);
+  const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    const box = event.currentTarget.getBoundingClientRect();
+    const x = (event.clientX - box.left) / box.width;
+    const y = (event.clientY - box.top) / box.height;
+    rotateY.set((x - 0.5) * 2 * TILT_MAX_DEG);
+    rotateX.set(-(y - 0.5) * 2 * TILT_MAX_DEG);
+    event.currentTarget.style.setProperty("--sheen-x", `${x * 100}%`);
+    event.currentTarget.style.setProperty("--sheen-y", `${y * 100}%`);
+  };
+  const onPointerLeave = () => {
+    rotateX.set(0);
+    rotateY.set(0);
+    setLit(false);
   };
 
   return (
-    <>
-      <ul
-        onPointerMove={fine ? onPointerMove : undefined}
-        onPointerLeave={(event) => event.pointerType === "mouse" && setOpen(null)}
-        className="relative border-b border-ink/20"
+    <motion.div
+      initial={{ opacity: 0, y: 70, rotateX: 28, z: -220 }}
+      whileInView={{ opacity: 1, y: 0, rotateX: 0, z: 0 }}
+      viewport={{ once: true, margin: "0px 0px -8% 0px" }}
+      transition={{ delay: order * STAGGER_S, duration: 1, ease: EASE_PRINT }}
+      style={{ transformPerspective: 1100 }}
+      className={cn("origin-bottom", className)}
+    >
+      <motion.div
+        onPointerMove={tilts ? onPointerMove : undefined}
+        onPointerEnter={tilts ? () => setLit(true) : undefined}
+        onPointerLeave={tilts ? onPointerLeave : undefined}
+        style={{ rotateX, rotateY, transformPerspective: 900 }}
+        className={cn(
+          "relative flex h-full flex-col gap-4 overflow-hidden rounded-[1.75rem] p-6 sm:p-7",
+          TONE_CLASS[tone],
+        )}
       >
-        {rows.map((row, index) => (
-          <IndexRow
-            key={row.key}
-            row={row}
-            index={index}
-            open={open === index}
-            onOpen={setOpen}
-            onToggle={(value) => setOpen((currentOpen) => (currentOpen === value ? null : value))}
-          />
-        ))}
-      </ul>
-      {fine ? (
-        <motion.div aria-hidden style={{ x, y }} className="pointer-events-none fixed top-0 left-0 z-30">
-          <AnimatePresence>
-            {current ? (
-              <motion.div
-                key={current.key}
-                initial={{ scale: 0, rotate: -30 }}
-                animate={{ scale: 1, rotate: 0 }}
-                exit={{ scale: 0, rotate: 30 }}
-                transition={{ type: "spring", stiffness: 380, damping: 24 }}
-              >
-                <Sticker row={current} />
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
-        </motion.div>
-      ) : null}
-    </>
+        <span
+          aria-hidden
+          className={cn(
+            "pointer-events-none absolute inset-0 transition-opacity duration-500",
+            SHEEN_CLASS[tone],
+            lit ? "opacity-100" : "opacity-0",
+          )}
+        />
+        {children}
+      </motion.div>
+    </motion.div>
   );
 };
 
+const Eyebrow = ({ tone, left, right }: { tone: Tone; left: string; right?: string }) => (
+  <div
+    className={cn("relative flex items-center justify-between gap-4 font-technical text-micro uppercase", muted(tone))}
+  >
+    <span>{left}</span>
+    {right ? <span>{right}</span> : null}
+  </div>
+);
+
+const FeaturedTile = ({ award, label, total }: { award: Award; label: string; total: number }) => (
+  <Tile tone="ink" order={0} className="md:col-span-6 lg:row-span-2">
+    <Eyebrow tone="ink" left={label} right={`${pad(total)} awards`} />
+    {/* The badge, giant and outlined, filling the corner. */}
+    <span
+      aria-hidden
+      className="pointer-events-none absolute -right-6 -bottom-10 font-wide text-[clamp(9rem,18vw,16rem)] leading-none font-semibold text-transparent [-webkit-text-stroke:1.5px_color-mix(in_srgb,var(--bg-primary)_18%,transparent)]"
+    >
+      {award.badge}
+    </span>
+    <span className="relative mt-auto grid size-16 place-items-center rounded-full bg-signal font-wide text-xl font-semibold text-paper">
+      {award.badge}
+    </span>
+    <h3 className="relative max-w-[16ch] font-wide text-[clamp(1.8rem,3.4vw,3.2rem)] leading-[0.95] font-semibold tracking-[-0.02em] uppercase">
+      {award.title}
+    </h3>
+    <span className="relative font-technical text-micro text-signal uppercase">
+      {award.org}
+      {award.year ? ` · ${award.year}` : ""}
+    </span>
+    {award.text ? (
+      <p className="relative max-w-[42ch] font-glyph text-[1rem] leading-relaxed text-paper/70">{award.text}</p>
+    ) : null}
+  </Tile>
+);
+
+const AwardTile = ({ award, order }: { award: Award; order: number }) => (
+  <Tile tone="paper" order={order} className="md:col-span-3">
+    <div className="relative flex items-start justify-between gap-4">
+      <span className="grid size-12 shrink-0 place-items-center rounded-full border-2 border-signal font-wide text-sm font-semibold text-signal">
+        {award.badge}
+      </span>
+      <span className="font-technical text-micro text-graphite uppercase">{award.year || award.org}</span>
+    </div>
+    <h3 className="relative mt-auto font-wide text-[1.15rem] leading-tight font-semibold uppercase">{award.title}</h3>
+    {award.text ? (
+      <p className="relative font-glyph text-[0.9rem] leading-relaxed text-graphite">{award.text}</p>
+    ) : null}
+  </Tile>
+);
+
+const SchoolTile = ({ school, label, order }: { school: School; label: string; order: number }) => (
+  <Tile tone="stone" order={order} className="md:col-span-3 lg:col-span-5">
+    <Eyebrow tone="stone" left={label} right={school.year} />
+    <div className="relative mt-auto flex items-end gap-5">
+      <span className="font-wide text-[clamp(3rem,5vw,4.5rem)] leading-[0.8] font-semibold text-transparent [-webkit-text-stroke:1.5px_var(--signal)]">
+        {school.badge}
+      </span>
+      <span className="flex min-w-0 flex-col gap-1">
+        <span className="font-wide text-[1.05rem] leading-tight font-semibold uppercase">{school.title}</span>
+        <span className="font-glyph text-[0.9rem] text-graphite">{school.org}</span>
+      </span>
+    </div>
+  </Tile>
+);
+
+const QuoteTile = ({ quote, label, order, tone }: { quote: Quote; label: string; order: number; tone: Tone }) => (
+  <Tile tone={tone} order={order} className="md:col-span-6 lg:col-span-7">
+    <Eyebrow tone={tone} left={label} />
+    <span
+      aria-hidden
+      className={cn(
+        "relative -mb-4 font-wide text-[4.5rem] leading-[0.6]",
+        tone === "signal" ? "text-ink" : "text-signal",
+      )}
+    >
+      “
+    </span>
+    <blockquote className="relative font-wide text-[clamp(1.3rem,2.2vw,2rem)] leading-[1.1] font-semibold tracking-[-0.01em] text-balance uppercase">
+      {quote.quote}
+    </blockquote>
+    <span className={cn("relative mt-auto font-technical text-micro uppercase", muted(tone))}>— {quote.source}</span>
+  </Tile>
+);
+
 export const Recognition = ({ recognition }: { recognition: Recognition }) => {
-  const awards: Row[] = recognition.awards.map((award, index) => ({
-    key: `award-${index}`,
-    lead: pad(index + 1),
-    title: award.title,
-    meta: award.org,
-    tail: award.year ?? "",
-    badge: award.badge,
-    detail: award.text ?? "",
-  }));
-  const schools: Row[] = recognition.education.map((school, index) => ({
-    key: `school-${index}`,
-    lead: school.badge,
-    title: school.title,
-    meta: school.org,
-    tail: school.year,
-    badge: school.badge,
-    detail: "",
-  }));
+  const { awards, education, quotes } = recognition;
+  // The featured award: the first with a year (the most specific), else the first.
+  const featuredIndex = Math.max(
+    0,
+    awards.findIndex((award) => award.year),
+  );
+  const featured = awards[featuredIndex];
+  const others = awards.filter((_, index) => index !== featuredIndex);
+  const [firstQuote, secondQuote] = quotes;
+  let order = 1 + others.length;
 
   return (
     <Section id="recognition" className="bg-newsprint/40">
       <SectionHeader header={recognition.header} />
-
-      {awards.length > 0 ? (
-        <div className="flex flex-col">
-          <Label>{recognition.awardsLabel}</Label>
-          <IndexList rows={awards} />
-        </div>
-      ) : null}
-
-      {schools.length > 0 ? (
-        <div className="mt-[clamp(3.5rem,9svh,6rem)] flex flex-col">
-          <Label>{recognition.educationLabel}</Label>
-          <IndexList rows={schools} />
-        </div>
-      ) : null}
-
-      {recognition.quotes.length > 0 ? (
-        <div className="mt-[clamp(4rem,11svh,7rem)] flex flex-col gap-[clamp(3rem,8svh,5rem)]">
-          <Label>{recognition.quotesLabel}</Label>
-          {recognition.quotes.map((quote, index) => (
-            <figure
-              key={index}
-              className={cn("flex max-w-[64rem] flex-col gap-5", index % 2 === 1 && "self-end text-right")}
-            >
-              <span aria-hidden className="font-wide text-[5rem] leading-[0.5] text-signal">
-                “
-              </span>
-              <ScrollInk
-                text={quote.quote}
-                className="font-wide text-[clamp(1.6rem,3.6vw,3.4rem)] leading-[1.05] font-semibold tracking-[-0.015em] text-balance uppercase"
-              />
-              <figcaption className="font-technical text-micro text-graphite uppercase">— {quote.source}</figcaption>
-            </figure>
-          ))}
-        </div>
-      ) : null}
+      <div className="grid gap-4 md:grid-cols-6 lg:[grid-auto-flow:dense] lg:auto-rows-[minmax(15rem,auto)] lg:grid-cols-12">
+        {featured ? <FeaturedTile award={featured} label={recognition.awardsLabel} total={awards.length} /> : null}
+        {others.map((award, index) => (
+          <AwardTile key={`${award.title}-${index}`} award={award} order={1 + index} />
+        ))}
+        {firstQuote ? (
+          <QuoteTile quote={firstQuote} label={recognition.quotesLabel} order={order++} tone="signal" />
+        ) : null}
+        {education.map((school, index) => (
+          <SchoolTile
+            key={`${school.title}-${index}`}
+            school={school}
+            label={recognition.educationLabel}
+            order={order++}
+          />
+        ))}
+        {secondQuote ? (
+          <QuoteTile quote={secondQuote} label={recognition.quotesLabel} order={order++} tone="ink" />
+        ) : null}
+      </div>
     </Section>
   );
 };

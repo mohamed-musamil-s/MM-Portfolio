@@ -125,7 +125,7 @@ const StaticAbout = ({ about }: { about: About }) => (
 /* ---------- The pinned story (large screens) ---------- */
 
 /** Scroll (in svh) the stage stays pinned for. */
-const STORY_TRAVEL_SVH = 280;
+const STORY_TRAVEL_SVH = 320;
 
 /** A stretch of the pinned progress (0–1). */
 type Window = [number, number];
@@ -136,9 +136,10 @@ const ACT: {
   facts: { enter: Window; count: Window; exit: Window };
   road: { enter: Window; scrub: Window };
 } = {
-  statement: { ink: [0.02, 0.32], exit: [0.34, 0.42] },
-  facts: { enter: [0.4, 0.48], count: [0.44, 0.62], exit: [0.64, 0.7] },
-  road: { enter: [0.68, 0.74], scrub: [0.74, 0.97] },
+  // The first stretch belongs to the title alone; the statement fades in after it.
+  statement: { ink: [0.12, 0.38], exit: [0.4, 0.47] },
+  facts: { enter: [0.46, 0.53], count: [0.5, 0.66], exit: [0.68, 0.73] },
+  road: { enter: [0.72, 0.77], scrub: [0.77, 0.97] },
 };
 
 const InkedWord = ({
@@ -158,8 +159,10 @@ const Statement = ({ text, progress }: { text: string; progress: MotionValue<num
   const words = text.split(" ");
   const [start, end] = ACT.statement.ink;
   const step = (end - start) / words.length;
-  const opacity = useTransform(progress, ACT.statement.exit, [1, 0]);
-  const y = useTransform(progress, ACT.statement.exit, ["0svh", "-8svh"]);
+  const [inkStart] = ACT.statement.ink;
+  const [exitStart, exitEnd] = ACT.statement.exit;
+  const opacity = useTransform(progress, [inkStart - 0.06, inkStart, exitStart, exitEnd], [0, 1, 1, 0]);
+  const y = useTransform(progress, [inkStart - 0.06, inkStart, exitStart, exitEnd], ["5svh", "0svh", "0svh", "-8svh"]);
   return (
     <motion.div style={{ opacity, y }} className="absolute inset-0 flex items-center">
       <p

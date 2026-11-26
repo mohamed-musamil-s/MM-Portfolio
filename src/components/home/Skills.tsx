@@ -36,6 +36,8 @@ const CARD_H = 430;
 const RING_GAP = 70;
 /** Scroll (in svh) spent per group while the ring turns. */
 const SVH_PER_GROUP = 60;
+/** Scroll (in svh) at the start of the pin where the title stands alone, then the ring makes its entrance. */
+const INTRO_SVH = 80;
 const TILT_DEG = 7;
 /** Vertical room kept for the header and the footer row when sizing the ring (px). */
 const RING_RESERVED_PX = 300;
@@ -136,21 +138,31 @@ const Stage = ({ skills }: { skills: Skills }) => {
   const fit = useRingFit();
   const [front, setFront] = useState(0);
 
-  // The way in: from flat and small, spinning, the cards bursting out of the centre.
-  const { scrollYProgress: enter } = useScroll({ target: section, offset: ["start end", "start start"] });
-  const intro = useTransform(enter, [0.1, 0.95], [0, 1], { clamp: true });
+  // The pin: first the title stands alone, then the ring makes its entrance, then it turns.
+  const { scrollYProgress: pinned } = useScroll({ target: section, offset: ["start start", "end end"] });
+  /** Where the entrance ends and the turning starts, as a share of the pin. */
+  const turnStart = INTRO_SVH / (INTRO_SVH + Math.max(1, total - 1) * SVH_PER_GROUP);
+
+  // The entrance: from flat and small, spinning, the cards bursting out of the centre.
+  const intro = useTransform(pinned, [turnStart * 0.25, turnStart * 0.95], [0, 1], { clamp: true });
+  const ringOpacity = useTransform(intro, [0, 0.15], [0, 1]);
   const spread = useTransform(intro, [0, 1], [0.04, 1]);
   const scale = useTransform(() => 0.4 + (fit.get() - 0.4) * intro.get());
   const introSpin = useTransform(intro, [0, 1], [-240, 0]);
   const lift = useTransform(intro, [0, 1], [64, -6]);
   const floorOpacity = useTransform(intro, [0.3, 1], [0, 1]);
 
-  // While pinned: one group to the front per stretch of scroll.
-  const { scrollYProgress: pinned } = useScroll({ target: section, offset: ["start start", "end end"] });
-  const spin = useSpring(useTransform(pinned, [0, 1], [0, -(total - 1) * step]), { stiffness: 110, damping: 22 });
+  // Then one group to the front per stretch of scroll.
+  const spin = useSpring(useTransform(pinned, [turnStart, 1], [0, -(total - 1) * step], { clamp: true }), {
+    stiffness: 110,
+    damping: 22,
+  });
   const turn = useTransform(() => spin.get() + introSpin.get());
   const floorShift = useTransform(pinned, [0, 1], ["0px", "-960px"]);
-  useMotionValueEvent(pinned, "change", (value) => setFront(Math.min(total - 1, Math.round(value * (total - 1)))));
+  useMotionValueEvent(pinned, "change", (value) => {
+    const turned = Math.min(1, Math.max(0, (value - turnStart) / (1 - turnStart)));
+    setFront(Math.min(total - 1, Math.round(turned * (total - 1))));
+  });
 
   // The pointer tilts the ring a little.
   const tiltX = useSpring(0, TILT_SPRING);
@@ -174,7 +186,8 @@ const Stage = ({ skills }: { skills: Skills }) => {
       return;
     }
     const travel = box.offsetHeight - window.innerHeight;
-    window.scrollTo({ top: box.offsetTop + (travel * index) / Math.max(1, total - 1), behavior: "smooth" });
+    const share = turnStart + ((1 - turnStart) * index) / Math.max(1, total - 1);
+    window.scrollTo({ top: box.offsetTop + travel * share, behavior: "smooth" });
   };
 
   const current = groups[front] ?? groups[0];
@@ -184,7 +197,7 @@ const Stage = ({ skills }: { skills: Skills }) => {
       ref={section}
       id="skills"
       className="relative scroll-mt-20 bg-paper"
-      style={{ height: `${100 + (total - 1) * SVH_PER_GROUP}svh` }}
+      style={{ height: `${100 + INTRO_SVH + (total - 1) * SVH_PER_GROUP}svh` }}
     >
       <div className="sticky top-0 flex h-svh flex-col overflow-clip px-page pt-[clamp(1.25rem,3svh,2rem)] pb-6">
         <div className="relative z-10 mx-auto w-full max-w-[1440px]">
@@ -213,7 +226,7 @@ const Stage = ({ skills }: { skills: Skills }) => {
             style={{ width: CARD_W, height: CARD_H, marginLeft: -CARD_W / 2, marginTop: -CARD_H / 2 }}
           >
             <motion.div
-              style={{ rotateX, rotateY, scale, z: -radius }}
+              style={{ rotateX, rotateY, scale, z: -radius, opacity: ringOpacity }}
               className="relative size-full [transform-style:preserve-3d]"
             >
               {groups.map((group, index) => (

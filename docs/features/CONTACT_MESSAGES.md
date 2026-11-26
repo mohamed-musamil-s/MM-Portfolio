@@ -4,11 +4,11 @@ Visitors write in through the form in the home page's Contact section. Each mess
 
 ## Flow
 
-1. The visitor fills in name, email, a topic (one of the content's `contact.form.topics`) and a message.
-2. The form checks the fields on the client with the same zod schema the server uses (`src/lib/shared/contact/contact-schema.ts`).
-3. It posts to `POST /api/contact`.
-4. While the request runs, the send button plays its impact. On a 201 the button lands a check and the full screen celebrates, then the form gives way to the thank-you card ("{name}" filled in).
-5. A failure shakes the button and shows `errors.failed`, or `errors.rate` on 429.
+1. The form is told as a chat (`src/components/home/ChatForm.tsx`). When it first comes into view, the host greets the visitor and asks the first question; each line arrives after a short "typing" beat. The lines come from `contact.form.prompts`, and `{name}` is filled in.
+2. The visitor answers in the composer: name, email, then a topic (quick replies from `contact.form.topics`, skipped when there are none), then the message. Enter sends an answer; Shift+Enter makes a new line in the message.
+3. Each answer is checked with the same zod schema the server uses (`src/lib/shared/contact/contact-schema.ts`). A wrong one gets a reply from `contact.form.errors`, and the question stays.
+4. At the end the composer becomes the send button, which posts to `POST /api/contact`. The impact plays while it sends; on a 201 the check and the full-screen celebration play, then the thank-you arrives as a chat line. A failure gets `errors.failed` (or `errors.rate` on 429) as a reply, and the button stays for a retry.
+5. "Start over" in the header clears the chat.
 
 ## API
 
@@ -46,7 +46,7 @@ Visitors write in through the form in the home page's Contact section. Each mess
 
 ## Send button and effects
 
-- `src/components/home/SendButton.tsx` is a real `<button type="submit">` in the site's pill style. It takes `state`: `idle | sending | done | error`.
+- `src/components/home/SendButton.tsx` (the chat's last step) is a real `<button type="submit">` in the site's pill style. It takes `state`: `idle | sending | done | error`.
   - **Press:** it squashes while pressed.
   - **sending:** one flash of signal, a tilt and a spring back, plus the impact.
   - **done:** the disc turns to a check, plus the celebration.

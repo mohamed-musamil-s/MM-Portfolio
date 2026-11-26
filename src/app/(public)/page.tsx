@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { About } from "@/components/home/About";
 import { Contact } from "@/components/home/Contact";
+import { Education } from "@/components/home/Education";
 import { Experience } from "@/components/home/Experience";
 import { Hero } from "@/components/home/Hero";
 import { Recognition } from "@/components/home/Recognition";
@@ -45,10 +46,15 @@ export default async function HomePage() {
   return (
     <>
       <SiteNav nav={home.nav} />
-      <main id="top">
+      {/* Above the footer, which sits fixed underneath and is uncovered as the page lifts off it. */}
+      <main
+        id="top"
+        className="relative z-10 overflow-clip rounded-b-[2.5rem] bg-paper shadow-[0_40px_80px_-30px_rgb(0_0_0/0.5)]"
+      >
         <Hero hero={home.hero} />
         <About about={home.about} />
         <Experience experience={home.experience} />
+        <Education education={home.education} />
         <Skills skills={home.skills} />
         <Work work={home.work} />
         <Recognition recognition={home.recognition} />

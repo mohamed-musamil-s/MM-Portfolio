@@ -18,7 +18,7 @@ import { EASE_PRINT } from "@/lib/motion/tokens";
 import { Reveal, Section, SectionHeader, TechChip } from "./section-kit";
 
 /*
- * Skills (docs/screens/HOME_BUSINESS.md §6.3): the skill groups as cards on a
+ * Skills (docs/screens/HOME_BUSINESS.md §6.4): the skill groups as cards on a
  * 3D ring. On large screens the section pins and the ring turns one group to
  * the front per stretch of scroll. On the way in it flies up from flat,
  * spinning, its cards bursting out from the centre over a perspective grid

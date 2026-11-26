@@ -351,9 +351,16 @@ Verified with a production build (`next start`) connected to Atlas:
 - The footer is redesigned: live local clock, massive quote, three columns, the name as a full-width wordmark ([spec](screens/HOME_BUSINESS.md) §6.7).
 - Dev DB: home content has `contact.form` and the new footer fields.
 
+## 2026-11-26: Education section, new About, Contact and footer
+
+- Education is its own section (`education` in the home content), between Experience and Skills, with its own navbar and footer link; Recognition keeps the awards and kind words. Headers renumbered 01–07.
+- About is a pinned kinetic story (statement, facts, road scrubber); Contact tells the form as a chat (`form.prompts`); the footer is a curtain the page lifts off.
+- The navbar's current-section pill is now worked out from the scroll position.
+- Dev DB migrated (education section, header numbers, nav and footer links, chat prompts).
+
 ## Open items
 
-- [ ] Production: the home content needs `contact.form` and the new footer fields (`wordmark`, `clock`, `linksLabel`, `socialsLabel`); the `contact_conversations` indexes are created on first use.
+- [ ] Production: the home content needs the `education` section (moved out of `recognition`, whose `education` and `educationLabel` are gone), renumbered header indices (education 03 … contact 07), the Education link in `nav.links` and `footer.links`, and `contact.form.prompts`. It also needs `contact.form` and the new footer fields (`wordmark`, `clock`, `linksLabel`, `socialsLabel`); the `contact_conversations` indexes are created on first use.
 - [ ] Seed the home screen on production (`npm run seed:screens:prod -- --only=home`, plus its studio-shell `editor.screens` entry) once development is complete.
 - [ ] Seed the name splash on production (`npm run seed:screens:prod -- --only=splash`) and add its entry to the production studio-shell `editor.screens`; until then production shows no splash.
 

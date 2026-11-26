@@ -67,27 +67,36 @@ const RollingLabel = ({ text, active }: { text: string; active: boolean }) => (
   </span>
 );
 
-/** The section under the middle of the viewport, from the links' `#anchors` (null above the first). */
+/**
+ * The section under the middle of the viewport, from the links' `#anchors` (null above the first).
+ * Worked out from the scroll position on each frame that scrolls, so jumps and long pinned sections
+ * never leave a stale link marked.
+ */
 const useActiveSection = (links: Nav["links"]) => {
   const [active, setActive] = useState<string | null>(null);
   useEffect(() => {
-    const sections = links
-      .map((link) => (link.href.startsWith("#") ? document.getElementById(link.href.slice(1)) : null))
-      .filter((section): section is HTMLElement => section !== null);
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setActive(`#${entry.target.id}`);
-          } else if (entry.target === sections[0] && entry.boundingClientRect.top > 0) {
-            setActive(null);
-          }
-        }
-      },
-      { rootMargin: "-45% 0px -54% 0px" },
-    );
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
+    const anchors = links.map((link) => link.href).filter((href) => href.startsWith("#"));
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const middle = window.innerHeight / 2;
+      const found = anchors.find((href) => {
+        const box = document.getElementById(href.slice(1))?.getBoundingClientRect();
+        return box ? box.top <= middle && box.bottom > middle : false;
+      });
+      setActive(found ?? null);
+    };
+    const onScroll = () => {
+      frame ||= window.requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, [links]);
   return active;
 };

@@ -94,13 +94,20 @@ export const workSchema = z.object({
 export const recognitionSchema = z.object({
   header,
   awardsLabel: text(40),
-  educationLabel: text(40),
   quotesLabel: text(60),
   awards: z
     .array(z.object({ badge: text(4), title: text(60), org: text(48), year: maybe(12), text: maybe(200) }))
     .max(8),
-  education: z.array(z.object({ badge: text(4), title: text(60), org: text(60), year: text(24) })).max(4),
   quotes: z.array(z.object({ quote: text(240), source: text(60) })).max(4),
+});
+
+/** Education / qualifications, its own section (§6.3). */
+export const educationSchema = z.object({
+  header,
+  items: z
+    .array(z.object({ badge: text(4), title: text(60), org: text(60), year: text(24) }))
+    .min(1)
+    .max(6),
 });
 
 export const contactSchema = z.object({
@@ -118,6 +125,16 @@ export const contactSchema = z.object({
     email: z.object({ label: text(32), placeholder: maybe(60) }),
     message: z.object({ label: text(32), placeholder: maybe(80) }),
     topicsLabel: text(48),
+    /** The chat the form is told as: the greeting, one question per step, the review line and "start over". */
+    prompts: z.object({
+      greeting: text(160),
+      name: text(120),
+      email: text(120),
+      topic: text(120),
+      message: text(120),
+      review: text(120),
+      restart: text(32),
+    }),
     topics: z.array(text(40)).max(5),
     submit: text(32),
     sending: text(32),

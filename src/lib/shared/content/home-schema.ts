@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   aboutSchema,
   contactSchema,
+  educationSchema,
   experienceSchema,
   footerSchema,
   recognitionSchema,
@@ -45,6 +46,7 @@ export const homeContentSchema = z.object({
   }),
   about: aboutSchema,
   experience: experienceSchema,
+  education: educationSchema,
   skills: skillsSchema,
   work: workSchema,
   recognition: recognitionSchema,

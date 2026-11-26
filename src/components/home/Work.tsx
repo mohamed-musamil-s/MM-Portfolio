@@ -10,7 +10,7 @@ import type { HomeContent } from "@/lib/shared/content/home-schema";
 import { Reveal, Section, SectionHeader } from "./section-kit";
 
 /*
- * Selected work (docs/screens/HOME_BUSINESS.md §6.4): a deck of case cards.
+ * Selected work (docs/screens/HOME_BUSINESS.md §6.5): a deck of case cards.
  * On large screens each card pins and the next one slides up over it; the
  * cards underneath settle back (smaller, dimmed) so the deck reads as a
  * stack, and each image zooms out of a close crop as its card arrives. On

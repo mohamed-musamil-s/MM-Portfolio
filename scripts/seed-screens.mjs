@@ -56,6 +56,7 @@ const SCREENS = {
       links: [
         { label: "About", href: "#about" },
         { label: "Experience", href: "#experience" },
+        { label: "Education", href: "#education" },
         { label: "Skills", href: "#skills" },
         { label: "Work", href: "#work" },
         { label: "Contact", href: "#contact" },
@@ -109,8 +110,12 @@ const SCREENS = {
         },
       ],
     },
+    education: {
+      header: { index: "03", eyebrow: "Learn / Build / Repeat", title: "Education", count: "" },
+      items: [{ badge: "BSc", title: "Your degree", org: "Your college", year: "2018 — 2021" }],
+    },
     skills: {
-      header: { index: "03", eyebrow: "Focus / Discipline", title: "Skills", count: "" },
+      header: { index: "04", eyebrow: "Focus / Discipline", title: "Skills", count: "" },
       legend: { core: "Core stack", other: "Also used", summary: "Your stack in one line" },
       groups: [
         {
@@ -124,7 +129,7 @@ const SCREENS = {
       ],
     },
     work: {
-      header: { index: "04", eyebrow: "Selected work", title: "Work", count: "" },
+      header: { index: "05", eyebrow: "Selected work", title: "Work", count: "" },
       note: "",
       projects: [
         {
@@ -139,16 +144,14 @@ const SCREENS = {
       ],
     },
     recognition: {
-      header: { index: "05", eyebrow: "Create / Inspire / Elevate", title: "Recognition", count: "" },
+      header: { index: "06", eyebrow: "Create / Inspire / Elevate", title: "Recognition", count: "" },
       awardsLabel: "Honors & awards",
-      educationLabel: "Education",
       quotesLabel: "Kind words",
       awards: [],
-      education: [],
       quotes: [],
     },
     contact: {
-      header: { index: "06", eyebrow: "Create / Inspire / Elevate", title: "Let's talk", count: "" },
+      header: { index: "07", eyebrow: "Create / Inspire / Elevate", title: "Let's talk", count: "" },
       headline: "Let's build something that lasts.",
       text: "Have a role or a project in mind? Say hello.",
       email: "",
@@ -160,6 +163,15 @@ const SCREENS = {
         email: { label: "Email", placeholder: "jane@company.com" },
         message: { label: "Message", placeholder: "Tell me about the role or project…" },
         topicsLabel: "I'm reaching out about",
+        prompts: {
+          greeting: "Hi there! A few quick questions and your message is on its way.",
+          name: "First up, what should I call you?",
+          email: "Nice to meet you, {name}. Which email should I reply to?",
+          topic: "What are you reaching out about?",
+          message: "Tell me a little about it.",
+          review: "All set. Send it over?",
+          restart: "Start over",
+        },
         topics: ["Full-time role", "Freelance project", "Consulting"],
         submit: "Send message",
         sending: "Sending…",

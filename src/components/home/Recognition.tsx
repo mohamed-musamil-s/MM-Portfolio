@@ -10,17 +10,16 @@ import { EASE_PRINT } from "@/lib/motion/tokens";
 import { Section, SectionHeader } from "./section-kit";
 
 /*
- * Recognition (docs/screens/HOME_BUSINESS.md §6.5), a bento wall of tiles in
+ * Recognition (docs/screens/HOME_BUSINESS.md §6.6), a bento wall of tiles in
  * mixed sizes: one large featured award (ink), the other awards as smaller
- * tiles, education tiles, and the kind words as two wide quote tiles (one in
- * signal). On the way in the tiles assemble from depth, tipping up from
+ * tiles, and the kind words as two quote tiles side by side (signal, ink).
+ * Education has its own section (Education.tsx). On the way in the tiles assemble from depth, tipping up from
  * behind the page one after another. Under a mouse each tile tilts in 3D
  * toward the pointer while a soft sheen follows it.
  */
 
 type Recognition = HomeContent["recognition"];
 type Award = Recognition["awards"][number];
-type School = Recognition["education"][number];
 type Quote = Recognition["quotes"][number];
 
 type Tone = "ink" | "signal" | "paper" | "stone";
@@ -170,23 +169,8 @@ const AwardTile = ({ award, order }: { award: Award; order: number }) => (
   </Tile>
 );
 
-const SchoolTile = ({ school, label, order }: { school: School; label: string; order: number }) => (
-  <Tile tone="stone" order={order} className="md:col-span-3 lg:col-span-5">
-    <Eyebrow tone="stone" left={label} right={school.year} />
-    <div className="relative mt-auto flex items-end gap-5">
-      <span className="font-wide text-[clamp(3rem,5vw,4.5rem)] leading-[0.8] font-semibold text-transparent [-webkit-text-stroke:1.5px_var(--signal)]">
-        {school.badge}
-      </span>
-      <span className="flex min-w-0 flex-col gap-1">
-        <span className="font-wide text-[1.05rem] leading-tight font-semibold uppercase">{school.title}</span>
-        <span className="font-glyph text-[0.9rem] text-graphite">{school.org}</span>
-      </span>
-    </div>
-  </Tile>
-);
-
 const QuoteTile = ({ quote, label, order, tone }: { quote: Quote; label: string; order: number; tone: Tone }) => (
-  <Tile tone={tone} order={order} className="md:col-span-6 lg:col-span-7">
+  <Tile tone={tone} order={order} className="md:col-span-6">
     <Eyebrow tone={tone} left={label} />
     <span
       aria-hidden
@@ -205,7 +189,7 @@ const QuoteTile = ({ quote, label, order, tone }: { quote: Quote; label: string;
 );
 
 export const Recognition = ({ recognition }: { recognition: Recognition }) => {
-  const { awards, education, quotes } = recognition;
+  const { awards, quotes } = recognition;
   // The featured award: the first with a year (the most specific), else the first.
   const featuredIndex = Math.max(
     0,
@@ -227,14 +211,6 @@ export const Recognition = ({ recognition }: { recognition: Recognition }) => {
         {firstQuote ? (
           <QuoteTile quote={firstQuote} label={recognition.quotesLabel} order={order++} tone="signal" />
         ) : null}
-        {education.map((school, index) => (
-          <SchoolTile
-            key={`${school.title}-${index}`}
-            school={school}
-            label={recognition.educationLabel}
-            order={order++}
-          />
-        ))}
         {secondQuote ? (
           <QuoteTile quote={secondQuote} label={recognition.quotesLabel} order={order++} tone="ink" />
         ) : null}

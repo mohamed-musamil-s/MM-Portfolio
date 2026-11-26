@@ -376,7 +376,7 @@ Verified with a production build (`next start`) connected to Atlas:
 
 ## Open items
 
-- [ ] Pulse: enable Web Analytics in the Vercel project, then add `VERCEL_ANALYTICS_TOKEN`, `VERCEL_ANALYTICS_PROJECT`, `VERCEL_ANALYTICS_TEAM` locally and in Vercel (Preview and Production). Until then Pulse shows its setup card; the live data path is untested.
+- [ ] Pulse: enable Web Analytics in the Vercel project. Locally `.env.local` already has `VERCEL_ANALYTICS_PROJECT=md-musamil` and `VERCEL_ANALYTICS_TEAM=mohamed-musamils-projects-60b2665d`; the owner adds `VERCEL_ANALYTICS_TOKEN` (a Vercel access token, read-only scope to the team). In Vercel, the owner adds all three for Preview and Production. Until then Pulse shows its setup card; the live data path is untested.
 
 - [ ] Production, before deploying this code: the `studio-shell` content needs `inbox` (with `bell`), `launchpad` (with `versions`, `status`, `outline` and `versions.changedLabel`), `missionControl` (with `attention`, `attentionOne`, `allClear`, `traffic`, `checklist`, `activity`), `pulse` and `editor.sections` (the old `editor.allSections` is gone) (plus the updated `modules.release.description` and `editor.screens.home.description`), or the studio pages fail validation. Same copy as the seed.
 - [ ] Production: the home content needs the `education` section (moved out of `recognition`, whose `education` and `educationLabel` are gone), renumbered header indices (education 03 … contact 07), the Education link in `nav.links` and `footer.links`, and `contact.form.prompts`. It also needs `contact.form` and the new footer fields (`wordmark`, `clock`, `linksLabel`, `socialsLabel`); the `contact_conversations` indexes are created on first use.
@@ -395,3 +395,11 @@ Verified with a production build (`next start`) connected to Atlas:
 - Public portfolio
 - Studio modules still to build: Resume Lab; replying to messages from the studio (email integration)
 - UI design and styling for the studio modules (the login is done)
+
+## 2026-11-27: Inbox bell, Launchpad and Mission Control redesigns, previews for every screen
+
+- Content Forge: only Home is split into section entries. Home and the name splash now have a live preview (the frame scrolls to the open section; the splash loops). Preview frames are not counted by Vercel Analytics.
+- Studio topbar: a messages bell with the unread count and the newest unread messages.
+- Launchpad: a launch console (status strip, page outline with switchable section blocks, version timeline).
+- Mission Control: command banner, 7-day traffic, health check, activity timeline, recent messages.
+- Dev DB: studio-shell has `inbox.bell`, `launchpad.status`, `launchpad.outline`, `launchpad.versions.changedLabel`, and the new `missionControl` fields.

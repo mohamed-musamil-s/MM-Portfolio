@@ -1,127 +1,168 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "motion/react";
+import { motion, useScroll, useTransform, type MotionValue } from "motion/react";
 import Image from "next/image";
 import { useRef } from "react";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useMotionTheme } from "@/hooks/useMotionTheme";
 import { cn } from "@/lib/shared/cn";
 import type { HomeContent } from "@/lib/shared/content/home-schema";
-import { EASE_PRINT } from "@/lib/motion/tokens";
-import { MaskRise, Reveal, Section, SectionHeader } from "./section-kit";
+import { Reveal, Section, SectionHeader } from "./section-kit";
 
 /*
- * Selected work (docs/screens/HOME_BUSINESS.md §6.5), editorial: each project
- * is a spread on a hairline, no cards. A giant outlined number drifts across
- * behind it; the text column holds the category and period, the title huge,
- * the summary and the tags as a slashed line; the illustration has no frame
- * and bleeds off the page edge, wiping open as the spread scrolls in while
- * the picture inside settles from a close crop. Sides alternate.
+ * Selected work (docs/screens/HOME_BUSINESS.md §6.5): a deck of case cards.
+ * On large screens each card pins and the next one slides up over it; the
+ * cards underneath settle back (smaller, dimmed) so the deck reads as a
+ * stack, and each image zooms out of a close crop as its card arrives. On
+ * phones, and with reduced motion, the same cards simply follow each other.
  */
 
 type Work = HomeContent["work"];
 type Project = Work["projects"][number];
 
-const Spread = ({ project, index, total }: { project: Project; index: number; total: number }) => {
-  const frame = useRef<HTMLElement>(null);
-  const { reducedMotion } = useMotionTheme();
-  const flipped = index % 2 === 1;
-  const { scrollYProgress: arrive } = useScroll({ target: frame, offset: ["start 90%", "start 30%"] });
-  const { scrollYProgress: pass } = useScroll({ target: frame, offset: ["start end", "end start"] });
-  const wipe = useTransform(
-    arrive,
-    [0, 1],
-    reducedMotion
-      ? ["inset(0% 0% 0% 0%)", "inset(0% 0% 0% 0%)"]
-      : flipped
-        ? ["inset(0% 0% 0% 100%)", "inset(0% 0% 0% 0%)"]
-        : ["inset(0% 100% 0% 0%)", "inset(0% 0% 0% 0%)"],
-  );
-  const zoom = useTransform(arrive, [0, 1], reducedMotion ? [1, 1] : [1.25, 1]);
-  const drift = useTransform(
-    pass,
-    [0, 1],
-    reducedMotion ? ["0vw", "0vw"] : flipped ? ["-8vw", "8vw"] : ["8vw", "-8vw"],
-  );
+/** Card colours, alternating down the deck. */
+const TONES = [
+  {
+    card: "border-paper/10 bg-ink text-paper",
+    muted: "text-paper/60",
+    chip: "border-paper/20",
+    ghost: "[-webkit-text-stroke:1.5px_var(--signal)]",
+  },
+  {
+    card: "border-ink/10 bg-newsprint text-ink",
+    muted: "text-graphite",
+    chip: "border-ink/15",
+    ghost: "[-webkit-text-stroke:1.5px_var(--text-primary)]",
+  },
+] as const;
+
+/** How much smaller each card underneath ends up, per card above it. */
+const SETTLE_STEP = 0.045;
+/** Space between the stacked cards' top edges. */
+const STACK_OFFSET_REM = 1.5;
+
+type CardProps = {
+  project: Project;
+  index: number;
+  total: number;
+  /** The deck's scroll progress; drives the settle-back of cards underneath. */
+  deck: MotionValue<number>;
+  stacked: boolean;
+};
+
+const CaseCard = ({ project, index, total, deck, stacked }: CardProps) => {
+  const slot = useRef<HTMLDivElement>(null);
+  const tone = TONES[index % TONES.length] ?? TONES[0];
+  const last = index === total - 1;
+
+  // As the card arrives the image zooms out of a close crop.
+  const { scrollYProgress: arrive } = useScroll({ target: slot, offset: ["start end", "start start"] });
+  const imageScale = useTransform(arrive, [0, 1], stacked ? [1.35, 1] : [1, 1]);
+  // Once covered, it settles back and dims under the next cards.
+  const settle = 1 - (total - 1 - index) * SETTLE_STEP;
+  const scale = useTransform(deck, [index / total, 1], stacked ? [1, settle] : [1, 1]);
+  const dim = useTransform(deck, [index / total, (index + 1) / total], [0, stacked && !last ? 0.55 : 0]);
 
   return (
-    <article
-      ref={frame}
-      className="relative grid items-center gap-8 py-[clamp(3rem,10svh,6.5rem)] lg:grid-cols-12 lg:gap-12"
+    <div
+      ref={slot}
+      className={cn(stacked && "sticky top-0 flex h-svh items-start")}
+      style={stacked ? { paddingTop: `calc(5.5rem + ${index * STACK_OFFSET_REM}rem)` } : undefined}
     >
-      <motion.span
-        aria-hidden
-        initial={{ scaleX: 0 }}
-        whileInView={{ scaleX: 1 }}
-        viewport={{ once: true, margin: "0px 0px -10% 0px" }}
-        transition={{ duration: 1.1, ease: EASE_PRINT }}
-        className="absolute inset-x-0 top-0 h-px origin-left bg-ink/20"
-      />
-      {/* The number, giant and outlined, drifting across behind the spread. */}
-      <motion.span
-        aria-hidden
-        style={{ x: drift }}
+      <motion.article
+        style={{ scale }}
         className={cn(
-          "pointer-events-none absolute top-1/2 -z-10 -translate-y-1/2 font-wide text-[clamp(10rem,26vw,24rem)] leading-none font-semibold text-transparent [-webkit-text-stroke:1.5px_color-mix(in_srgb,var(--text-primary)_10%,transparent)]",
-          flipped ? "left-0" : "right-0",
+          "relative grid w-full origin-top grid-cols-[minmax(0,1fr)] gap-8 overflow-hidden rounded-[2rem] border p-6 sm:p-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-12",
+          stacked && "h-[min(calc(100svh-12rem),640px)]",
+          tone.card,
         )}
       >
-        {project.index}
-      </motion.span>
-
-      <div className={cn("relative flex flex-col gap-5 lg:col-span-6", flipped && "lg:order-2 lg:col-start-7")}>
-        <Reveal y={0} className="flex flex-wrap gap-x-4 font-technical text-micro text-graphite uppercase">
-          <span className="text-signal">
-            {project.index} / {String(total).padStart(2, "0")}
+        {/* Left: the case. */}
+        <div className="relative z-10 flex min-h-0 flex-col gap-6">
+          <div className={cn("flex items-center justify-between font-technical text-micro uppercase", tone.muted)}>
+            <span>{project.category}</span>
+            <span>
+              {project.index} / {String(total).padStart(2, "0")}
+            </span>
+          </div>
+          <span
+            aria-hidden
+            className={cn(
+              "font-wide text-[clamp(3.5rem,min(9vw,13svh),8.5rem)] leading-[0.8] font-semibold text-transparent",
+              tone.ghost,
+            )}
+          >
+            {project.index}
           </span>
-          <span>{project.category}</span>
-          <span>{project.period}</span>
-        </Reveal>
-        <h3 className="font-wide text-[clamp(1.8rem,3.2vw,3.4rem)] leading-[0.95] font-semibold tracking-[-0.02em] uppercase">
-          <MaskRise>{project.title}</MaskRise>
-        </h3>
-        <Reveal as="p" delay={0.1} className="max-w-[44ch] font-glyph text-lead text-pretty text-graphite">
-          {project.summary}
-        </Reveal>
-        <Reveal delay={0.18} className="font-technical text-micro uppercase">
-          {project.tags.join(" / ")}
-        </Reveal>
-      </div>
+          <h3 className="font-wide text-[clamp(1.4rem,6vw,2.4rem)] leading-[0.95] font-semibold tracking-[-0.02em] [overflow-wrap:anywhere] uppercase lg:text-[clamp(1.9rem,3.4vw,3.4rem)]">
+            {project.title}
+          </h3>
+          <p className={cn("max-w-[46ch] font-glyph text-[1.02rem] leading-relaxed", tone.muted)}>{project.summary}</p>
+          <div className="mt-auto flex flex-wrap items-center gap-2">
+            {project.tags.map((tag) => (
+              <span
+                key={tag}
+                className={cn("rounded-full border px-3 py-1 font-technical text-micro uppercase", tone.chip)}
+              >
+                {tag}
+              </span>
+            ))}
+            <span className={cn("ml-auto font-technical text-micro uppercase", tone.muted)}>{project.period}</span>
+          </div>
+        </div>
 
-      {/* The illustration, frameless, bleeding off the page edge. */}
-      <motion.div
-        style={{ clipPath: wipe }}
-        className={cn(
-          "relative aspect-[16/10] overflow-hidden lg:col-span-6",
-          flipped ? "lg:order-1 lg:-ml-[var(--page-margin)]" : "lg:-mr-[var(--page-margin)]",
-        )}
-      >
-        <motion.div style={{ scale: zoom }} className="absolute inset-0">
-          <Image
-            src={project.image.src}
-            alt={project.image.alt}
-            fill
-            unoptimized
-            sizes="(min-width: 1024px) 60vw, 100vw"
-            className="object-cover"
-          />
-        </motion.div>
-      </motion.div>
-    </article>
+        {/* Right: the picture, zooming out as the card lands. */}
+        <div className="relative aspect-[16/10] min-h-0 overflow-hidden rounded-[1.25rem] lg:aspect-auto">
+          <motion.div style={{ scale: imageScale }} className="absolute inset-0">
+            <Image
+              src={project.image.src}
+              alt={project.image.alt}
+              fill
+              unoptimized
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover"
+            />
+          </motion.div>
+        </div>
+
+        {/* The dim that falls over a card once the next one covers it. */}
+        <motion.span
+          aria-hidden
+          style={{ opacity: dim }}
+          className="pointer-events-none absolute inset-0 z-20 bg-ink"
+        />
+      </motion.article>
+    </div>
   );
 };
 
-export const Work = ({ work }: { work: Work }) => (
-  <Section id="work" className="isolate">
-    <SectionHeader header={work.header} />
-    <div className="relative border-b border-ink/20">
-      {work.projects.map((project, index) => (
-        <Spread key={project.index} project={project} index={index} total={work.projects.length} />
-      ))}
-    </div>
-    {work.note ? (
-      <Reveal y={0} className="mt-8 font-technical text-micro text-graphite uppercase">
-        {work.note}
-      </Reveal>
-    ) : null}
-  </Section>
-);
+export const Work = ({ work }: { work: Work }) => {
+  const deckRef = useRef<HTMLDivElement>(null);
+  const wide = useMediaQuery("(min-width: 1024px)");
+  const { reducedMotion } = useMotionTheme();
+  const stacked = wide && !reducedMotion;
+  const { scrollYProgress: deck } = useScroll({ target: deckRef, offset: ["start start", "end end"] });
+  const total = work.projects.length;
+
+  return (
+    <Section id="work">
+      <SectionHeader header={work.header} />
+      <div ref={deckRef} className={cn("relative", !stacked && "flex flex-col gap-6")}>
+        {work.projects.map((project, index) =>
+          stacked ? (
+            <CaseCard key={project.index} project={project} index={index} total={total} deck={deck} stacked />
+          ) : (
+            <Reveal key={project.index} delay={0.05}>
+              <CaseCard project={project} index={index} total={total} deck={deck} stacked={false} />
+            </Reveal>
+          ),
+        )}
+      </div>
+      {work.note ? (
+        <Reveal y={0} className="mt-8 font-technical text-micro text-graphite uppercase">
+          {work.note}
+        </Reveal>
+      ) : null}
+    </Section>
+  );
+};

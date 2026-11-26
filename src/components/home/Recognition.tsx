@@ -1,169 +1,220 @@
 "use client";
 
-import { motion } from "motion/react";
+import { motion, useSpring } from "motion/react";
+import { useState, type PointerEvent, type ReactNode } from "react";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useMotionTheme } from "@/hooks/useMotionTheme";
 import { cn } from "@/lib/shared/cn";
 import type { HomeContent } from "@/lib/shared/content/home-schema";
 import { EASE_PRINT } from "@/lib/motion/tokens";
-import { MaskRise, Reveal, Section, SectionHeader } from "./section-kit";
+import { Section, SectionHeader } from "./section-kit";
 
 /*
- * Recognition (docs/screens/HOME_BUSINESS.md §6.6), set like a newspaper
- * page: no tiles. A masthead between a thick and a thin rule (the awards
- * label, the count). The lead story: the featured award's title as a huge
- * headline, its kicker, and its text with a drop cap, the badge giant in the
- * margin. Below, the other awards as columns divided by vertical rules (a
- * kicker, a headline, the text). Then the kind words as two pull quotes
- * between rules. The rules draw in, headlines rise through masks, the text
- * fades up. Education has its own section (Education.tsx).
+ * Recognition (docs/screens/HOME_BUSINESS.md §6.6), a bento wall of tiles in
+ * mixed sizes: one large featured award (ink), the other awards as smaller
+ * tiles, and the kind words as two quote tiles side by side (signal, ink).
+ * Education has its own section (Education.tsx). On the way in the tiles assemble from depth, tipping up from
+ * behind the page one after another. Under a mouse each tile tilts in 3D
+ * toward the pointer while a soft sheen follows it.
  */
 
 type Recognition = HomeContent["recognition"];
 type Award = Recognition["awards"][number];
+type Quote = Recognition["quotes"][number];
 
-const VIEW = { once: true, margin: "0px 0px -10% 0px" } as const;
+type Tone = "ink" | "signal" | "paper" | "stone";
+
+const TILT_MAX_DEG = 7;
+const TILT_SPRING = { stiffness: 220, damping: 20 } as const;
+const STAGGER_S = 0.07;
 
 const pad = (value: number) => String(value).padStart(2, "0");
 
-/** A horizontal rule that draws across. */
-const Rule = ({ thick = false, delay = 0 }: { thick?: boolean; delay?: number }) => (
-  <motion.span
-    aria-hidden
-    initial={{ scaleX: 0 }}
-    whileInView={{ scaleX: 1 }}
-    viewport={VIEW}
-    transition={{ delay, duration: 1.1, ease: EASE_PRINT }}
-    className={cn("block origin-left bg-ink", thick ? "h-[3px]" : "h-px opacity-25")}
-  />
-);
+const TONE_CLASS: Record<Tone, string> = {
+  ink: "bg-ink text-paper",
+  signal: "bg-signal text-paper",
+  paper: "border border-ink/10 bg-paper text-ink",
+  stone: "bg-newsprint text-ink",
+};
 
-const Kicker = ({ award }: { award: Award }) => (
-  <span className="font-technical text-micro text-signal uppercase">
-    {award.org}
-    {award.year ? ` · ${award.year}` : ""}
-  </span>
-);
+/** The sheen under the pointer: white on dark tiles, a warm tint on light ones. */
+const SHEEN_CLASS: Record<Tone, string> = {
+  ink: "bg-[radial-gradient(circle_at_var(--sheen-x)_var(--sheen-y),rgb(255_255_255/0.16),transparent_45%)]",
+  signal: "bg-[radial-gradient(circle_at_var(--sheen-x)_var(--sheen-y),rgb(255_255_255/0.3),transparent_45%)]",
+  paper:
+    "bg-[radial-gradient(circle_at_var(--sheen-x)_var(--sheen-y),color-mix(in_srgb,var(--signal)_14%,transparent),transparent_45%)]",
+  stone:
+    "bg-[radial-gradient(circle_at_var(--sheen-x)_var(--sheen-y),color-mix(in_srgb,var(--signal)_14%,transparent),transparent_45%)]",
+};
 
-const LeadStory = ({ award }: { award: Award }) => (
-  <article className="grid gap-8 py-[clamp(2rem,6svh,3.5rem)] lg:grid-cols-12 lg:gap-12">
-    <div className="flex flex-col gap-5 lg:col-span-8">
-      <Kicker award={award} />
-      <h3 className="font-wide text-[clamp(2.2rem,5vw,5.2rem)] leading-[0.92] font-semibold tracking-[-0.025em] uppercase">
-        <MaskRise>{award.title}</MaskRise>
-      </h3>
-      {award.text ? (
-        <Reveal
-          as="p"
-          delay={0.15}
-          className="max-w-[56ch] font-glyph text-lead text-pretty text-graphite first-letter:float-left first-letter:mt-1 first-letter:mr-3 first-letter:font-wide first-letter:text-[3.6em] first-letter:leading-[0.8] first-letter:font-semibold first-letter:text-ink"
-        >
-          {award.text}
-        </Reveal>
-      ) : null}
-    </div>
-    {/* The badge in the margin, giant and outlined. */}
-    <Reveal
-      delay={0.2}
-      y={0}
-      className="flex items-start justify-start font-wide text-[clamp(6rem,14vw,13rem)] leading-[0.8] font-semibold text-transparent [-webkit-text-stroke:1.5px_var(--signal)] lg:col-span-4 lg:justify-end"
+const muted = (tone: Tone) => (tone === "paper" || tone === "stone" ? "text-graphite" : "text-paper/65");
+
+/**
+ * One tile: assembles from depth on the way in; under a mouse it tilts toward the pointer with a sheen.
+ * The entrance and the tilt live on separate layers so their transforms never fight.
+ */
+const Tile = ({
+  tone,
+  order,
+  className,
+  children,
+}: {
+  tone: Tone;
+  order: number;
+  className?: string;
+  children: ReactNode;
+}) => {
+  const fine = useMediaQuery("(hover: hover) and (pointer: fine)");
+  const { reducedMotion } = useMotionTheme();
+  const tilts = fine && !reducedMotion;
+  const rotateX = useSpring(0, TILT_SPRING);
+  const rotateY = useSpring(0, TILT_SPRING);
+  const [lit, setLit] = useState(false);
+
+  const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    const box = event.currentTarget.getBoundingClientRect();
+    const x = (event.clientX - box.left) / box.width;
+    const y = (event.clientY - box.top) / box.height;
+    rotateY.set((x - 0.5) * 2 * TILT_MAX_DEG);
+    rotateX.set(-(y - 0.5) * 2 * TILT_MAX_DEG);
+    event.currentTarget.style.setProperty("--sheen-x", `${x * 100}%`);
+    event.currentTarget.style.setProperty("--sheen-y", `${y * 100}%`);
+  };
+  const onPointerLeave = () => {
+    rotateX.set(0);
+    rotateY.set(0);
+    setLit(false);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 70, rotateX: 28, z: -220 }}
+      whileInView={{ opacity: 1, y: 0, rotateX: 0, z: 0 }}
+      viewport={{ once: true, margin: "0px 0px -8% 0px" }}
+      transition={{ delay: order * STAGGER_S, duration: 1, ease: EASE_PRINT }}
+      style={{ transformPerspective: 1100 }}
+      className={cn("origin-bottom", className)}
     >
-      <span aria-hidden>{award.badge}</span>
-    </Reveal>
-  </article>
+      <motion.div
+        onPointerMove={tilts ? onPointerMove : undefined}
+        onPointerEnter={tilts ? () => setLit(true) : undefined}
+        onPointerLeave={tilts ? onPointerLeave : undefined}
+        style={{ rotateX, rotateY, transformPerspective: 900 }}
+        className={cn(
+          "relative flex h-full flex-col gap-4 overflow-hidden rounded-[1.75rem] p-6 sm:p-7",
+          TONE_CLASS[tone],
+        )}
+      >
+        <span
+          aria-hidden
+          className={cn(
+            "pointer-events-none absolute inset-0 transition-opacity duration-500",
+            SHEEN_CLASS[tone],
+            lit ? "opacity-100" : "opacity-0",
+          )}
+        />
+        {children}
+      </motion.div>
+    </motion.div>
+  );
+};
+
+const Eyebrow = ({ tone, left, right }: { tone: Tone; left: string; right?: string }) => (
+  <div
+    className={cn("relative flex items-center justify-between gap-4 font-technical text-micro uppercase", muted(tone))}
+  >
+    <span>{left}</span>
+    {right ? <span>{right}</span> : null}
+  </div>
 );
 
-/** One newspaper column: the vertical rule on its left draws down. */
-const Column = ({ award, index }: { award: Award; index: number }) => (
-  <article className="relative flex flex-col gap-3 py-6 lg:px-6 lg:first:pl-0">
-    {index > 0 ? (
-      <motion.span
-        aria-hidden
-        initial={{ scaleY: 0 }}
-        whileInView={{ scaleY: 1 }}
-        viewport={VIEW}
-        transition={{ delay: index * 0.1, duration: 1, ease: EASE_PRINT }}
-        className="absolute top-6 bottom-6 left-0 hidden w-px origin-top bg-ink/25 lg:block"
-      />
-    ) : null}
-    <div className="flex items-center justify-between gap-3">
-      <Kicker award={award} />
-      <span className="font-wide text-sm font-semibold text-graphite">{award.badge}</span>
-    </div>
-    <h4 className="font-wide text-[1.2rem] leading-[1.05] font-semibold uppercase">
-      <MaskRise delay={index * 0.08}>{award.title}</MaskRise>
-    </h4>
+const FeaturedTile = ({ award, label, total }: { award: Award; label: string; total: number }) => (
+  <Tile tone="ink" order={0} className="md:col-span-6 lg:row-span-2">
+    <Eyebrow tone="ink" left={label} right={`${pad(total)} awards`} />
+    {/* The badge, giant and outlined, filling the corner. */}
+    <span
+      aria-hidden
+      className="pointer-events-none absolute -right-6 -bottom-10 font-wide text-[clamp(9rem,18vw,16rem)] leading-none font-semibold text-transparent [-webkit-text-stroke:1.5px_color-mix(in_srgb,var(--bg-primary)_18%,transparent)]"
+    >
+      {award.badge}
+    </span>
+    <span className="relative mt-auto grid size-16 place-items-center rounded-full bg-signal font-wide text-xl font-semibold text-paper">
+      {award.badge}
+    </span>
+    <h3 className="relative max-w-[16ch] font-wide text-[clamp(1.8rem,3.4vw,3.2rem)] leading-[0.95] font-semibold tracking-[-0.02em] uppercase">
+      {award.title}
+    </h3>
+    <span className="relative font-technical text-micro text-signal uppercase">
+      {award.org}
+      {award.year ? ` · ${award.year}` : ""}
+    </span>
     {award.text ? (
-      <Reveal as="p" delay={0.1 + index * 0.08} className="font-glyph text-[0.95rem] leading-relaxed text-graphite">
-        {award.text}
-      </Reveal>
+      <p className="relative max-w-[42ch] font-glyph text-[1rem] leading-relaxed text-paper/70">{award.text}</p>
     ) : null}
-  </article>
+  </Tile>
+);
+
+const AwardTile = ({ award, order }: { award: Award; order: number }) => (
+  <Tile tone="paper" order={order} className="md:col-span-3">
+    <div className="relative flex items-start justify-between gap-4">
+      <span className="grid size-12 shrink-0 place-items-center rounded-full border-2 border-signal font-wide text-sm font-semibold text-signal">
+        {award.badge}
+      </span>
+      <span className="font-technical text-micro text-graphite uppercase">{award.year || award.org}</span>
+    </div>
+    <h3 className="relative mt-auto font-wide text-[1.15rem] leading-tight font-semibold uppercase">{award.title}</h3>
+    {award.text ? (
+      <p className="relative font-glyph text-[0.9rem] leading-relaxed text-graphite">{award.text}</p>
+    ) : null}
+  </Tile>
+);
+
+const QuoteTile = ({ quote, label, order, tone }: { quote: Quote; label: string; order: number; tone: Tone }) => (
+  <Tile tone={tone} order={order} className="md:col-span-6">
+    <Eyebrow tone={tone} left={label} />
+    <span
+      aria-hidden
+      className={cn(
+        "relative -mb-4 font-wide text-[4.5rem] leading-[0.6]",
+        tone === "signal" ? "text-ink" : "text-signal",
+      )}
+    >
+      “
+    </span>
+    <blockquote className="relative font-wide text-[clamp(1.3rem,2.2vw,2rem)] leading-[1.1] font-semibold tracking-[-0.01em] text-balance uppercase">
+      {quote.quote}
+    </blockquote>
+    <span className={cn("relative mt-auto font-technical text-micro uppercase", muted(tone))}>— {quote.source}</span>
+  </Tile>
 );
 
 export const Recognition = ({ recognition }: { recognition: Recognition }) => {
   const { awards, quotes } = recognition;
-  // The lead story: the first award with a year (the most specific), else the first.
-  const leadIndex = Math.max(
+  // The featured award: the first with a year (the most specific), else the first.
+  const featuredIndex = Math.max(
     0,
     awards.findIndex((award) => award.year),
   );
-  const lead = awards[leadIndex];
-  const others = awards.filter((_, index) => index !== leadIndex);
+  const featured = awards[featuredIndex];
+  const others = awards.filter((_, index) => index !== featuredIndex);
+  const [firstQuote, secondQuote] = quotes;
+  let order = 1 + others.length;
 
   return (
-    <Section id="recognition">
+    <Section id="recognition" className="bg-newsprint/40">
       <SectionHeader header={recognition.header} />
-
-      {awards.length > 0 ? (
-        <>
-          {/* Masthead. */}
-          <Rule thick />
-          <div className="flex items-center justify-between gap-4 py-3 font-technical text-micro uppercase">
-            <span>{recognition.awardsLabel}</span>
-            <span className="text-graphite">{pad(awards.length)}</span>
-          </div>
-          <Rule delay={0.1} />
-
-          {lead ? <LeadStory award={lead} /> : null}
-
-          {others.length > 0 ? (
-            <>
-              <Rule />
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4">
-                {others.map((award, index) => (
-                  <Column key={`${award.title}-${index}`} award={award} index={index} />
-                ))}
-              </div>
-            </>
-          ) : null}
-        </>
-      ) : null}
-
-      {quotes.length > 0 ? (
-        <div className="mt-[clamp(3rem,8svh,5rem)]">
-          <Rule thick />
-          <span className="block py-3 font-technical text-micro text-graphite uppercase">
-            {recognition.quotesLabel}
-          </span>
-          <Rule />
-          <div className="grid gap-10 py-[clamp(2rem,6svh,3.5rem)] lg:grid-cols-2 lg:gap-16">
-            {quotes.map((quote, index) => (
-              <figure key={index} className="relative flex flex-col gap-4 lg:pl-14">
-                <span
-                  aria-hidden
-                  className="font-wide text-[5rem] leading-[0.6] text-signal lg:absolute lg:top-1 lg:left-0"
-                >
-                  “
-                </span>
-                <blockquote className="font-wide text-[clamp(1.4rem,2.4vw,2.2rem)] leading-[1.1] font-semibold tracking-[-0.01em] text-balance uppercase">
-                  <MaskRise delay={index * 0.12}>{quote.quote}</MaskRise>
-                </blockquote>
-                <figcaption className="font-technical text-micro text-graphite uppercase">— {quote.source}</figcaption>
-              </figure>
-            ))}
-          </div>
-          <Rule />
-        </div>
-      ) : null}
+      <div className="grid gap-4 md:grid-cols-6 lg:[grid-auto-flow:dense] lg:auto-rows-[minmax(15rem,auto)] lg:grid-cols-12">
+        {featured ? <FeaturedTile award={featured} label={recognition.awardsLabel} total={awards.length} /> : null}
+        {others.map((award, index) => (
+          <AwardTile key={`${award.title}-${index}`} award={award} order={1 + index} />
+        ))}
+        {firstQuote ? (
+          <QuoteTile quote={firstQuote} label={recognition.quotesLabel} order={order++} tone="signal" />
+        ) : null}
+        {secondQuote ? (
+          <QuoteTile quote={secondQuote} label={recognition.quotesLabel} order={order++} tone="ink" />
+        ) : null}
+      </div>
     </Section>
   );
 };

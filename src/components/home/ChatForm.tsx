@@ -10,10 +10,11 @@ import { EASE_PRINT } from "@/lib/motion/tokens";
 import { SendButton } from "./SendButton";
 
 /*
- * The contact form told as a chat (docs/features/CONTACT_MESSAGES.md). The
- * questions arrive one at a time as bubbles (each after a short "typing"
- * beat); the visitor answers in the composer at the bottom (topics as quick
- * replies). At the end the composer becomes the send button: the impact plays
+ * The contact form told as a chat (docs/features/CONTACT_MESSAGES.md), set
+ * on the page with no window or bubbles: the host's lines in large type,
+ * the visitor's answers in signal capitals, the composer a big underlined
+ * line. The questions arrive one at a time (each after a short "typing"
+ * beat); topics are slashed text options. At the end the composer becomes the send button: the impact plays
  * while sending, the check and the full-screen celebration once the server
  * has accepted it, then a thank-you from the other side. Messages go to
  * POST /api/contact and land in the studio's chat module.
@@ -55,17 +56,19 @@ const TypingDots = () => (
 
 const BubbleView = ({ bubble }: { bubble: Bubble }) => (
   <motion.div
-    initial={{ opacity: 0, y: 12, scale: 0.96 }}
-    animate={{ opacity: 1, y: 0, scale: 1 }}
-    transition={{ duration: 0.4, ease: EASE_PRINT }}
+    initial={{ opacity: 0, y: 18 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5, ease: EASE_PRINT }}
     className={cn(
-      "max-w-[85%] rounded-[1.25rem] px-4 py-3 font-glyph text-[0.98rem] leading-snug whitespace-pre-line",
+      "max-w-[92%] leading-[1.15] whitespace-pre-line",
       bubble.from === "host"
-        ? "self-start rounded-bl-md bg-newsprint text-ink"
-        : "self-end rounded-br-md bg-ink text-paper",
-      bubble.tone === "error" && "bg-signal/12 text-ink ring-1 ring-signal/40",
+        ? "self-start font-glyph text-[clamp(1.25rem,2vw,1.75rem)] text-ink"
+        : "self-end text-right font-wide text-[clamp(1rem,1.5vw,1.3rem)] font-semibold text-signal uppercase",
+      bubble.tone === "error" && "text-signal",
     )}
   >
+    {bubble.from === "you" ? <span aria-hidden>→ </span> : null}
+    {bubble.tone === "error" ? <span aria-hidden>× </span> : null}
     {bubble.text}
   </motion.div>
 );
@@ -223,28 +226,17 @@ export const ChatForm = ({ form }: { form: Form }) => {
   const fieldLabel = step === "name" ? form.name.label : step === "email" ? form.email.label : form.message.label;
 
   return (
-    <div
-      ref={frame}
-      className="flex h-[min(40rem,82svh)] flex-col overflow-hidden rounded-[2rem] border border-ink/10 bg-paper shadow-[0_40px_80px_-50px_rgb(0_0_0/0.45)]"
-    >
-      {/* The header bar. */}
-      <div className="flex items-center justify-between gap-4 border-b border-ink/10 px-5 py-4">
-        <span className="flex items-center gap-3">
-          <span
-            aria-hidden
-            className="grid size-9 place-items-center rounded-full bg-ink font-wide text-lg leading-none text-signal"
-          >
-            “
-          </span>
-          <span className="flex flex-col">
-            <span className="text-label font-bold">{form.label}</span>
-            {form.replyNote ? (
-              <span className="flex items-center gap-1.5 font-technical text-[0.65rem] text-graphite uppercase">
-                <StatusDot />
-                {form.replyNote}
-              </span>
-            ) : null}
-          </span>
+    <div ref={frame} className="flex h-[min(36rem,74svh)] flex-col">
+      {/* A line of marginalia above the conversation. */}
+      <div className="flex items-center justify-between gap-4 border-t border-ink/20 pt-3 font-technical text-micro uppercase">
+        <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <span className="text-signal">{form.label}</span>
+          {form.replyNote ? (
+            <span className="flex items-center gap-1.5 text-graphite">
+              <StatusDot />
+              {form.replyNote}
+            </span>
+          ) : null}
         </span>
         <button
           type="button"
@@ -261,7 +253,7 @@ export const ChatForm = ({ form }: { form: Form }) => {
         ref={log}
         role="log"
         aria-live="polite"
-        className="flex flex-1 flex-col gap-2.5 overflow-y-auto px-5 py-5"
+        className="flex flex-1 flex-col gap-5 overflow-y-auto [mask-image:linear-gradient(to_bottom,transparent,black_14%)] py-8"
       >
         {bubbles.map((bubble) => (
           <BubbleView key={bubble.id} bubble={bubble} />
@@ -273,7 +265,7 @@ export const ChatForm = ({ form }: { form: Form }) => {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="self-start rounded-[1.25rem] rounded-bl-md bg-newsprint px-4 py-3"
+              className="self-start py-2"
             >
               <TypingDots />
             </motion.div>
@@ -288,7 +280,7 @@ export const ChatForm = ({ form }: { form: Form }) => {
         onFocus={() => {
           openedAt.current ||= Date.now();
         }}
-        className="border-t border-ink/10 p-3"
+        className="pt-2"
       >
         <input
           type="text"
@@ -301,7 +293,7 @@ export const ChatForm = ({ form }: { form: Form }) => {
           className="absolute -left-[9999px] size-px opacity-0"
         />
         {isText ? (
-          <div className="flex items-end gap-2">
+          <div className="flex items-end gap-4">
             {step === "message" ? (
               <textarea
                 ref={field}
@@ -317,7 +309,7 @@ export const ChatForm = ({ form }: { form: Form }) => {
                     answer(draft);
                   }
                 }}
-                className="min-h-12 flex-1 resize-none rounded-[1.25rem] bg-newsprint px-4 py-3 font-glyph text-[1rem] placeholder:text-graphite/60 focus:outline-2 focus:outline-signal"
+                className="min-h-14 flex-1 resize-none border-b-2 border-ink bg-transparent py-3 font-glyph text-[clamp(1.1rem,1.8vw,1.5rem)] placeholder:text-graphite/50 focus:border-signal focus:outline-none"
               />
             ) : (
               <input
@@ -329,7 +321,7 @@ export const ChatForm = ({ form }: { form: Form }) => {
                 placeholder={placeholder}
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
-                className="h-12 flex-1 rounded-full bg-newsprint px-5 font-glyph text-[1rem] placeholder:text-graphite/60 focus:outline-2 focus:outline-signal"
+                className="h-14 flex-1 border-b-2 border-ink bg-transparent font-glyph text-[clamp(1.1rem,1.8vw,1.5rem)] placeholder:text-graphite/50 focus:border-signal focus:outline-none"
               />
             )}
             <button
@@ -344,23 +336,33 @@ export const ChatForm = ({ form }: { form: Form }) => {
         ) : null}
 
         {step === "topic" ? (
-          <div role="group" aria-label={form.topicsLabel} className="flex flex-wrap gap-2 p-1">
-            {form.topics.map((topic) => (
-              <button
-                key={topic}
-                type="button"
-                disabled={typing}
-                onClick={() => answer(topic)}
-                className="rounded-full border border-ink/15 px-4 py-2 text-[0.85rem] font-semibold transition-colors duration-300 ease-print hover:border-ink hover:bg-ink hover:text-paper focus-visible:outline-2 focus-visible:outline-signal disabled:opacity-40"
-              >
-                {topic}
-              </button>
+          <div
+            role="group"
+            aria-label={form.topicsLabel}
+            className="flex flex-wrap items-baseline gap-x-1 gap-y-2 border-b-2 border-ink pb-3"
+          >
+            {form.topics.map((topic, index) => (
+              <span key={topic} className="flex items-baseline">
+                {index > 0 ? (
+                  <span aria-hidden className="px-3 font-wide text-signal">
+                    /
+                  </span>
+                ) : null}
+                <button
+                  type="button"
+                  disabled={typing}
+                  onClick={() => answer(topic)}
+                  className="font-wide text-[clamp(1rem,1.6vw,1.35rem)] font-semibold uppercase underline decoration-ink/25 decoration-2 underline-offset-[0.3em] transition-colors duration-300 ease-print hover:text-signal hover:decoration-signal focus-visible:outline-2 focus-visible:outline-signal disabled:opacity-40"
+                >
+                  {topic}
+                </button>
+              </span>
             ))}
           </div>
         ) : null}
 
         {step === "review" ? (
-          <div className="flex flex-wrap items-center justify-between gap-3 p-1">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-ink/20 pt-4">
             <span className="font-technical text-micro text-graphite uppercase">
               {values.name} · {values.email}
             </span>
@@ -369,7 +371,7 @@ export const ChatForm = ({ form }: { form: Form }) => {
         ) : null}
 
         {step === "sent" ? (
-          <div className="flex justify-end p-1">
+          <div className="flex justify-end border-t border-ink/20 pt-4">
             <button
               type="button"
               onClick={restart}

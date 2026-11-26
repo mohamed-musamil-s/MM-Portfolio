@@ -65,6 +65,9 @@ type Issue = { path: (string | number)[]; message: string; code?: string; minimu
 type SaveResponse =
   { ok: true; data: { version: number } } | { ok: false; error: { code: string; message: string; issues?: Issue[] } };
 
+/** Screens with more top-level sections than this show them one at a time, as tabs. */
+const TABBED_FROM = 5;
+
 const noopSubscribe = () => () => undefined;
 /** Local date-time, rendered only in the browser so server and client HTML match. */
 const useFormattedTime = (iso: string) =>
@@ -108,6 +111,8 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
   const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
   /** The field being edited, for the preview outline. */
   const [focusPath, setFocusPath] = useState<Path | null>(null);
+  /** Big screens show one section at a time; null shows every section. Chosen per screen. */
+  const [sectionTab, setSectionTab] = useState<Record<string, string | null>>({});
 
   const screen = screens.find((item) => item.slug === selected);
   const draft = drafts[selected];
@@ -195,7 +200,17 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
     return () => window.removeEventListener("keydown", handleKey);
   }, [save]);
 
-  const sections = draft ? Object.entries(draft).filter(([key, value]) => matchesQuery(key, value, query)) : [];
+  const allSections = draft ? Object.entries(draft) : [];
+  // Screens with many sections (the home page) open on their first section; a search always shows every match.
+  const tabbed = allSections.length > TABBED_FROM;
+  const activeTab = tabbed
+    ? sectionTab[selected] === undefined
+      ? (allSections[0]?.[0] ?? null)
+      : sectionTab[selected]
+    : null;
+  const sections = allSections.filter(
+    ([key, value]) => matchesQuery(key, value, query) && (query || activeTab === null || key === activeTab),
+  );
   const targets: PreviewableScreen[] =
     selected === "shared" ? [...SHARED_CONSUMERS] : isPreviewableScreen(selected) ? [selected] : [];
   const focusValue = focusPath ? getAt(draft, focusPath) : undefined;
@@ -303,7 +318,33 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
                 </div>
               ) : null}
 
-              {sections.length > 1 && !query ? (
+              {tabbed && !query ? (
+                // One section at a time: tabs for each, plus one that shows them all.
+                <div role="tablist" aria-label={copy.screensTitle} className="flex flex-wrap gap-1.5">
+                  {[null, ...allSections.map(([key]) => key)].map((key) => {
+                    const active = key === activeTab;
+                    const edited = key !== null && !same(draft?.[key], screen.content[key]);
+                    return (
+                      <button
+                        key={key ?? "all"}
+                        type="button"
+                        role="tab"
+                        aria-selected={active}
+                        onClick={() => setSectionTab((current) => ({ ...current, [selected]: key }))}
+                        className={cn(
+                          "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none",
+                          active
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-primary",
+                        )}
+                      >
+                        {key === null ? copy.allSections : humanize(key)}
+                        {edited ? <span aria-hidden className="size-1.5 rounded-full bg-warning" /> : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : !tabbed && sections.length > 1 && !query ? (
                 <nav aria-label={copy.screensTitle} className="flex flex-wrap gap-1.5">
                   {sections.map(([key]) => (
                     <a

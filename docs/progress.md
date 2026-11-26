@@ -358,8 +358,18 @@ Verified with a production build (`next start`) connected to Atlas:
 - The navbar's current-section pill is now worked out from the scroll position.
 - Dev DB migrated (education section, header numbers, nav and footer links, chat prompts).
 
+## 2026-11-27: Studio modules: Mission Control, Launchpad, Inbox; Content Forge tabs
+
+- Pinned About and Skills show their title alone first, then start their animation.
+- Launchpad shows or hides portfolio sections (`site_settings` `sections`, `/api/studio/settings/sections`); the home page drops hidden sections and their navbar and footer links. It also carries the site mode switch.
+- Inbox lists every contact conversation (search, All / Unread / Archived), opens a thread, marks read / unread, archives and restores, and replies by email (mailto) until studio replies exist.
+- Mission Control: site status, unread messages, sections showing, content version, shortcuts, recent messages.
+- Content Forge shows the home page's sections one at a time as tabs.
+- Dev DB: studio-shell has the new `inbox`, `launchpad`, `missionControl` and `editor.allSections` copy.
+
 ## Open items
 
+- [ ] Production, before deploying this code: the `studio-shell` content needs `inbox`, `launchpad`, `missionControl` and `editor.allSections` (plus the updated `modules.release.description` and `editor.screens.home.description`), or the studio pages fail validation. Same copy as the seed.
 - [ ] Production: the home content needs the `education` section (moved out of `recognition`, whose `education` and `educationLabel` are gone), renumbered header indices (education 03 … contact 07), the Education link in `nav.links` and `footer.links`, and `contact.form.prompts`. It also needs `contact.form` and the new footer fields (`wordmark`, `clock`, `linksLabel`, `socialsLabel`); the `contact_conversations` indexes are created on first use.
 - [ ] Seed the home screen on production (`npm run seed:screens:prod -- --only=home`, plus its studio-shell `editor.screens` entry) once development is complete.
 - [ ] Seed the name splash on production (`npm run seed:screens:prod -- --only=splash`) and add its entry to the production studio-shell `editor.screens`; until then production shows no splash.
@@ -374,5 +384,5 @@ Verified with a production build (`next start`) connected to Atlas:
 ## On hold (waiting for instructions)
 
 - Public portfolio
-- Studio modules other than Content Forge: dashboard, release, resume, chat, analytics
+- Studio modules still to build: Resume Lab, Pulse; replying to messages from the studio (email integration)
 - UI design and styling for the studio modules (the login is done)

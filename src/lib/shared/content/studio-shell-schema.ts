@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { HOME_SECTIONS, type HomeSection } from "./home-sections";
 
 /**
  * Content model for the studio shell: sidebar, topbar and module placeholders
@@ -95,6 +96,86 @@ export const studioShellContentSchema = z.object({
       updated: text(64),
     }),
     screens: z.record(z.string(), z.object({ name: text(40), description: text(140) })),
+    /** Tab that shows every section of a screen at once. */
+    allSections: text(24),
+  }),
+  /** Inbox, the chat module (docs/screens/STUDIO_INBOX_BUSINESS.md). Placeholders: {n} {topic}. */
+  inbox: z.object({
+    search: text(40),
+    filters: z.object({ all: text(16), unread: text(16), archived: text(16) }),
+    unreadCount: text(32),
+    empty: text(160),
+    emptyFilter: text(120),
+    selectPrompt: text(120),
+    markRead: text(24),
+    markUnread: text(24),
+    archive: text(24),
+    restore: text(24),
+    replyByEmail: text(32),
+    replyNote: text(160),
+    replySubject: text(60),
+    topic: text(24),
+    received: text(24),
+    page: text(24),
+    noTopic: text(32),
+    back: text(24),
+    you: text(24),
+    updated: text(64),
+    failed: text(120),
+  }),
+  /** Launchpad (docs/screens/STUDIO_LAUNCHPAD_BUSINESS.md). Placeholders: {n} {total} {time} {who} {section}. */
+  launchpad: z.object({
+    sectionsTitle: text(40),
+    sectionsHint: text(200),
+    count: text(48),
+    lastChange: text(64),
+    visible: text(16),
+    hidden: text(16),
+    toggle: text(40),
+    shown: text(64),
+    hiddenToast: text(64),
+    failed: text(120),
+    sections: z.object(
+      Object.fromEntries(
+        HOME_SECTIONS.map((section) => [section, z.object({ name: text(32), description: text(120) })]),
+      ) as Record<HomeSection, z.ZodObject<{ name: z.ZodString; description: z.ZodString }>>,
+    ),
+  }),
+  /** Mission Control, the dashboard (docs/screens/STUDIO_MISSION_CONTROL_BUSINESS.md). Placeholders: {name} {n} {total} {time} {who}. */
+  missionControl: z.object({
+    greeting: text(48),
+    summary: text(160),
+    stats: z.object({
+      site: text(32),
+      live: text(24),
+      maintenance: text(24),
+      siteHint: text(40),
+      unread: text(32),
+      unreadHint: text(40),
+      sections: text(32),
+      sectionsValue: text(32),
+      sectionsHint: text(40),
+      content: text(32),
+      contentValue: text(32),
+      contentHint: text(64),
+      never: text(32),
+    }),
+    shortcutsTitle: text(32),
+    shortcuts: z.object(
+      Object.fromEntries(
+        (["site", "content", "inbox", "launchpad", "resume", "pulse"] as const).map((key) => [
+          key,
+          z.object({ label: text(32), description: text(80) }),
+        ]),
+      ) as Record<
+        "site" | "content" | "inbox" | "launchpad" | "resume" | "pulse",
+        z.ZodObject<{ label: z.ZodString; description: z.ZodString }>
+      >,
+    ),
+    recentTitle: text(32),
+    recentEmpty: text(120),
+    viewAll: text(24),
+    soon: text(16),
   }),
   actions: z.object({
     collapse: text(32),

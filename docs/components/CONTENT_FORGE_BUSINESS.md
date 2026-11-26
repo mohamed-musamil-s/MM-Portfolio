@@ -6,8 +6,8 @@ Content Forge edits the text of the **public portfolio site**. Every string, dat
 
 ## 1. Scope
 
-| Listed | Not listed |
-| --- | --- |
+| Listed                                                                                                                                                              | Not listed                                                                                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | Portfolio screens (`PORTFOLIO_SCREENS` in `src/lib/shared/content/screens.ts`): `shared` (Shared content), `maintenance` (Maintenance page), `not-found` (404 page) | Studio screens (`studio-login`, `studio-shell`). Their copy stays in the database and the admin API, but they are not edited here |
 
 **One value, one field.** Text that appears on more than one page is stored once in `shared` (schema `shared-schema.ts`) and each page reads it next to its own content. Today that is `footer.note`. When a new page repeats text another page already has, move it into `shared` instead of copying it.
@@ -16,10 +16,10 @@ New portfolio sections are added to `PORTFOLIO_SCREENS` once their schema exists
 
 ## 2. Layout: three columns
 
-| Column | Content |
-| --- | --- |
-| **Left: screens** | Site mode card (Live / Maintenance switch), then the screen list: icon, name, one-line description, amber dot for unsaved edits. A toggle hides the column down to an icon strip (names in tooltips, dots stay), like the side navigation. |
-| **Centre: fields** | Screen header (name, `Version n`, `Saved {time} by {who}`, field search), section chips, one card per section, the save bar (`Discard`, `Save`, `Ctrl/⌘ S`). |
+| Column                  | Content                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Left: screens**       | Site mode card (Live / Maintenance switch), then the screen list: icon, name, one-line description, amber dot for unsaved edits. A toggle hides the column down to an icon strip (names in tooltips, dots stay), like the side navigation.                                                                                                                                                                                                        |
+| **Centre: fields**      | Screen header (name, `Version n`, `Saved {time} by {who}`, field search), section chips, one card per section, the save bar (`Discard`, `Save`, `Ctrl/⌘ S`). Screens with more than five sections (the home page) show them one at a time: the chips become tabs (each section, plus `All sections`), opening on the first; a tab with unsaved edits carries a dot; a field search always shows every match.                                      |
 | **Right: live preview** | The real public page in a scaled frame, showing the current drafts (unsaved edits included) as you type. The stage fills the column top to bottom. Views: **Fit to panel** (default: the page renders 900px wide and as tall as the panel, so it fills the stage), **Desktop** (1440×900) and **Mobile** (390×844), centred and scaled to fit; plus `Open page ↗`. For **Shared content**, `Shown on` chips switch between the pages that use it. |
 
 From 1280px wide the page is a **100vh workspace**: the three columns fill the viewport under the topbar and each scrolls on its own (the save bar stays at the bottom of the fields column). Below 1280 the fields and the preview share one column, with a sticky **Edit / Preview** switch on top (the Edit tab shows an amber dot when there are unsaved edits). Below 1024 (phones) the screens become a compact, sideways-scrolling row of chips (icon + name), the hide toggle is not shown (hiding is desktop-only), and **Fit to panel** renders the phone layout of the page.
@@ -38,16 +38,16 @@ The form is generated from the stored content, so it always matches the schema.
 
 **Section card:** a letter tile, the section name, a field count (`1 field` / `{n} fields`) and an `Edited` tag when anything inside changed.
 
-| Value | Editor |
-| --- | --- |
-| Short text | Input with a character count |
-| Long or multi-line text (over 70 characters) | Textarea |
-| ISO date | Date-time picker, in UTC |
-| Number | Number input |
-| On / off | Switch |
-| List of text | Numbered rows in one tile, × to remove, `+ Add item` |
-| List of groups | A card per item (`Item n`), × to remove, `+ Add item` (copies the last item's shape, emptied) |
-| Group | Titled panel with its fields in two columns |
+| Value                                        | Editor                                                                                        |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Short text                                   | Input with a character count                                                                  |
+| Long or multi-line text (over 70 characters) | Textarea                                                                                      |
+| ISO date                                     | Date-time picker, in UTC                                                                      |
+| Number                                       | Number input                                                                                  |
+| On / off                                     | Switch                                                                                        |
+| List of text                                 | Numbered rows in one tile, × to remove, `+ Add item`                                          |
+| List of groups                               | A card per item (`Item n`), × to remove, `+ Add item` (copies the last item's shape, emptied) |
+| Group                                        | Titled panel with its fields in two columns                                                   |
 
 ## 4. Saving
 
@@ -64,15 +64,15 @@ All copy is in `site_screens/studio-shell` under `editor` (schema `studio-shell-
 
 ## 6. Code
 
-| Piece | Location |
-| --- | --- |
-| Page (server) | `src/app/studio/(protected)/content/page.tsx` |
-| Editor | `src/components/studio/content/ContentEditor.tsx` |
-| Field renderer | `ContentField.tsx` (recursive) |
-| Site mode | `SiteModeCard.tsx` |
-| Live preview panel | `PreviewPanel.tsx` |
-| Preview page | `src/app/(public)/preview/[slug]/page.tsx`, `src/components/public/LivePreview.tsx`, `preview-mode.tsx` |
-| Helpers | `content-paths.ts` (labels, paths, immutable set, dates, search) |
+| Piece              | Location                                                                                                |
+| ------------------ | ------------------------------------------------------------------------------------------------------- |
+| Page (server)      | `src/app/studio/(protected)/content/page.tsx`                                                           |
+| Editor             | `src/components/studio/content/ContentEditor.tsx`                                                       |
+| Field renderer     | `ContentField.tsx` (recursive)                                                                          |
+| Site mode          | `SiteModeCard.tsx`                                                                                      |
+| Live preview panel | `PreviewPanel.tsx`                                                                                      |
+| Preview page       | `src/app/(public)/preview/[slug]/page.tsx`, `src/components/public/LivePreview.tsx`, `preview-mode.tsx` |
+| Helpers            | `content-paths.ts` (labels, paths, immutable set, dates, search)                                        |
 
 ## 7. Acceptance criteria
 

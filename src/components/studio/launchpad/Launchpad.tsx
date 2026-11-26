@@ -85,12 +85,14 @@ export const Launchpad = ({ shell, initial, updatedAt, updatedBy, maintenance }:
             <h2 className="text-base font-semibold">{copy.sectionsTitle}</h2>
             <p className="text-xs leading-relaxed text-muted-foreground">{copy.sectionsHint}</p>
           </div>
-          <div className="flex flex-col items-end gap-1 text-xs text-muted-foreground">
-            <span className="rounded-full bg-primary/10 px-3 py-1 font-semibold text-primary tabular-nums">
-              {fill(copy.count, { n: showing, total: HOME_SECTIONS.length })}
-            </span>
-            {updatedAt && updatedBy ? <LastChange template={copy.lastChange} iso={updatedAt} who={updatedBy} /> : null}
-          </div>
+          <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary tabular-nums">
+            {fill(copy.count, { n: showing, total: HOME_SECTIONS.length })}
+          </span>
+          {updatedAt && updatedBy ? (
+            <p className="w-full text-xs text-muted-foreground">
+              <LastChange template={copy.lastChange} iso={updatedAt} who={updatedBy} />
+            </p>
+          ) : null}
         </header>
         <ul className="divide-y divide-border">
           {HOME_SECTIONS.map((section, index) => {

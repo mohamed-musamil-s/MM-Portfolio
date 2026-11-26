@@ -4,7 +4,7 @@ import { motion, useScroll } from "motion/react";
 import { useRef } from "react";
 import { cn } from "@/lib/shared/cn";
 import type { HomeContent } from "@/lib/shared/content/home-schema";
-import { Pill, Reveal, ScrollInk, Section, SectionHeader, isExternal } from "./section-kit";
+import { Parallax, Pill, Reveal, ScrollInk, Section, SectionHeader, isExternal } from "./section-kit";
 
 /*
  * About (docs/screens/HOME_BUSINESS.md §6.1): the statement inks in word by
@@ -65,7 +65,7 @@ export const About = ({ about }: { about: About }) => (
         text={about.statement}
         className="font-wide text-[clamp(1.8rem,3.6vw,3.4rem)] leading-[1.05] font-semibold tracking-[-0.02em] uppercase"
       />
-      <div className="flex flex-col gap-6">
+      <Parallax distance={50} className="flex flex-col gap-6">
         {about.paragraphs.map((paragraph, index) => (
           <Reveal key={index} as="p" delay={index * 0.1} className="font-glyph text-lead text-pretty text-graphite">
             {paragraph}
@@ -79,7 +79,7 @@ export const About = ({ about }: { about: About }) => (
             {about.secondary.label}
           </Pill>
         </Reveal>
-      </div>
+      </Parallax>
     </div>
 
     {about.facts.length > 0 ? (

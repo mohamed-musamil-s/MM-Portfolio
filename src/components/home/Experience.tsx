@@ -32,7 +32,7 @@ const RoleCard = ({ role, index }: { role: Role; index: number }) => (
         role.current ? "border-signal bg-signal" : "border-ink bg-paper",
       )}
     />
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 lg:sticky lg:top-28 lg:self-start">
       <span className="flex items-center gap-2 font-technical text-micro text-graphite uppercase">
         {role.current ? <StatusDot /> : null}
         {role.period}

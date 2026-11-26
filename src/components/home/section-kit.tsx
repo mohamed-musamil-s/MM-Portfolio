@@ -3,6 +3,7 @@
 import { motion, useScroll, useTransform, type MotionValue } from "motion/react";
 import Image from "next/image";
 import { useRef, type ReactNode } from "react";
+import { useMotionTheme } from "@/hooks/useMotionTheme";
 import { cn } from "@/lib/shared/cn";
 import { EASE_PRINT } from "@/lib/motion/tokens";
 
@@ -17,6 +18,57 @@ export type Header = { index: string; eyebrow: string; title: string; count: str
 export type Tech = { name: string; icon: string; core: boolean; ink: boolean };
 
 const VIEW = { once: true, margin: "0px 0px -12% 0px" } as const;
+
+/**
+ * Scroll parallax: a vertical drift from +distance to -distance (px) while the
+ * element crosses the viewport. Positive distances move slower than the page,
+ * negative ones faster. Still with reduced motion.
+ */
+export const useParallax = <T extends HTMLElement>(distance: number) => {
+  const ref = useRef<T>(null);
+  const { reducedMotion } = useMotionTheme();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const y = useTransform(scrollYProgress, [0, 1], reducedMotion ? [0, 0] : [distance, -distance]);
+  return { ref, y };
+};
+
+/** A block on its own parallax layer (see useParallax). */
+export const Parallax = ({
+  children,
+  className,
+  distance = 40,
+}: {
+  children: ReactNode;
+  className?: string;
+  distance?: number;
+}) => {
+  const { ref, y } = useParallax<HTMLDivElement>(distance);
+  return (
+    <motion.div ref={ref} style={{ y }} className={className}>
+      {children}
+    </motion.div>
+  );
+};
+
+/** The section number, giant and outlined, drifting behind the header on a slower layer. */
+const GhostIndex = ({ index, tone }: { index: string; tone: "paper" | "ink" }) => {
+  const { ref, y } = useParallax<HTMLSpanElement>(110);
+  return (
+    <motion.span
+      ref={ref}
+      aria-hidden
+      style={{ y }}
+      className={cn(
+        "pointer-events-none absolute -top-[0.12em] right-0 -z-10 font-wide text-[clamp(8rem,24vw,22rem)] leading-none font-semibold text-transparent select-none",
+        tone === "ink"
+          ? "[-webkit-text-stroke:1.5px_color-mix(in_srgb,var(--bg-primary)_16%,transparent)]"
+          : "[-webkit-text-stroke:1.5px_color-mix(in_srgb,var(--text-primary)_13%,transparent)]",
+      )}
+    >
+      {index}
+    </motion.span>
+  );
+};
 
 /** Fades and rises into place the first time it enters the viewport. */
 export const Reveal = ({
@@ -112,8 +164,12 @@ export const SectionHeader = ({
   compact?: boolean;
 }) => (
   <header
-    className={cn("flex flex-col gap-6", compact ? "mb-[clamp(1.5rem,4svh,2.5rem)]" : "mb-[clamp(2.5rem,7svh,4.5rem)]")}
+    className={cn(
+      "relative isolate flex flex-col gap-6",
+      compact ? "mb-[clamp(1.5rem,4svh,2.5rem)]" : "mb-[clamp(2.5rem,7svh,4.5rem)]",
+    )}
   >
+    {compact ? null : <GhostIndex index={header.index} tone={tone} />}
     <Reveal
       y={0}
       className={cn(

@@ -2,7 +2,7 @@
 
 import type { HomeContent } from "@/lib/shared/content/home-schema";
 import { ContactForm } from "./ContactForm";
-import { MaskRise, Reveal, Section, SectionHeader, isExternal } from "./section-kit";
+import { MaskRise, Parallax, Reveal, Section, SectionHeader, isExternal } from "./section-kit";
 
 /*
  * Contact (docs/screens/HOME_BUSINESS.md §6.6): the headline massive, a short
@@ -17,7 +17,7 @@ export const Contact = ({ contact }: { contact: Contact }) => (
   <Section id="contact">
     <SectionHeader header={contact.header} />
     <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-20">
-      <div className="flex flex-col gap-8">
+      <Parallax distance={40} className="flex flex-col gap-8">
         <h3 className="font-wide text-[clamp(2rem,4vw,3.8rem)] leading-[1] font-semibold tracking-[-0.02em] uppercase">
           <MaskRise>{contact.headline}</MaskRise>
         </h3>
@@ -64,7 +64,7 @@ export const Contact = ({ contact }: { contact: Contact }) => (
             </Reveal>
           ))}
         </dl>
-      </div>
+      </Parallax>
       <Reveal delay={0.15} x={30} y={0}>
         <ContactForm form={contact.form} />
       </Reveal>

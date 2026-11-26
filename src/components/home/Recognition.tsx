@@ -1,7 +1,7 @@
 "use client";
 
 import type { HomeContent } from "@/lib/shared/content/home-schema";
-import { Reveal, Section, SectionHeader } from "./section-kit";
+import { Parallax, Reveal, Section, SectionHeader } from "./section-kit";
 
 /*
  * Recognition (docs/screens/HOME_BUSINESS.md §6.5): awards as badge cards
@@ -74,7 +74,7 @@ export const Recognition = ({ recognition }: { recognition: Recognition }) => (
         </div>
       ) : null}
       {recognition.quotes.length > 0 ? (
-        <div>
+        <Parallax distance={45}>
           <Label>{recognition.quotesLabel}</Label>
           <div className="flex flex-col gap-8">
             {recognition.quotes.map((quote, index) => (
@@ -89,7 +89,7 @@ export const Recognition = ({ recognition }: { recognition: Recognition }) => (
               </Reveal>
             ))}
           </div>
-        </div>
+        </Parallax>
       ) : null}
     </div>
   </Section>

@@ -1,12 +1,13 @@
 "use client";
 
-import { motion } from "motion/react";
+import { motion, useScroll, useTransform } from "motion/react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { StatusDot } from "@/components/motion/StatusDot";
+import { useMotionTheme } from "@/hooks/useMotionTheme";
 import { cn } from "@/lib/shared/cn";
 import type { HomeContent } from "@/lib/shared/content/home-schema";
 import { EASE_PRINT } from "@/lib/motion/tokens";
-import { Pill, Reveal, isExternal } from "./section-kit";
+import { MaskRise, Pill, Reveal, isExternal } from "./section-kit";
 
 /*
  * Footer "Horizon" (docs/screens/HOME_BUSINESS.md §6.7): the dark finale.
@@ -141,14 +142,25 @@ const Wordmark = ({ text }: { text: string }) => {
 
 export const SiteFooter = ({ footer }: { footer: Footer }) => {
   const clock = useClock(footer.clock.timeZone);
+  const frame = useRef<HTMLElement>(null);
+  const { reducedMotion } = useMotionTheme();
+  // The curtain: the footer's content rises from behind the page as the footer scrolls in.
+  const { scrollYProgress } = useScroll({ target: frame, offset: ["start end", "end end"] });
+  const lift = useTransform(scrollYProgress, [0, 1], reducedMotion ? ["0%", "0%"] : ["-8%", "0%"]);
   return (
-    <footer className="relative overflow-hidden bg-ink px-page pt-[clamp(4.5rem,12svh,8rem)] pb-6 text-paper">
+    <footer
+      ref={frame}
+      className="relative overflow-hidden bg-ink px-page pt-[clamp(4.5rem,12svh,8rem)] pb-6 text-paper"
+    >
       {/* A soft signal aura low on the horizon. */}
       <div
         aria-hidden
         className="pointer-events-none absolute -bottom-[30vw] left-1/2 size-[70vw] -translate-x-1/2 rounded-full bg-signal/[0.12] blur-[140px]"
       />
-      <div className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-[clamp(3rem,9svh,6rem)]">
+      <motion.div
+        style={{ y: lift }}
+        className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-[clamp(3rem,9svh,6rem)]"
+      >
         <Reveal
           y={0}
           className="flex items-center justify-between border-t border-paper/20 pt-3 font-technical text-micro uppercase"
@@ -166,20 +178,13 @@ export const SiteFooter = ({ footer }: { footer: Footer }) => {
           <div className="flex flex-col gap-4">
             <h2 className="font-wide text-[clamp(2.2rem,5.6vw,5.4rem)] leading-[0.95] font-semibold tracking-[-0.02em] uppercase">
               {footer.quote.split(". ").map((part, index, parts) => (
-                <span key={index} className="block overflow-hidden pb-[0.05em]">
-                  <motion.span
-                    className={cn(
-                      "block",
-                      index === 1 && "text-ink [-webkit-text-stroke:max(1.25px,0.012em)_var(--bg-primary)]",
-                    )}
-                    initial={{ y: "105%" }}
-                    whileInView={{ y: "0%" }}
-                    viewport={VIEW}
-                    transition={{ delay: index * 0.12, duration: 1, ease: EASE_PRINT }}
-                  >
-                    {index < parts.length - 1 ? `${part}.` : part}
-                  </motion.span>
-                </span>
+                <MaskRise
+                  key={index}
+                  delay={index * 0.12}
+                  className={cn(index === 1 && "text-ink [-webkit-text-stroke:max(1.25px,0.012em)_var(--bg-primary)]")}
+                >
+                  {index < parts.length - 1 ? `${part}.` : part}
+                </MaskRise>
               ))}
             </h2>
             <Reveal delay={0.2} y={10} className="font-technical text-micro text-paper/55 uppercase">
@@ -248,7 +253,7 @@ export const SiteFooter = ({ footer }: { footer: Footer }) => {
             </span>
           </a>
         </div>
-      </div>
+      </motion.div>
     </footer>
   );
 };

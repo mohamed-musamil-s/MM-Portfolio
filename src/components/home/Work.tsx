@@ -1,124 +1,168 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "motion/react";
+import { motion, useScroll, useTransform, type MotionValue } from "motion/react";
 import Image from "next/image";
-import { useLayoutEffect, useRef, useState } from "react";
-import { CropMarks } from "@/components/motion/CropMarks";
+import { useRef } from "react";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useMotionTheme } from "@/hooks/useMotionTheme";
+import { cn } from "@/lib/shared/cn";
 import type { HomeContent } from "@/lib/shared/content/home-schema";
-import { Reveal, SectionHeader } from "./section-kit";
+import { Reveal, Section, SectionHeader } from "./section-kit";
 
 /*
- * Selected work (docs/screens/HOME_BUSINESS.md §6.4). On large screens the
- * section pins and the project cards travel horizontally as the page scrolls
- * (the section is as tall as the track is long). On phones the cards stack.
+ * Selected work (docs/screens/HOME_BUSINESS.md §6.4): a deck of case cards.
+ * On large screens each card pins and the next one slides up over it; the
+ * cards underneath settle back (smaller, dimmed) so the deck reads as a
+ * stack, and each image zooms out of a close crop as its card arrives. On
+ * phones, and with reduced motion, the same cards simply follow each other.
  */
 
 type Work = HomeContent["work"];
 type Project = Work["projects"][number];
 
-const ProjectCard = ({ project }: { project: Project }) => (
-  <article className="group flex w-full shrink-0 flex-col gap-4 lg:w-[min(42vw,600px)]">
-    <div className="relative aspect-[16/10] overflow-hidden rounded-[1.5rem] border border-ink/10 bg-newsprint lg:aspect-auto lg:h-[min(40svh,360px)]">
-      <CropMarks />
-      <Image
-        src={project.image.src}
-        alt={project.image.alt}
-        fill
-        unoptimized
-        sizes="(min-width: 1024px) 46vw, 100vw"
-        className="object-cover transition-transform duration-700 ease-print group-hover:scale-[1.04]"
-      />
-      <span className="absolute top-4 left-4 rounded-full bg-paper/85 px-3 py-1 font-technical text-micro uppercase backdrop-blur-sm">
-        {project.category}
-      </span>
-    </div>
-    <div className="flex items-start justify-between gap-6">
-      <h3 className="font-wide text-[clamp(1.4rem,2.2vw,2rem)] leading-tight font-semibold uppercase">
-        <span className="mr-3 font-technical text-micro text-signal">{project.index}</span>
-        {project.title}
-      </h3>
-      <span className="shrink-0 font-technical text-micro text-graphite uppercase">{project.period}</span>
-    </div>
-    <p className="max-w-[52ch] font-glyph text-[1rem] leading-relaxed text-graphite">{project.summary}</p>
-    <ul className="flex flex-wrap gap-2">
-      {project.tags.map((tag) => (
-        <li key={tag} className="rounded-full border border-ink/12 px-3 py-1 font-technical text-micro uppercase">
-          {tag}
-        </li>
-      ))}
-    </ul>
-  </article>
-);
+/** Card colours, alternating down the deck. */
+const TONES = [
+  {
+    card: "border-paper/10 bg-ink text-paper",
+    muted: "text-paper/60",
+    chip: "border-paper/20",
+    ghost: "[-webkit-text-stroke:1.5px_var(--signal)]",
+  },
+  {
+    card: "border-ink/10 bg-newsprint text-ink",
+    muted: "text-graphite",
+    chip: "border-ink/15",
+    ghost: "[-webkit-text-stroke:1.5px_var(--text-primary)]",
+  },
+] as const;
 
-/** The pinned horizontal track: its travel is measured so the last card ends at the right margin. */
-const Track = ({ work }: { work: Work }) => {
-  const section = useRef<HTMLElement>(null);
-  const track = useRef<HTMLDivElement>(null);
-  const [travel, setTravel] = useState(0);
-  const { scrollYProgress } = useScroll({ target: section, offset: ["start start", "end end"] });
-  const x = useTransform(scrollYProgress, [0.08, 0.95], [0, -travel]);
+/** How much smaller each card underneath ends up, per card above it. */
+const SETTLE_STEP = 0.045;
+/** Space between the stacked cards' top edges. */
+const STACK_OFFSET_REM = 1.5;
 
-  useLayoutEffect(() => {
-    const frame = track.current;
-    const cards = frame?.firstElementChild;
-    if (!frame || !(cards instanceof HTMLElement)) {
-      return;
-    }
-    // Re-measured whenever the frame or the cards change size (fonts and images settle after mount).
-    const measure = () => setTravel(Math.max(0, cards.scrollWidth - frame.clientWidth));
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(frame);
-    observer.observe(cards);
-    void document.fonts.ready.then(measure);
-    return () => observer.disconnect();
-  }, []);
+type CardProps = {
+  project: Project;
+  index: number;
+  total: number;
+  /** The deck's scroll progress; drives the settle-back of cards underneath. */
+  deck: MotionValue<number>;
+  stacked: boolean;
+};
+
+const CaseCard = ({ project, index, total, deck, stacked }: CardProps) => {
+  const slot = useRef<HTMLDivElement>(null);
+  const tone = TONES[index % TONES.length] ?? TONES[0];
+  const last = index === total - 1;
+
+  // As the card arrives the image zooms out of a close crop.
+  const { scrollYProgress: arrive } = useScroll({ target: slot, offset: ["start end", "start start"] });
+  const imageScale = useTransform(arrive, [0, 1], stacked ? [1.35, 1] : [1, 1]);
+  // Once covered, it settles back and dims under the next cards.
+  const settle = 1 - (total - 1 - index) * SETTLE_STEP;
+  const scale = useTransform(deck, [index / total, 1], stacked ? [1, settle] : [1, 1]);
+  const dim = useTransform(deck, [index / total, (index + 1) / total], [0, stacked && !last ? 0.55 : 0]);
 
   return (
-    <section
-      ref={section}
-      id="work"
-      className="relative scroll-mt-20 bg-paper"
-      style={{ height: `calc(100svh + ${travel}px)` }}
+    <div
+      ref={slot}
+      className={cn(stacked && "sticky top-0 flex h-svh items-start")}
+      style={stacked ? { paddingTop: `calc(5.5rem + ${index * STACK_OFFSET_REM}rem)` } : undefined}
     >
-      <div className="sticky top-0 flex h-svh flex-col justify-center overflow-hidden px-page">
-        <div className="mx-auto w-full max-w-[1440px]">
-          <SectionHeader header={work.header} compact />
-          <div ref={track} className="overflow-visible">
-            <motion.div style={{ x }} className="flex gap-10">
-              {work.projects.map((project) => (
-                <ProjectCard key={project.index} project={project} />
-              ))}
-            </motion.div>
+      <motion.article
+        style={{ scale }}
+        className={cn(
+          "relative grid w-full origin-top grid-cols-[minmax(0,1fr)] gap-8 overflow-hidden rounded-[2rem] border p-6 sm:p-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-12",
+          stacked && "h-[min(calc(100svh-12rem),640px)]",
+          tone.card,
+        )}
+      >
+        {/* Left: the case. */}
+        <div className="relative z-10 flex min-h-0 flex-col gap-6">
+          <div className={cn("flex items-center justify-between font-technical text-micro uppercase", tone.muted)}>
+            <span>{project.category}</span>
+            <span>
+              {project.index} / {String(total).padStart(2, "0")}
+            </span>
           </div>
-          {work.note ? <p className="mt-6 font-technical text-micro text-graphite uppercase">{work.note}</p> : null}
+          <span
+            aria-hidden
+            className={cn(
+              "font-wide text-[clamp(3.5rem,min(9vw,13svh),8.5rem)] leading-[0.8] font-semibold text-transparent",
+              tone.ghost,
+            )}
+          >
+            {project.index}
+          </span>
+          <h3 className="font-wide text-[clamp(1.4rem,6vw,2.4rem)] leading-[0.95] font-semibold tracking-[-0.02em] [overflow-wrap:anywhere] uppercase lg:text-[clamp(1.9rem,3.4vw,3.4rem)]">
+            {project.title}
+          </h3>
+          <p className={cn("max-w-[46ch] font-glyph text-[1.02rem] leading-relaxed", tone.muted)}>{project.summary}</p>
+          <div className="mt-auto flex flex-wrap items-center gap-2">
+            {project.tags.map((tag) => (
+              <span
+                key={tag}
+                className={cn("rounded-full border px-3 py-1 font-technical text-micro uppercase", tone.chip)}
+              >
+                {tag}
+              </span>
+            ))}
+            <span className={cn("ml-auto font-technical text-micro uppercase", tone.muted)}>{project.period}</span>
+          </div>
         </div>
-      </div>
-    </section>
+
+        {/* Right: the picture, zooming out as the card lands. */}
+        <div className="relative aspect-[16/10] min-h-0 overflow-hidden rounded-[1.25rem] lg:aspect-auto">
+          <motion.div style={{ scale: imageScale }} className="absolute inset-0">
+            <Image
+              src={project.image.src}
+              alt={project.image.alt}
+              fill
+              unoptimized
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover"
+            />
+          </motion.div>
+        </div>
+
+        {/* The dim that falls over a card once the next one covers it. */}
+        <motion.span
+          aria-hidden
+          style={{ opacity: dim }}
+          className="pointer-events-none absolute inset-0 z-20 bg-ink"
+        />
+      </motion.article>
+    </div>
   );
 };
 
 export const Work = ({ work }: { work: Work }) => {
+  const deckRef = useRef<HTMLDivElement>(null);
   const wide = useMediaQuery("(min-width: 1024px)");
   const { reducedMotion } = useMotionTheme();
-  if (wide && !reducedMotion) {
-    return <Track work={work} />;
-  }
+  const stacked = wide && !reducedMotion;
+  const { scrollYProgress: deck } = useScroll({ target: deckRef, offset: ["start start", "end end"] });
+  const total = work.projects.length;
+
   return (
-    <section id="work" className="relative scroll-mt-20 bg-paper px-page py-[clamp(4.5rem,12svh,8rem)]">
-      <div className="mx-auto w-full max-w-[1440px]">
-        <SectionHeader header={work.header} />
-        <div className="flex flex-col gap-14">
-          {work.projects.map((project, index) => (
-            <Reveal key={project.index} delay={index * 0.05}>
-              <ProjectCard project={project} />
+    <Section id="work">
+      <SectionHeader header={work.header} />
+      <div ref={deckRef} className={cn("relative", !stacked && "flex flex-col gap-6")}>
+        {work.projects.map((project, index) =>
+          stacked ? (
+            <CaseCard key={project.index} project={project} index={index} total={total} deck={deck} stacked />
+          ) : (
+            <Reveal key={project.index} delay={0.05}>
+              <CaseCard project={project} index={index} total={total} deck={deck} stacked={false} />
             </Reveal>
-          ))}
-        </div>
-        {work.note ? <p className="mt-8 font-technical text-micro text-graphite uppercase">{work.note}</p> : null}
+          ),
+        )}
       </div>
-    </section>
+      {work.note ? (
+        <Reveal y={0} className="mt-8 font-technical text-micro text-graphite uppercase">
+          {work.note}
+        </Reveal>
+      ) : null}
+    </Section>
   );
 };

@@ -8,7 +8,6 @@ import { Recognition } from "@/components/home/Recognition";
 import { SiteFooter } from "@/components/home/SiteFooter";
 import { Skills } from "@/components/home/Skills";
 import { Work } from "@/components/home/Work";
-import { Sheet } from "@/components/home/Sheet";
 import { SiteNav } from "@/components/home/SiteNav";
 import { ReplaceRoute } from "@/components/public/ReplaceRoute";
 import { getScreenContent } from "@/lib/server/content/screens";
@@ -48,29 +47,14 @@ export default async function HomePage() {
       <SiteNav nav={home.nav} />
       <main id="top">
         <Hero hero={home.hero} />
-        {/* Each section slides up over the last as a sheet (Sheet.tsx). */}
-        <Sheet depth={1}>
-          <About about={home.about} />
-        </Sheet>
-        <Sheet depth={2}>
-          <Experience experience={home.experience} />
-        </Sheet>
-        <Sheet depth={3}>
-          <Skills skills={home.skills} />
-        </Sheet>
-        <Sheet depth={4}>
-          <Work work={home.work} />
-        </Sheet>
-        <Sheet depth={5}>
-          <Recognition recognition={home.recognition} />
-        </Sheet>
-        <Sheet depth={6}>
-          <Contact contact={home.contact} />
-        </Sheet>
+        <About about={home.about} />
+        <Experience experience={home.experience} />
+        <Skills skills={home.skills} />
+        <Work work={home.work} />
+        <Recognition recognition={home.recognition} />
+        <Contact contact={home.contact} />
       </main>
-      <Sheet depth={7}>
-        <SiteFooter footer={home.footer} />
-      </Sheet>
+      <SiteFooter footer={home.footer} />
     </>
   );
 }

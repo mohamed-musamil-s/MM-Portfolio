@@ -142,7 +142,7 @@ const Panels = ({ roles }: { roles: Role[] }) => {
             onPointerEnter={() => openSoon(index)}
             className={cn(
               "relative min-w-0 basis-[6.5rem] overflow-hidden rounded-[2rem] transition-colors duration-500 ease-print",
-              active ? "bg-ink text-paper" : "bg-paper text-ink hover:bg-ink/5",
+              active ? "bg-ink text-paper" : "bg-newsprint text-ink hover:bg-ink/10",
             )}
           >
             {/* The fold: company up the side, number on top, period at the foot. */}
@@ -234,7 +234,7 @@ const Stack = ({ roles }: { roles: Role[] }) => {
             transition={{ duration: 0.8, ease: EASE_PRINT }}
             className={cn(
               "overflow-hidden rounded-[1.75rem] transition-colors duration-500",
-              active ? "bg-ink text-paper" : "bg-paper text-ink",
+              active ? "bg-ink text-paper" : "bg-newsprint text-ink",
             )}
           >
             <button
@@ -281,7 +281,7 @@ const Stack = ({ roles }: { roles: Role[] }) => {
 export const Experience = ({ experience }: { experience: Experience }) => {
   const wide = useMediaQuery("(min-width: 1024px)");
   return (
-    <Section id="experience" className="bg-newsprint">
+    <Section id="experience">
       <SectionHeader header={experience.header} />
       {wide ? <Panels roles={experience.roles} /> : <Stack roles={experience.roles} />}
     </Section>

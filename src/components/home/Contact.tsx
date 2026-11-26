@@ -14,7 +14,7 @@ import { MaskRise, Parallax, Reveal, Section, SectionHeader, isExternal } from "
 type Contact = HomeContent["contact"];
 
 export const Contact = ({ contact }: { contact: Contact }) => (
-  <Section id="contact" className="bg-newsprint">
+  <Section id="contact">
     <SectionHeader header={contact.header} />
     <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-20">
       <Parallax distance={40} className="flex flex-col gap-8">

@@ -122,6 +122,14 @@ export const studioShellContentSchema = z.object({
     you: text(24),
     updated: text(64),
     failed: text(120),
+    /** The topbar bell: unread messages at a glance. Placeholder: {n}. */
+    bell: z.object({
+      label: text(40),
+      title: text(32),
+      count: text(24),
+      empty: text(80),
+      viewAll: text(24),
+    }),
   }),
   /** Launchpad (docs/screens/STUDIO_LAUNCHPAD_BUSINESS.md). Placeholders: {n} {total} {time} {who} {section}. */
   launchpad: z.object({

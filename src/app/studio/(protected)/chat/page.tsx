@@ -11,15 +11,20 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /** Inbox, the chat module: every contact-form conversation (docs/screens/STUDIO_INBOX_BUSINESS.md). */
-export default async function StudioChatPage() {
+export default async function StudioChatPage({ searchParams }: PageProps<"/studio/chat">) {
   await requireSession(ROUTES.studio.chat);
-  const [shell, conversations] = await Promise.all([getScreenContent("studio-shell"), listConversations()]);
+  const [shell, conversations, { open }] = await Promise.all([
+    getScreenContent("studio-shell"),
+    listConversations(),
+    searchParams,
+  ]);
   return (
     <Inbox
       copy={shell.inbox}
       title={shell.modules.chat.title}
       description={shell.modules.chat.description}
       initial={conversations}
+      openId={typeof open === "string" ? open : undefined}
     />
   );
 }

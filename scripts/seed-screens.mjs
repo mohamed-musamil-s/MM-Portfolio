@@ -507,6 +507,13 @@ const SCREENS = {
       you: "You",
       updated: "Conversation updated.",
       failed: "Couldn't update the conversation. Try again.",
+      bell: {
+        label: "Messages, {n} unread",
+        title: "Messages",
+        count: "{n} new",
+        empty: "You're all caught up.",
+        viewAll: "Open Inbox",
+      },
     },
     launchpad: {
       sectionsTitle: "Portfolio sections",

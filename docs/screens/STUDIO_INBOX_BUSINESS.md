@@ -36,3 +36,13 @@ The search placeholder, filter labels, empty states, action labels, the reply no
 
 - If loading or updating a conversation fails, a toast appears and the state rolls back.
 - An empty inbox and an empty filter each have their own message.
+
+## 7. Topbar bell
+
+A bell in the studio topbar, on every studio page, left of the account menu.
+
+- **Badge:** the number of unread conversations that are not archived (`9+` above nine). No badge when there are none. The button's accessible name says the count ("Messages, 2 unread").
+- **Menu:** a header with "Messages" and "{n} new", then the five newest unread conversations (initials, name, time, topic, a two-line preview). Clicking one opens it in the Inbox (`/studio/chat?open=<id>`), which marks it read. Below: "Open Inbox". With nothing unread: "You're all caught up."
+- **Freshness:** the first count comes from the server with the page. After that the bell re-reads `GET /api/studio/messages` after each page change, when the window regains focus, when the Inbox marks, archives or restores a conversation, and once a minute while the tab is visible.
+- **Motion:** when the count goes up, the bell swings once (not with reduced motion); the badge pops in. Nothing loops.
+- **Copy:** `inbox.bell` (`label`, `title`, `count`, `empty`, `viewAll`).

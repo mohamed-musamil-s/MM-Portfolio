@@ -1,13 +1,14 @@
 "use client";
 
 import { Archive, ArchiveRestore, ArrowLeft, Inbox as InboxIcon, Mail, MailOpen, Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/studio/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/studio/ui/tooltip";
 import { useRelativeTime } from "@/hooks/useRelativeTime";
 import { cn } from "@/lib/shared/cn";
 import type { Conversation, ConversationSummary } from "@/lib/shared/contact/contact-schema";
+import { announceInboxChange } from "@/lib/shared/contact/inbox-events";
 import type { StudioShellContent } from "@/lib/shared/content/studio-shell-schema";
 import { formatDateUtc } from "@/lib/shared/format";
 
@@ -27,6 +28,8 @@ type InboxProps = {
   title: string;
   description: string;
   initial: ConversationSummary[];
+  /** A conversation to open on arrival (from the topbar bell, `?open=<id>`). */
+  openId?: string;
 };
 
 const ENTER =
@@ -218,7 +221,7 @@ const Thread = ({
   );
 };
 
-export const Inbox = ({ copy, title, description, initial }: InboxProps) => {
+export const Inbox = ({ copy, title, description, initial, openId }: InboxProps) => {
   const [items, setItems] = useState(initial);
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
@@ -254,6 +257,7 @@ export const Inbox = ({ copy, title, description, initial }: InboxProps) => {
       toast.error(copy.failed);
       return;
     }
+    announceInboxChange();
     if (!quiet) {
       toast.success(copy.updated);
     }
@@ -271,6 +275,16 @@ export const Inbox = ({ copy, title, description, initial }: InboxProps) => {
       await patch(id, { unread: false }, true);
     }
   };
+
+  // Opened from the bell: show that conversation once, then drop the parameter so a refresh doesn't reopen it.
+  const opened = useRef<string | null>(null);
+  useEffect(() => {
+    if (!openId || opened.current === openId) return;
+    opened.current = openId;
+    void openConversation(openId);
+    window.history.replaceState(null, "", window.location.pathname);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs when the requested conversation changes only
+  }, [openId]);
 
   const filters: Filter[] = ["all", "unread", "archived"];
 

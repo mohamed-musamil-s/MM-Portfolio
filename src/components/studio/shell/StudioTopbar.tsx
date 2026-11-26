@@ -4,8 +4,10 @@ import { CalendarDays } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useSyncExternalStore } from "react";
 import { MagicIcon } from "@/components/ui/MagicIcon";
+import type { InboxSnapshot } from "@/lib/shared/contact/inbox-events";
 import type { StudioShellContent } from "@/lib/shared/content/studio-shell-schema";
 import { cn } from "@/lib/shared/cn";
+import { InboxBell } from "./InboxBell";
 import { OwnerChip } from "./OwnerChip";
 import { useSidebarState } from "./sidebar-state";
 import { useActiveModule } from "./use-active-module";
@@ -56,9 +58,9 @@ const MenuButton = ({ content }: { content: StudioShellContent }) => {
 /**
  * Clean, flush topbar: menu button (mobile), a one-line breadcrumb
  * (group / page, the page part rolls over when you pick another page),
- * today's date and the account menu.
+ * today's date, the unread-messages bell and the account menu.
  */
-export const StudioTopbar = ({ content }: { content: StudioShellContent }) => {
+export const StudioTopbar = ({ content, inbox }: { content: StudioShellContent; inbox: InboxSnapshot }) => {
   const active = useActiveModule();
   const group = active ? content.groups.find((item) => item.items.includes(active)) : undefined;
 
@@ -97,9 +99,10 @@ export const StudioTopbar = ({ content }: { content: StudioShellContent }) => {
         </ol>
       </nav>
 
-      <div className="flex shrink-0 items-center gap-4">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         <Today />
         <span aria-hidden className="hidden h-6 w-px bg-border md:block" />
+        <InboxBell copy={content.inbox.bell} initial={inbox} />
         <OwnerChip content={content} />
       </div>
     </header>

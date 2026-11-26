@@ -43,10 +43,11 @@ Seeds stay generic: no personal details in code or seed files.
 
 ## 4. Navbar
 
-- Fixed at the top. **Left:** the animated monogram (`data-brand-mark`, where the splash logo lands) with the name beside it on two lines. **Centre (≥ md):** the links in a glass capsule; on hover the letters roll up one after another and an orange dot slides under the link. **Right:** the "Let's talk" ink pill with an orange arrow circle (magnetic on fine pointers).
-- At the top of the page the row is transparent. Scrolling down hides it; scrolling back up brings it back as a **blurred paper bar**.
-- **Phone:** monogram + `MENU`; a full-screen paper overlay with massive stacked links (Esc closes, focus returns).
-- Entrance (after the splash): items drop in one by one.
+- **Top of the page:** an open, transparent row. On the left, the monogram (smaller: 24px, 28px from `sm`) and the name on two lines; the splash lands its logo on the monogram. In the middle, numbered links (`01 About` …) whose letters roll up on hover. On the right, the live status (from `xl`) and the magnetic "Let's talk" pill.
+- **Active section:** the section under the middle of the viewport is marked by an ink pill that slides from link to link (`aria-current="location"`).
+- **Scrolling:** scrolling down hides the bar. Scrolling back up brings it back as a floating island (max 1120px, rounded, blurred paper), with the reading progress drawn in signal along its lower edge. The status moves out of the island to keep it compact.
+- **Phones:** monogram and a "Menu" pill with two lines open a full-screen sheet. Its links rise in turn; it holds focus inside and Escape closes it.
+- **Reduced motion:** the bar never hides.
 
 ## 5. Hero
 

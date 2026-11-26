@@ -242,10 +242,20 @@ export const Bold = ({ text, strongClassName }: { text: string; strongClassName?
 );
 
 /** A technology chip: logo icon (ink icons invert on dark), name; core skills marked with a signal ring. */
-export const TechChip = ({ tech, dark = false }: { tech: Tech; dark?: boolean }) => (
+export const TechChip = ({
+  tech,
+  dark = false,
+  small = false,
+}: {
+  tech: Tech;
+  dark?: boolean;
+  /** Tighter chip for dense cards. */
+  small?: boolean;
+}) => (
   <span
     className={cn(
-      "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[0.8125rem] font-medium whitespace-nowrap",
+      "inline-flex items-center rounded-full border font-medium whitespace-nowrap",
+      small ? "gap-1.5 px-2.5 py-1 text-[0.72rem]" : "gap-2 px-3 py-1.5 text-[0.8125rem]",
       dark ? "border-paper/15 bg-paper/5 text-paper" : "border-ink/12 bg-paper text-ink",
       tech.core && (dark ? "border-signal/60" : "border-signal/50"),
     )}
@@ -257,7 +267,7 @@ export const TechChip = ({ tech, dark = false }: { tech: Tech; dark?: boolean })
         width={16}
         height={16}
         unoptimized
-        className={cn("size-4 object-contain", tech.ink && dark && "invert")}
+        className={cn("object-contain", small ? "size-3.5" : "size-4", tech.ink && dark && "invert")}
       />
     ) : (
       <span aria-hidden className="size-1.5 rounded-full bg-signal" />

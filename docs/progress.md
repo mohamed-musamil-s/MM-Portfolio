@@ -18,18 +18,18 @@ Done:
 
 Verified against a production build (`next start`), without a database:
 
-| Request | Result |
-| --- | --- |
-| `/` | 302 to `/maintenance` |
-| `/maintenance` | 200 |
-| `/404` | 404 |
-| `/does/not/exist` | 302 to `/404` |
+| Request                                           | Result                          |
+| ------------------------------------------------- | ------------------------------- |
+| `/`                                               | 302 to `/maintenance`           |
+| `/maintenance`                                    | 200                             |
+| `/404`                                            | 404                             |
+| `/does/not/exist`                                 | 302 to `/404`                   |
 | `/studio`, `/studio/dashboard`, `/studio/unknown` | 302 to `/studio/login?next=...` |
-| a forged cookie | 302 to login, cookie cleared |
-| `/studio/login` | 200 |
-| `/api/nope` | JSON 404 |
-| cross-origin login | 403 |
-| login and health with no `MONGODB_URI` | logged 500 with `requestId` |
+| a forged cookie                                   | 302 to login, cookie cleared    |
+| `/studio/login`                                   | 200                             |
+| `/api/nope`                                       | JSON 404                        |
+| cross-origin login                                | 403                             |
+| login and health with no `MONGODB_URI`            | logged 500 with `requestId`     |
 
 ## 2026-11-22: Verified against MongoDB Atlas
 
@@ -37,22 +37,22 @@ The Atlas database already had `sessions` and `auth_attempts` collections. Their
 
 Verified with a production build (`next start`) connected to Atlas:
 
-| Check | Result |
-| --- | --- |
-| `GET /api/health` | 200, database up |
-| Boot logs | connecting, connected, server state changes, indexes ensured |
-| Wrong code, wrong email | 401 |
-| Empty body | 400 |
-| 5 failures from one IP | locked; correct credentials then get 429 with `Retry-After: 900` |
-| Correct login | 200; cookie is `Secure; HttpOnly; SameSite=strict`, expires in 12 h |
-| Session row in `sessions` | stores only the token hash |
-| All 6 studio pages with the session | 200 |
-| `/studio` | 302 to `/studio/dashboard` |
-| `/studio/login` while signed in | redirect to dashboard |
-| Logout | 200; cookie cleared, row deleted |
-| Old cookie after logout | rejected by the server guard, redirect to login |
-| Browser: login form, then `?next=` target, then sign out | works |
-| Server errors during the run | none |
+| Check                                                    | Result                                                              |
+| -------------------------------------------------------- | ------------------------------------------------------------------- |
+| `GET /api/health`                                        | 200, database up                                                    |
+| Boot logs                                                | connecting, connected, server state changes, indexes ensured        |
+| Wrong code, wrong email                                  | 401                                                                 |
+| Empty body                                               | 400                                                                 |
+| 5 failures from one IP                                   | locked; correct credentials then get 429 with `Retry-After: 900`    |
+| Correct login                                            | 200; cookie is `Secure; HttpOnly; SameSite=strict`, expires in 12 h |
+| Session row in `sessions`                                | stores only the token hash                                          |
+| All 6 studio pages with the session                      | 200                                                                 |
+| `/studio`                                                | 302 to `/studio/dashboard`                                          |
+| `/studio/login` while signed in                          | redirect to dashboard                                               |
+| Logout                                                   | 200; cookie cleared, row deleted                                    |
+| Old cookie after logout                                  | rejected by the server guard, redirect to login                     |
+| Browser: login form, then `?next=` target, then sign out | works                                                               |
+| Server errors during the run                             | none                                                                |
 
 ## 2026-11-22: Public design system spec
 
@@ -127,6 +127,7 @@ Verified with a production build (`next start`) connected to Atlas:
   - in the root `<title>` and description.
 
   The internal identifiers (database name `mm-portfolio`, token issuer, log app name) were left alone: visitors never see them, and renaming the database would disconnect the existing data.
+
 - [x] Fixed: the short-screen Tailwind classes were built from a template string, so Tailwind never generated them; they're now written out in full.
 - Note: the in-app browser throttles animation frames while it's unfocused, so screenshots sometimes catch the wireframe before it has drawn in. It draws normally in a visible tab.
 
@@ -343,8 +344,16 @@ Verified with a production build (`next start`) connected to Atlas:
 - Assets from the previous site: `public/portfolio/icons`, `logos`, `projects`.
 - Navbar anchors scroll smoothly (Lenis `anchors`).
 
+## 2026-11-26: Contact form, messages backend and the new footer
+
+- The Contact section has a form; messages are stored in `contact_conversations` for the studio's chat module ([feature](features/CONTACT_MESSAGES.md)). Backend APIs are done; the chat module UI is not.
+- The send button is in the site's own pill style; its impact and full-screen celebration (`src/lib/motion/impact-fx.ts`) take their beats from the Sakuga VFX reference, drawn our own way.
+- The footer is redesigned: live local clock, massive quote, three columns, the name as a full-width wordmark ([spec](screens/HOME_BUSINESS.md) §6.7).
+- Dev DB: home content has `contact.form` and the new footer fields.
+
 ## Open items
 
+- [ ] Production: the home content needs `contact.form` and the new footer fields (`wordmark`, `clock`, `linksLabel`, `socialsLabel`); the `contact_conversations` indexes are created on first use.
 - [ ] Seed the home screen on production (`npm run seed:screens:prod -- --only=home`, plus its studio-shell `editor.screens` entry) once development is complete.
 - [ ] Seed the name splash on production (`npm run seed:screens:prod -- --only=splash`) and add its entry to the production studio-shell `editor.screens`; until then production shows no splash.
 

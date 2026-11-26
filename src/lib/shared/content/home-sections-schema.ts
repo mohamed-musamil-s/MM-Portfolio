@@ -110,10 +110,30 @@ export const contactSchema = z.object({
   /** Shown big as the main way in (a mailto link). */
   email: maybe(120),
   details: z.array(z.object({ label: text(24), value: text(60), href: maybe(300) })).max(6),
+  /** The contact form; messages land in the studio's chat module. `{name}` in thanks.title is the sender's name. */
+  form: z.object({
+    label: text(40),
+    replyNote: maybe(60),
+    name: z.object({ label: text(32), placeholder: maybe(60) }),
+    email: z.object({ label: text(32), placeholder: maybe(60) }),
+    message: z.object({ label: text(32), placeholder: maybe(80) }),
+    topicsLabel: text(48),
+    topics: z.array(text(40)).max(5),
+    submit: text(32),
+    sending: text(32),
+    errors: z.object({ name: text(80), email: text(80), message: text(80), failed: text(140), rate: text(140) }),
+    thanks: z.object({ title: text(60), text: text(220), again: text(40) }),
+  }),
 });
 
 export const footerSchema = z.object({
   eyebrow: text(48),
+  /** The name set across the full width at the very bottom. */
+  wordmark: text(40),
+  /** A live clock: label and IANA time zone (e.g. "Asia/Kolkata"). */
+  clock: z.object({ label: text(40), timeZone: text(48) }),
+  linksLabel: text(24),
+  socialsLabel: text(24),
   manifesto: z.array(z.object({ word: text(16), index: text(24), text: text(80), outline: z.boolean() })).max(4),
   quote: text(80),
   quoteSource: text(80),

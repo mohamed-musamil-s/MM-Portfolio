@@ -5,6 +5,7 @@ export const COLLECTIONS = {
   authAttempts: "auth_attempts",
   siteScreens: "site_screens",
   siteSettings: "site_settings",
+  contactConversations: "contact_conversations",
 } as const;
 
 export type SessionDocument = {
@@ -57,3 +58,30 @@ export type MaintenanceSettingDocument = {
 
 export const siteSettingsCollection = (db: Db): Collection<MaintenanceSettingDocument> =>
   db.collection<MaintenanceSettingDocument>(COLLECTIONS.siteSettings);
+
+/**
+ * One conversation per contact-form submission (docs/features/CONTACT_MESSAGES.md).
+ * Shaped for the studio's chat module: replies are appended to `messages`.
+ */
+export type ContactConversationDocument = {
+  _id?: ObjectId;
+  visitor: { name: string; email: string };
+  topic: string;
+  status: "open" | "archived";
+  /** True until the owner opens it in the studio. */
+  unread: boolean;
+  messages: { from: "visitor" | "owner"; body: string; at: Date }[];
+  createdAt: Date;
+  lastMessageAt: Date;
+  /** Kept for abuse limits and context; never shown on the public site. */
+  meta: {
+    /** SHA-256 of the client IP with the session secret (the raw IP is never stored). */
+    ipHash: string;
+    userAgent: string;
+    page: string;
+    referrer: string;
+  };
+};
+
+export const contactConversationsCollection = (db: Db): Collection<ContactConversationDocument> =>
+  db.collection<ContactConversationDocument>(COLLECTIONS.contactConversations);

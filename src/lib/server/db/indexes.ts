@@ -1,6 +1,6 @@
 import type { Db } from "mongodb";
 import { getLogger } from "../logger";
-import { authAttemptsCollection, sessionsCollection } from "./collections";
+import { authAttemptsCollection, contactConversationsCollection, sessionsCollection } from "./collections";
 
 const log = getLogger("db");
 
@@ -16,6 +16,12 @@ export const ensureIndexes = async (db: Db): Promise<void> => {
     // TTL: MongoDB removes sessions once expiresAt passes.
     sessionsCollection(db).createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0, name: "session_ttl" }),
     authAttemptsCollection(db).createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0, name: "attempt_ttl" }),
+    // The studio inbox lists newest first; the contact rate limit counts recent sends per client.
+    contactConversationsCollection(db).createIndex({ lastMessageAt: -1 }, { name: "conversation_recent" }),
+    contactConversationsCollection(db).createIndex(
+      { "meta.ipHash": 1, createdAt: -1 },
+      { name: "conversation_by_client" },
+    ),
   ]);
   log.info("mongodb indexes ensured");
 };

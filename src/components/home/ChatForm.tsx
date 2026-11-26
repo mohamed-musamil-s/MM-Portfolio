@@ -255,8 +255,14 @@ export const ChatForm = ({ form }: { form: Form }) => {
         </button>
       </div>
 
-      {/* The conversation. */}
-      <div ref={log} role="log" aria-live="polite" className="flex flex-1 flex-col gap-2.5 overflow-y-auto px-5 py-5">
+      {/* The conversation. It scrolls on its own: data-lenis-prevent keeps the page's smooth scroll from taking the wheel. */}
+      <div
+        data-lenis-prevent
+        ref={log}
+        role="log"
+        aria-live="polite"
+        className="flex flex-1 flex-col gap-2.5 overflow-y-auto px-5 py-5"
+      >
         {bubbles.map((bubble) => (
           <BubbleView key={bubble.id} bubble={bubble} />
         ))}

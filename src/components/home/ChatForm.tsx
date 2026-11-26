@@ -62,7 +62,7 @@ const BubbleView = ({ bubble }: { bubble: Bubble }) => (
       "max-w-[85%] rounded-[1.25rem] px-4 py-3 font-glyph text-[0.98rem] leading-snug whitespace-pre-line",
       bubble.from === "host"
         ? "self-start rounded-bl-md bg-newsprint text-ink"
-        : "self-end rounded-br-md bg-ink text-paper",
+        : "self-end rounded-br-md bg-[color-mix(in_srgb,var(--text-primary)_70%,var(--bg-primary))] text-paper",
       bubble.tone === "error" && "bg-signal/12 text-ink ring-1 ring-signal/40",
     )}
   >

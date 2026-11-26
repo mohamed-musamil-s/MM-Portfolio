@@ -49,6 +49,8 @@
   --font-grotesk: var(--public-font-grotesk);
   --font-technical: var(--public-font-technical);
   --font-brush: var(--public-font-brush);
+  /* Body text in which every capital M is the logo's M (see "MM Glyph" below). */
+  --font-glyph: var(--public-font-glyph);
 
   /* Type scale: size from the surface, line-height and tracking fixed here */
   --text-wordmark: var(--fs-wordmark);
@@ -162,6 +164,28 @@
   }
 }
 
+/*
+ * "MM Glyph": a one-character face holding only the capital M of the logo
+ * (Zen Dots, OFL). unicode-range keeps it to U+004D, so in a stack such as
+ * `font-wide` or `font-glyph` every capital M takes the logo's shape while all
+ * other characters fall through to the real font. The stretch range lets it
+ * match the expanded display face.
+ */
+@font-face {
+  font-family: "MM Glyph";
+  src: url("/fonts/zen-dots-m.woff2") format("woff2");
+  unicode-range: U+004D;
+  font-display: swap;
+  font-stretch: 50% 200%;
+  font-weight: 100 900;
+}
+
+/* Expanded display headlines (home page): Archivo at full width, logo M included. */
+@utility font-wide {
+  font-family: var(--public-font-display);
+  font-stretch: 125%;
+}
+
 @layer base {
   /*
    * Light colour set. Also applied by [data-studio-theme="light"], which pins a
@@ -270,6 +294,8 @@
     --public-font-grotesk: var(--font-inter-tight), "Helvetica Neue", Arial, sans-serif;
     --public-font-technical: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", monospace;
     --public-font-brush: var(--font-permanent-marker), "Marker Felt", cursive;
+    --public-font-display: "MM Glyph", var(--font-archivo), "Arial", sans-serif;
+    --public-font-glyph: "MM Glyph", var(--public-font-grotesk);
 
     /* Type scale */
     --fs-wordmark: clamp(5rem, 20vw, 18rem);

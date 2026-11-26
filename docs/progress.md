@@ -332,6 +332,7 @@ Verified with a production build (`next start`) connected to Atlas:
 - New screen `site_screens/home` ([spec](screens/HOME_BUSINESS.md)), editable in Content Forge.
 - Navbar (`src/components/home/SiteNav.tsx`): monogram left (the splash lands its logo on it), floating glass pill of links with a sliding ink highlight, availability chip, magnetic call to action; hides on scroll down, returns on scroll up, condenses past the top; full-screen phone menu (Esc, focus trap, focus returns).
 - Hero (`src/components/home/Hero.tsx`), redesigned the same day for a clean, non-overlapping layout: statement, brush signature, intro and calls to action on the left; a framed halftone sphere with its tags on the right; facts along the bottom. 200svh section with a sticky stage: each layer moves at its own scroll speed, the stage shrinks into a card on ink; pointer depth on the sphere; velocity skew; an ink velocity marquee under it.
+- Later the same day the home was redesigned after the previous portfolio (`mm.s-portfolio`): name in Archivo expanded with the Zen Dots "M" glyph, ink portrait (`public/portraits/hero-portrait.svg`), stats rail counting up, pill buttons, glass capsule navbar with the name beside the monogram.
 - Navbar restyled: slash-separated labels with a letter-roll hover and an orange dot; transparent at the top, a blurred paper bar when it returns on scroll up.
 - Entrances wait for the splash to start leaving (`useIntroReady`, `src/components/splash/splash-state.ts`).
 

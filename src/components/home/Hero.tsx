@@ -1,14 +1,13 @@
 "use client";
 
-import { motion, useScroll, useTransform, type MotionStyle, type MotionValue } from "motion/react";
-import { useRef, type ReactNode } from "react";
-import { CropMarks } from "@/components/motion/CropMarks";
-import { HalftoneSphere } from "@/components/motion/HalftoneSphere";
+import { animate, motion, useMotionValue, useScroll, useTransform, type MotionValue } from "motion/react";
+import Image from "next/image";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Marquee } from "@/components/motion/Marquee";
-import { RegistrationMark } from "@/components/motion/RegistrationMark";
+import { StatusDot } from "@/components/motion/StatusDot";
 import { VelocitySkew } from "@/components/motion/VelocitySkew";
 import { useIntroReady } from "@/components/splash/splash-state";
-import { ActionButton } from "@/components/ui/ActionButton";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePointerParallax } from "@/hooks/usePointerParallax";
 import { useMotionTheme } from "@/hooks/useMotionTheme";
 import { cn } from "@/lib/shared/cn";
@@ -16,12 +15,12 @@ import type { HomeContent } from "@/lib/shared/content/home-schema";
 import { EASE_PRINT } from "@/lib/motion/tokens";
 
 /*
- * The home hero (docs/screens/HOME_BUSINESS.md §5). A clean two-column stage:
- * the statement, signature, intro and calls to action on the left; a framed
- * halftone sphere with its tags on the right; the facts along the bottom.
- * Nothing overlaps. The section is 200svh with a sticky stage, so scrolling
- * plays a sequence (each layer at its own speed, the stage shrinking into a
- * card on ink); the pointer adds depth; entrances wait for the splash.
+ * The home hero (docs/screens/HOME_BUSINESS.md §5), after the previous
+ * portfolio: the name massive in the wide face (second line in outline), the
+ * role, the intro and two pill buttons on the left; the ink portrait bleeding
+ * off the right edge; a stats rail along the bottom. On large screens the
+ * section is 180svh with a sticky stage: scrolling moves each layer at its own
+ * speed and shrinks the stage into a card on ink. Entrances wait for the splash.
  */
 
 type HeroContent = HomeContent["hero"];
@@ -32,43 +31,105 @@ const rise = (ready: boolean, delay: number, distance = 28) => ({
   transition: { delay, duration: 0.9, ease: EASE_PRINT },
 });
 
-/** Scroll-driven values for every layer (0 → 1 through the section). */
 const useHeroScroll = (progress: MotionValue<number>) => ({
   lines: [
-    useTransform(progress, [0, 1], ["0svh", "-6svh"]),
-    useTransform(progress, [0, 1], ["0svh", "-10svh"]),
-    useTransform(progress, [0, 1], ["0svh", "-14svh"]),
-    useTransform(progress, [0, 1], ["0svh", "-18svh"]),
+    useTransform(progress, [0, 1], ["0vw", "-5vw"]),
+    useTransform(progress, [0, 1], ["0vw", "5vw"]),
+    useTransform(progress, [0, 1], ["0vw", "-3vw"]),
   ],
-  left: { y: useTransform(progress, [0, 1], ["0svh", "-8svh"]) },
   details: {
     opacity: useTransform(progress, [0, 0.45], [1, 0]),
     y: useTransform(progress, [0, 0.45], ["0svh", "-6svh"]),
   },
-  frame: { y: useTransform(progress, [0, 1], ["0svh", "-14svh"]) },
-  sphere: {
-    scale: useTransform(progress, [0, 1], [1, 1.35]),
-    rotate: useTransform(progress, [0, 1], [0, -24]),
+  portrait: {
+    y: useTransform(progress, [0, 1], ["0svh", "-10svh"]),
+    scale: useTransform(progress, [0, 1], [1, 1.08]),
   },
   stage: {
-    scale: useTransform(progress, [0.6, 1], [1, 0.9]),
-    borderRadius: useTransform(progress, [0.6, 1], [0, 40]),
+    scale: useTransform(progress, [0.62, 1], [1, 0.9]),
+    borderRadius: useTransform(progress, [0.62, 1], [0, 40]),
   },
 });
 
-type HeroScroll = ReturnType<typeof useHeroScroll>;
+/* ---------- Pieces ---------- */
 
-/** Pointer depth wrapper (fine pointers only; still under reduced motion). */
-const Depth = ({ depth, className, children }: { depth: number; className?: string; children: ReactNode }) => {
-  const { x, y } = usePointerParallax(depth);
+/** A pill button whose label rolls on hover; the button itself never moves. */
+const Pill = ({
+  href,
+  tone,
+  icon,
+  children,
+}: {
+  href: string;
+  tone: "ink" | "line";
+  icon: string;
+  children: string;
+}) => (
+  <a
+    href={href}
+    className={cn(
+      "group inline-flex min-h-12 items-center gap-3 rounded-full py-1.5 pr-1.5 pl-6 text-label font-bold uppercase transition-colors duration-300 ease-print focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-signal",
+      tone === "ink" ? "bg-ink text-paper hover:bg-ink/88" : "border border-ink/20 text-ink hover:border-ink",
+    )}
+  >
+    <span className="relative block overflow-hidden">
+      <span className="block transition-transform duration-500 ease-print group-hover:-translate-y-full">
+        {children}
+      </span>
+      <span
+        aria-hidden
+        className="absolute inset-0 block translate-y-full transition-transform duration-500 ease-print group-hover:translate-y-0"
+      >
+        {children}
+      </span>
+    </span>
+    <span
+      aria-hidden
+      className={cn(
+        "grid size-9 place-items-center rounded-full text-sm transition-transform duration-500 ease-print group-hover:rotate-[-45deg]",
+        tone === "ink" ? "bg-signal text-paper" : "border border-ink/20",
+      )}
+    >
+      {icon}
+    </span>
+  </a>
+);
+
+/** Counts the number in a stat up from zero on entrance; prefix and suffix are marked in the accent. */
+const StatValue = ({ value, ready, delay }: { value: string; ready: boolean; delay: number }) => {
+  const match = /^([^\d]*)([\d.,]+)(.*)$/.exec(value);
+  const prefix = match?.[1] ?? "";
+  const target = match ? Number.parseFloat(match[2].replace(/,/g, "")) : 0;
+  const suffix = match?.[3] ?? "";
+  const count = useMotionValue(0);
+  const [shown, setShown] = useState("0");
+
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    const controls = animate(count, target, {
+      delay,
+      duration: 1.4,
+      ease: EASE_PRINT,
+      onUpdate: (latest) => setShown(Math.round(latest).toString()),
+    });
+    return () => controls.stop();
+  }, [ready, target, delay, count]);
+
+  if (!match) {
+    return <>{value}</>;
+  }
   return (
-    <motion.div className={className} style={{ x, y }}>
-      {children}
-    </motion.div>
+    <>
+      <span className="text-signal">{prefix}</span>
+      {shown}
+      <span className="text-signal">{suffix}</span>
+    </>
   );
 };
 
-const Statement = ({
+const Name = ({
   lines,
   drift,
   ready,
@@ -77,183 +138,175 @@ const Statement = ({
   drift: readonly (MotionValue<string> | undefined)[];
   ready: boolean;
 }) => (
-  <VelocitySkew>
-    <h1
-      aria-label={lines.join(" ")}
-      className="font-grotesk text-[clamp(3.2rem,min(8.4vw,13.5svh),9.5rem)] leading-[0.86] font-extrabold tracking-tighter uppercase"
-    >
-      {lines.map((line, index) => (
-        <motion.span key={`${line}-${index}`} aria-hidden style={{ y: drift[index] }} className="block">
-          <span className="block overflow-hidden pb-[0.05em]">
-            <motion.span
-              className={cn(
-                "block",
-                // The middle line is set in outline.
-                index === 1 && "text-paper [-webkit-text-stroke:max(1.5px,0.014em)_var(--text-primary)]",
-              )}
-              initial={{ y: "108%" }}
-              animate={{ y: ready ? "0%" : "108%" }}
-              transition={{ delay: 0.15 + index * 0.12, duration: 1, ease: EASE_PRINT }}
-            >
-              {line}
-            </motion.span>
-          </span>
-        </motion.span>
-      ))}
-    </h1>
-  </VelocitySkew>
+  <h1
+    aria-label={lines.join(" ")}
+    className="font-wide text-[clamp(2.6rem,min(6.4vw,12.5svh),7.6rem)] leading-[0.95] font-semibold tracking-[-0.02em] uppercase"
+  >
+    {lines.map((line, index) => (
+      <motion.span key={`${line}-${index}`} aria-hidden style={{ x: drift[index] }} className="block">
+        <span className="block overflow-hidden pb-[0.04em]">
+          <motion.span
+            className={cn(
+              "block",
+              index === 1 && "text-paper [-webkit-text-stroke:max(1.25px,0.012em)_var(--text-primary)]",
+            )}
+            initial={{ y: "108%" }}
+            animate={{ y: ready ? "0%" : "108%" }}
+            transition={{ delay: 0.15 + index * 0.12, duration: 1.05, ease: EASE_PRINT }}
+          >
+            {line}
+          </motion.span>
+        </span>
+      </motion.span>
+    ))}
+  </h1>
 );
 
-/** The name in brush lettering on its own line, wiped in, with an orange stroke under it. */
-const Signature = ({ text, ready }: { text: string; ready: boolean }) => (
-  <div className="relative w-fit -rotate-3">
+const Portrait = ({
+  portrait,
+  ready,
+  style,
+}: {
+  portrait: HeroContent["portrait"];
+  ready: boolean;
+  style?: { y: MotionValue<string>; scale: MotionValue<number> };
+}) => {
+  const { x, y } = usePointerParallax(14);
+  return (
+    <motion.div style={style} className="relative size-full">
+      <motion.div style={{ x, y }} className="relative size-full">
+        <motion.div
+          initial={{ clipPath: "inset(100% 0% 0% 0%)", scale: 1.06 }}
+          animate={
+            ready ? { clipPath: "inset(0% 0% 0% 0%)", scale: 1 } : { clipPath: "inset(100% 0% 0% 0%)", scale: 1.06 }
+          }
+          transition={{ delay: 0.35, duration: 1.4, ease: EASE_PRINT }}
+          className="relative size-full [mask-image:linear-gradient(to_bottom,#000_78%,transparent)]"
+        >
+          <Image
+            src={portrait.src}
+            alt={portrait.alt}
+            fill
+            priority
+            unoptimized
+            sizes="50vw"
+            className="object-contain object-bottom"
+          />
+        </motion.div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+const Stats = ({ stats, ready }: { stats: HeroContent["stats"]; ready: boolean }) =>
+  stats.length === 0 ? null : (
+    <dl className="grid grid-cols-3 border-t border-ink/15">
+      {stats.map((stat, index) => (
+        <motion.div
+          key={`${stat.label}-${index}`}
+          {...rise(ready, 1.15 + index * 0.08, 16)}
+          className={cn("flex flex-col gap-2 py-4 pr-4", index > 0 && "border-l border-ink/15 pl-4 sm:pl-6")}
+        >
+          <dt className="font-technical text-[10px] tracking-[0.14em] text-graphite uppercase sm:text-micro">
+            {stat.label}
+          </dt>
+          <dd className="font-wide text-[clamp(1.4rem,2.6vw,2.4rem)] leading-none font-semibold tabular-nums">
+            <StatValue value={stat.value} ready={ready} delay={1.25 + index * 0.1} />
+          </dd>
+        </motion.div>
+      ))}
+    </dl>
+  );
+
+const Details = ({ hero, ready }: { hero: HeroContent; ready: boolean }) => (
+  <div className="flex flex-col gap-6">
     <motion.p
-      initial={{ clipPath: "inset(-25% 100% -25% -5%)" }}
-      animate={{ clipPath: ready ? "inset(-25% -5% -25% -5%)" : "inset(-25% 100% -25% -5%)" }}
-      transition={{ delay: 0.7, duration: 1.1, ease: EASE_PRINT }}
-      className="font-brush text-[clamp(1.75rem,min(3.4vw,5.5svh),3.6rem)] leading-none whitespace-nowrap"
+      {...rise(ready, 0.75, 12)}
+      className="flex flex-wrap items-center gap-3 font-technical text-micro font-medium uppercase"
     >
-      {text}
+      <span className="text-ink">{hero.role}</span>
+      <span aria-hidden className="h-px w-14 bg-signal/70" />
+      <span className="font-glyph text-graphite">{hero.roleMeta}</span>
     </motion.p>
-    <svg viewBox="0 0 400 24" preserveAspectRatio="none" aria-hidden className="mt-1 h-3 w-full overflow-visible">
-      <motion.path
-        d="M2 16 C 90 4, 220 22, 398 8"
-        fill="none"
-        strokeWidth="4"
-        strokeLinecap="round"
-        vectorEffect="non-scaling-stroke"
-        className="stroke-signal"
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: ready ? 1 : 0 }}
-        transition={{ delay: 1.25, duration: 0.8, ease: EASE_PRINT }}
-      />
-    </svg>
+    <motion.p {...rise(ready, 0.9)} className="max-w-[36rem] font-glyph text-lead text-pretty text-graphite">
+      {hero.intro}
+    </motion.p>
+    <motion.div {...rise(ready, 1.02)} className="flex flex-wrap items-center gap-3">
+      <Pill href={hero.primary.href} tone="ink" icon="→">
+        {hero.primary.label}
+      </Pill>
+      <Pill href={hero.secondary.href} tone="line" icon="↗">
+        {hero.secondary.label}
+      </Pill>
+    </motion.div>
   </div>
 );
 
-/** The right column: a framed halftone sphere, its tags in a neat row underneath. */
-const Showcase = ({
-  hero,
-  ready,
-  still,
-  scroll,
-}: {
-  hero: HeroContent;
-  ready: boolean;
-  still: boolean;
-  scroll: HeroScroll;
-}) => (
-  <motion.div style={still ? undefined : scroll.frame} className="relative hidden flex-col gap-5 lg:flex">
-    <motion.div
-      initial={{ opacity: 0, scale: 0.92 }}
-      animate={ready ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.92 }}
-      transition={{ delay: 0.35, duration: 1.1, ease: EASE_PRINT }}
-      className="relative aspect-square max-h-[52svh] w-full overflow-hidden rounded-[2rem] border border-ink/10 bg-newsprint/60"
-    >
-      <CropMarks />
-      <Depth depth={18} className="absolute inset-[-6%]">
-        <motion.div style={still ? undefined : scroll.sphere} className="size-full">
-          <HalftoneSphere className="size-full" />
-        </motion.div>
-      </Depth>
-    </motion.div>
-    {hero.chips.length > 0 ? (
-      <ul className="flex flex-wrap gap-2">
-        {hero.chips.map((chip, index) => (
-          <motion.li
-            key={`${chip}-${index}`}
-            {...rise(ready, 1.1 + index * 0.06, 14)}
-            className="flex items-center gap-2 rounded-full border border-ink/12 px-3 py-1.5 font-technical text-micro uppercase"
-          >
-            <span aria-hidden className="size-1.5 rounded-full bg-signal" />
-            {chip}
-          </motion.li>
-        ))}
-      </ul>
-    ) : null}
-  </motion.div>
+const Frame = ({ children, className }: { children: ReactNode; className?: string }) => (
+  <div className={cn("relative mx-auto w-full max-w-[1440px]", className)}>{children}</div>
 );
+
+/* ---------- Hero ---------- */
 
 export const Hero = ({ hero }: { hero: HeroContent }) => {
   const ready = useIntroReady();
-  const { reducedMotion: still } = useMotionTheme();
+  const { reducedMotion } = useMotionTheme();
+  const wide = useMediaQuery("(min-width: 1024px)");
+  const animated = wide && !reducedMotion;
   const section = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: section, offset: ["start start", "end end"] });
   const scroll = useHeroScroll(scrollYProgress);
-  const stageStyle: MotionStyle | undefined = still ? undefined : scroll.stage;
 
   return (
     <>
-      <section ref={section} aria-label={hero.eyebrow} className="relative h-[200svh] bg-ink">
-        <div className="sticky top-0 h-svh overflow-hidden">
+      <section ref={section} aria-label={hero.lines.join(" ")} className="relative bg-ink lg:h-[180svh]">
+        <div className="lg:sticky lg:top-0 lg:h-svh lg:overflow-hidden">
           <motion.div
-            style={stageStyle}
-            className="relative flex h-full flex-col overflow-hidden bg-paper px-page pt-24 pb-6 sm:pt-28 lg:pb-8"
+            style={animated ? scroll.stage : undefined}
+            className="relative overflow-hidden bg-paper lg:h-full"
           >
-            {/* Construction grid. */}
+            {/* Depth field: a faint 12-column grid and a soft signal aura. */}
             <div
               aria-hidden
               className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,var(--border-ink)_1px,transparent_1px)] bg-size-[calc(100%/12)_100%] opacity-[0.045]"
             />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute top-[20%] right-[8%] size-[46vw] rounded-full bg-signal/[0.07] blur-[120px]"
+            />
 
-            <div className="relative grid flex-1 items-center gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] lg:gap-[6vw]">
-              {/* Left: eyebrow, statement, signature, intro, calls to action. */}
-              <motion.div style={still ? undefined : scroll.left} className="flex flex-col gap-[clamp(1rem,3svh,2rem)]">
-                <motion.span
-                  {...rise(ready, 0.05, 12)}
-                  className="flex items-center gap-3 font-technical text-micro uppercase"
-                >
-                  <RegistrationMark className="size-4" />
-                  {hero.eyebrow}
-                </motion.span>
-                <Statement lines={hero.lines} drift={still ? [] : scroll.lines} ready={ready} />
-                <Signature text={hero.signature} ready={ready} />
-                <motion.div style={still ? undefined : scroll.details} className="flex flex-col gap-5">
-                  <motion.p {...rise(ready, 0.95)} className="max-w-[40rem] text-lead text-pretty text-graphite">
-                    {hero.intro}
-                  </motion.p>
-                  <motion.div {...rise(ready, 1.05)} className="flex flex-wrap items-center gap-x-6 gap-y-3">
-                    <ActionButton method="navigate" href={hero.primary.href}>
-                      {hero.primary.label}
-                    </ActionButton>
-                    <a
-                      href={hero.secondary.href}
-                      className="group inline-flex min-h-11 items-center gap-2 text-label font-bold uppercase underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none"
-                    >
-                      {hero.secondary.label}
-                      <span
-                        aria-hidden
-                        className="transition-transform duration-500 ease-print group-hover:translate-x-1"
-                      >
-                        →
-                      </span>
-                    </a>
-                  </motion.div>
-                </motion.div>
-              </motion.div>
-
-              {/* Right: framed sphere and tags. */}
-              <Showcase hero={hero} ready={ready} still={still} scroll={scroll} />
+            {/* Portrait, bleeding off the right edge (large screens). */}
+            <div className="pointer-events-none absolute top-[9%] right-0 bottom-0 hidden w-[48%] lg:block">
+              <Portrait portrait={hero.portrait} ready={ready} style={animated ? scroll.portrait : undefined} />
             </div>
 
-            {/* Facts along the bottom. */}
-            {hero.meta.length > 0 ? (
-              <motion.dl
-                style={still ? undefined : scroll.details}
-                className="relative mt-6 hidden grid-cols-3 gap-8 border-t border-ink/15 pt-4 sm:grid"
+            <Frame className="flex flex-col px-page pt-28 pb-6 sm:pt-32 lg:h-full lg:pb-6">
+              <div className="flex flex-1 flex-col justify-center gap-[clamp(1.25rem,3.2svh,2.25rem)] lg:max-w-[56%]">
+                <motion.span
+                  {...rise(ready, 0.05, 10)}
+                  className="flex w-fit items-center gap-2.5 rounded-full border border-ink/12 bg-paper/70 px-3.5 py-2 font-technical text-micro uppercase backdrop-blur-sm"
+                >
+                  <StatusDot />
+                  {hero.status}
+                </motion.span>
+                <Name lines={hero.lines} drift={animated ? scroll.lines : []} ready={ready} />
+                <motion.div style={animated ? scroll.details : undefined}>
+                  <Details hero={hero} ready={ready} />
+                </motion.div>
+              </div>
+
+              {/* Portrait in the flow on phones and tablets. */}
+              <div className="relative mt-8 aspect-[1000/1074] w-full max-w-md self-center lg:hidden">
+                <Portrait portrait={hero.portrait} ready={ready} />
+              </div>
+
+              <motion.div
+                style={animated ? scroll.details : undefined}
+                className="relative mt-6 lg:mt-0 lg:max-w-[52%]"
               >
-                {hero.meta.map((item, index) => (
-                  <motion.div
-                    key={`${item.label}-${index}`}
-                    {...rise(ready, 1.2 + index * 0.08, 16)}
-                    className="flex flex-col gap-1"
-                  >
-                    <dt className="font-technical text-micro text-graphite uppercase">{item.label}</dt>
-                    <dd className="text-label font-bold uppercase">{item.value}</dd>
-                  </motion.div>
-                ))}
-              </motion.dl>
-            ) : null}
+                <Stats stats={hero.stats} ready={ready} />
+              </motion.div>
+            </Frame>
           </motion.div>
         </div>
       </section>
@@ -265,7 +318,7 @@ export const Hero = ({ hero }: { hero: HeroContent }) => {
             {hero.marquee.map((word, index) => (
               <span
                 key={`${word}-${index}`}
-                className="flex items-center gap-[0.35em] pr-[0.35em] text-[clamp(2.6rem,7vw,6.5rem)] leading-none font-extrabold tracking-tighter uppercase"
+                className="flex items-center gap-[0.35em] pr-[0.35em] font-wide text-[clamp(2.2rem,6vw,5.5rem)] leading-none font-semibold tracking-[-0.02em] uppercase"
               >
                 {index % 2 === 1 ? (
                   <span className="text-transparent [-webkit-text-stroke:max(1px,0.012em)_var(--bg-primary)]">

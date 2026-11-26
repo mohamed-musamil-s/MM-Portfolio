@@ -147,6 +147,8 @@ Why these:
 - **The wordmark is an SVG asset, not a font.** No web font reproduces the poster's lettering: the slant, the dry-brush edges, the long descending "M" stroke. Trace it once and use it as a logo.
 - **Permanent Marker for other brush words.** It's the closest open-source match in weight. Caveat Brush is too light and casual next to the wordmark.
 
+**Home page display face (2026-11-26).** The home headlines (name, stats, marquee) use **Archivo** at full width through the `font-wide` utility, as in the previous portfolio. In `font-wide` and `font-glyph` stacks every capital **M** renders as the logo's M (**Zen Dots**, `public/fonts/zen-dots-m.woff2`, a one-glyph face limited by `unicode-range: U+004D`).
+
 **Loading the fonts.** Load them with `next/font/google`, which self-hosts them (no request to Google at runtime). Use `display: "swap"` and these `variable` names:
 
 | `next/font` import | `variable` |

@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
 import Link from "next/link";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatedMonogram } from "@/components/brand/AnimatedMonogram";
 import { RegistrationMark } from "@/components/motion/RegistrationMark";
 import { StatusDot } from "@/components/motion/StatusDot";
@@ -14,11 +14,12 @@ import type { HomeContent } from "@/lib/shared/content/home-schema";
 import { EASE_PRINT } from "@/lib/motion/tokens";
 
 /*
- * The portfolio navbar (docs/screens/HOME_BUSINESS.md §4). At the top of the
- * page it is a transparent row; scrolling down hides it, scrolling back up
- * brings it back as a blurred paper bar. Links are poster-style labels
- * separated by slashes: on hover the letters roll up and an orange dot marks
- * the link. The monogram on the left is where the splash lands its logo.
+ * The portfolio navbar (docs/screens/HOME_BUSINESS.md §4), after the previous
+ * portfolio: monogram and name on the left (the splash lands its logo on the
+ * monogram), the links in a glass capsule in the middle (letters roll up on
+ * hover, an orange dot marks the link), "Let's talk" on the right. At the top
+ * of the page the row is transparent; scrolling down hides it, scrolling back
+ * up brings it back as a blurred paper bar.
  */
 
 type Nav = HomeContent["nav"];
@@ -69,16 +70,18 @@ const DesktopLinks = ({ links }: { links: Nav["links"] }) => {
   const [active, setActive] = useState<number | null>(null);
   return (
     <nav aria-label="Primary" className="hidden md:block">
-      <ul onPointerLeave={() => setActive(null)} className="flex items-center gap-1">
+      <ul
+        onPointerLeave={() => setActive(null)}
+        className="flex items-center gap-1 rounded-full border border-ink/10 bg-paper/60 px-3 py-1 backdrop-blur-xl backdrop-saturate-150"
+      >
         {links.map((link, index) => (
-          <Fragment key={`${link.href}-${index}`}>
-            {index > 0 ? (
-              <li aria-hidden className="px-1 text-label font-bold text-ink/25">
-                /
-              </li>
-            ) : null}
-            <NavLink link={link} index={index} active={active === index} onActive={setActive} />
-          </Fragment>
+          <NavLink
+            key={`${link.href}-${index}`}
+            link={link}
+            index={index}
+            active={active === index}
+            onActive={setActive}
+          />
         ))}
       </ul>
     </nav>
@@ -105,7 +108,7 @@ const NavLink = ({
         onPointerEnter={() => onActive(index)}
         onFocus={() => onActive(index)}
         onBlur={() => onActive(null)}
-        className="relative flex flex-col items-center px-2 py-2 text-label font-bold uppercase focus-visible:outline-none"
+        className="relative flex flex-col items-center px-3 py-2.5 text-label font-bold uppercase focus-visible:outline-none"
       >
         <RollingLabel text={link.label} active={active} />
         <span className="absolute -bottom-0.5 left-1/2 h-1.5 w-1.5 -translate-x-1/2">
@@ -122,6 +125,18 @@ const NavLink = ({
   );
 };
 
+/** The owner's name beside the monogram, on two lines when it has a space. */
+const NavName = ({ name }: { name: string }) => {
+  const drop = useDropIn(0);
+  const [first, ...rest] = name.split(" ");
+  return (
+    <motion.span {...drop} className="hidden flex-col font-glyph text-[0.8125rem] leading-[1.05] font-bold sm:flex">
+      <span>{first}</span>
+      {rest.length > 0 ? <span className="text-graphite">{rest.join(" ")}</span> : null}
+    </motion.span>
+  );
+};
+
 /** Ink pill that leans toward the cursor; its arrow flies out and back in on hover. */
 const MagneticCta = ({ cta, index }: { cta: Nav["cta"]; index: number }) => {
   const { anchorRef, x, y } = useMagnetic<HTMLSpanElement>();
@@ -132,10 +147,10 @@ const MagneticCta = ({ cta, index }: { cta: Nav["cta"]; index: number }) => {
         <motion.a
           href={cta.href}
           style={{ x, y }}
-          className="group flex min-h-11 items-center gap-2 rounded-full bg-ink px-5 text-label font-bold text-paper uppercase transition-colors duration-200 hover:bg-ink/88 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ink"
+          className="group flex min-h-11 items-center gap-3 rounded-full bg-ink py-1 pr-1 pl-5 text-label font-bold text-paper uppercase transition-colors duration-200 hover:bg-ink/88 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ink"
         >
           {cta.label}
-          <span aria-hidden className="relative inline-block size-[1em] overflow-hidden">
+          <span aria-hidden className="relative grid size-8 place-items-center overflow-hidden rounded-full bg-signal">
             <span className="absolute inset-0 grid place-items-center transition-transform duration-500 ease-print group-hover:translate-x-full group-hover:-translate-y-full">
               ↗
             </span>
@@ -250,7 +265,6 @@ export const SiteNav = ({ nav }: { nav: Nav }) => {
   const [bar, setBar] = useState(false);
   const [open, setOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
-  const status = useDropIn(nav.links.length + 1);
   const menu = useDropIn(1);
 
   useMotionValueEvent(scrollY, "change", (y) => {
@@ -290,14 +304,13 @@ export const SiteNav = ({ nav }: { nav: Nav }) => {
             aria-label="Home"
             className="relative shrink-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
           >
-            <AnimatedMonogram className="h-8 w-auto sm:h-10" />
+            <span className="flex items-center gap-3">
+              <AnimatedMonogram className="h-8 w-auto sm:h-10" />
+              <NavName name={nav.name} />
+            </span>
           </Link>
           <DesktopLinks links={nav.links} />
           <div className="flex items-center gap-5">
-            <motion.span {...status} className="hidden items-center gap-2 font-technical text-micro uppercase lg:flex">
-              <StatusDot />
-              {nav.status}
-            </motion.span>
             <MagneticCta cta={nav.cta} index={nav.links.length + 2} />
             <motion.button
               {...menu}

@@ -1,6 +1,6 @@
 # Module: Content Forge (Content Management), Business Spec
 
-Version 1.5, 2026-11-23 (mobile: screen chips, Edit / Preview switch). Route `/studio/content`, inside the studio shell. Design system: [ADMIN_STYLE.md](../ADMIN_STYLE.md).
+Version 1.6, 2026-11-27 (split = home only; preview for home and splash). Route `/studio/content`, inside the studio shell. Design system: [ADMIN_STYLE.md](../ADMIN_STYLE.md).
 
 Content Forge edits the text of the **public portfolio site**. Every string, date and setting on those pages lives in MongoDB (`site_screens`), and this page is where the owner changes it without touching code.
 
@@ -22,13 +22,16 @@ New portfolio sections are added to `PORTFOLIO_SCREENS` once their schema exists
 | **Centre: fields**      | Screen header (name, `Version n`, `Saved {time} by {who}`, field search), section chips, one card per section, the save bar (`Discard`, `Save`, `Ctrl/⌘ S`).                                                                                                                                                                                                                                                                                      |
 | **Right: live preview** | The real public page in a scaled frame, showing the current drafts (unsaved edits included) as you type. The stage fills the column top to bottom. Views: **Fit to panel** (default: the page renders 900px wide and as tall as the panel, so it fills the stage), **Desktop** (1440×900) and **Mobile** (390×844), centred and scaled to fit; plus `Open page ↗`. For **Shared content**, `Shown on` chips switch between the pages that use it. |
 
-**Split screens.** A screen with more than five sections (the home page) is listed section by section: in the screens column, under the screen's name, each section is its own entry (name and description from `editor.sections`, an icon, a dot when it has unsaved edits). Opening one shows that section alone, with the screen's name above the section's name in the header. Saving still saves the whole screen, and a field search finds matches in every section.
+**Split screens.** Only the home page (the portfolio) is listed section by section; every other screen stays one entry: in the screens column, under the screen's name, each section is its own entry (name and description from `editor.sections`, an icon, a dot when it has unsaved edits). Opening one shows that section alone, with the screen's name above the section's name in the header. Saving still saves the whole screen, and a field search finds matches in every section.
 
 From 1280px wide the page is a **100vh workspace**: the three columns fill the viewport under the topbar and each scrolls on its own (the save bar stays at the bottom of the fields column). Below 1280 the fields and the preview share one column, with a sticky **Edit / Preview** switch on top (the Edit tab shows an amber dot when there are unsaved edits). Below 1024 (phones) the screens become a compact, sideways-scrolling row of chips (icon + name), the hide toggle is not shown (hiding is desktop-only), and **Fit to panel** renders the phone layout of the page.
 
 ### 2b. Preview and impact
 
 - The frame loads `/preview/<slug>` (signed-in only, framable by the same origin only). It renders the real screen component in **preview mode**: the 404 countdown never redirects and the maintenance page never polls `/api/status`.
+- **Screens with a preview:** the home page, the name splash, maintenance and the 404 page; Shared content previews on the pages that use it.
+- **Home page:** the frame renders the whole home page with the section visibility set in Launchpad. Opening a section entry scrolls the frame to that section (Navbar, Hero and Page details go to the top; Footer to the bottom), and focusing a field scrolls to its first outlined match when it is off screen. Home preview visits are not counted by Vercel Analytics.
+- **Name splash:** the splash plays on a loop (a 1.5 s pause between plays) so edits to its lines can be seen.
 - The editor sends drafts to the frame with `postMessage` (shape in `src/lib/shared/content/preview-protocol.ts`; both sides check origin and shape). The frame validates the draft with the screen's schema. If it doesn't pass (for example an empty required field), the last valid version stays and the panel says `Fix the highlighted fields to update the preview.`
 - **Impact:** clicking into a field outlines every place its text appears on the page (blue outline) and the panel says `Status › Kicker: Shown in 1 place on this page`. Text that never appears on the page (browser tab title, search description, screen-reader text) says so instead. Dates are matched as the page prints them.
 

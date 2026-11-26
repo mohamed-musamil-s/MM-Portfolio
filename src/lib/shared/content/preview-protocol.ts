@@ -7,7 +7,7 @@ import { z } from "zod";
  */
 
 /** Portfolio screens that render as a page (the shared record has no page of its own). */
-export const PREVIEWABLE_SCREENS = ["maintenance", "not-found"] as const;
+export const PREVIEWABLE_SCREENS = ["home", "splash", "maintenance", "not-found"] as const;
 export type PreviewableScreen = (typeof PREVIEWABLE_SCREENS)[number];
 
 /** Pages that read the shared record: its preview shows these. */
@@ -22,6 +22,8 @@ export const toPreviewSchema = z.discriminatedUnion("type", [
   z.object({ source: z.literal("content-forge"), type: z.literal("draft"), content: z.unknown(), shared: z.unknown() }),
   /** Texts of the field being edited, to outline where they appear. Empty clears. */
   z.object({ source: z.literal("content-forge"), type: z.literal("focus"), texts: z.array(z.string()) }),
+  /** The home section being edited, to bring it into view (null: the top). */
+  z.object({ source: z.literal("content-forge"), type: z.literal("section"), section: z.string().nullable() }),
 ]);
 export type ToPreviewMessage = z.infer<typeof toPreviewSchema>;
 

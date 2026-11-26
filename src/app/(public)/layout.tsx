@@ -1,5 +1,5 @@
-import { Analytics } from "@vercel/analytics/next";
 import { PublicShell } from "@/components/public/PublicShell";
+import { SiteAnalytics } from "@/components/public/SiteAnalytics";
 import { SplashGate } from "@/components/splash/SplashGate";
 import { getScreenContent } from "@/lib/server/content/screens";
 
@@ -17,7 +17,7 @@ export default async function PublicLayout({ children }: LayoutProps<"/">) {
     <PublicShell>
       {children}
       <SplashGate content={await readSplash()} />
-      <Analytics />
+      <SiteAnalytics />
     </PublicShell>
   );
 }

@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useState } from "react";
+import { HomeView } from "@/components/home/HomeView";
 import { MaintenanceScreen } from "@/components/maintenance/MaintenanceScreen";
+import { NameSplash } from "@/components/splash/NameSplash";
+import { markIntroReady } from "@/components/splash/splash-state";
+import { homeContentSchema, type HomeContent } from "@/lib/shared/content/home-schema";
+import type { SectionVisibility } from "@/lib/shared/content/home-sections";
+import { splashContentSchema, type SplashContent } from "@/lib/shared/content/splash-schema";
 import { NotFoundScreen } from "@/components/not-found/NotFoundScreen";
 import { maintenanceContentSchema, type MaintenanceContent } from "@/lib/shared/content/maintenance-schema";
 import { notFoundContentSchema, type NotFoundContent } from "@/lib/shared/content/not-found-schema";
@@ -16,7 +22,12 @@ import { PreviewModeContext } from "./preview-mode";
 
 type Rendered =
   | { slug: "maintenance"; content: MaintenanceContent; shared: SharedContent }
-  | { slug: "not-found"; content: NotFoundContent; shared: SharedContent };
+  | { slug: "not-found"; content: NotFoundContent; shared: SharedContent }
+  | { slug: "home"; content: HomeContent; shared: SharedContent }
+  | { slug: "splash"; content: SplashContent; shared: SharedContent };
+
+/** Pause between two plays of the splash preview. */
+const SPLASH_REPLAY_MS = 1500;
 
 /** Validates a draft for this screen; null when it doesn't pass (the last valid render stays). */
 const parseDraft = (slug: PreviewableScreen, content: unknown, shared: unknown): Rendered | null => {
@@ -26,6 +37,14 @@ const parseDraft = (slug: PreviewableScreen, content: unknown, shared: unknown):
   }
   if (slug === "maintenance") {
     const result = maintenanceContentSchema.safeParse(content);
+    return result.success ? { slug, content: result.data, shared: sharedResult.data } : null;
+  }
+  if (slug === "home") {
+    const result = homeContentSchema.safeParse(content);
+    return result.success ? { slug, content: result.data, shared: sharedResult.data } : null;
+  }
+  if (slug === "splash") {
+    const result = splashContentSchema.safeParse(content);
     return result.success ? { slug, content: result.data, shared: sharedResult.data } : null;
   }
   const result = notFoundContentSchema.safeParse(content);
@@ -55,7 +74,49 @@ const highlight = (texts: string[]): number => {
     return box.width > 4 && box.height > 4;
   });
   hits.forEach((element) => element.setAttribute(HIT, ""));
+  // Bring the first match into view when it is off screen (long pages such as the home page).
+  const first = hits[0];
+  if (first) {
+    const box = first.getBoundingClientRect();
+    if (box.top < 0 || box.bottom > window.innerHeight) {
+      first.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
+  }
   return hits.length;
+};
+
+/** Scrolls the home preview to a section: its anchor, the footer, or the top for the navbar, hero and page details. */
+const showSection = (section: string | null) => {
+  const target =
+    section === "footer"
+      ? document.querySelector("footer")
+      : section && !["nav", "hero", "meta"].includes(section)
+        ? document.getElementById(section)
+        : null;
+  if (target) {
+    window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY, behavior: "smooth" });
+  } else {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+};
+
+/** The splash on a loop: it plays, waits a moment, and plays again. */
+const SplashLoop = ({ content }: { content: SplashContent }) => {
+  const [take, setTake] = useState(0);
+  const [playing, setPlaying] = useState(true);
+  useEffect(() => {
+    if (playing) return;
+    const timer = window.setTimeout(() => {
+      setTake((value) => value + 1);
+      setPlaying(true);
+    }, SPLASH_REPLAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [playing]);
+  return playing ? (
+    <NameSplash key={take} content={content} onExitStart={() => undefined} onFinished={() => setPlaying(false)} />
+  ) : (
+    <div className="grid min-h-svh place-items-center bg-paper" />
+  );
 };
 
 const reply = (message: FromPreviewMessage) => window.parent.postMessage(message, window.location.origin);
@@ -69,10 +130,13 @@ export const LivePreview = ({
   slug,
   initialContent,
   initialShared,
+  visible,
 }: {
   slug: PreviewableScreen;
   initialContent: unknown;
   initialShared: unknown;
+  /** Which home sections show (Launchpad), so the preview matches the live page. */
+  visible: SectionVisibility;
 }) => {
   const [rendered, setRendered] = useState(() => parseDraft(slug, initialContent, initialShared));
   const [valid, setValid] = useState(true);
@@ -91,6 +155,10 @@ export const LivePreview = ({
         setFocusTexts(message.data.texts);
         return;
       }
+      if (message.data.type === "section") {
+        showSection(message.data.section);
+        return;
+      }
       const next = parseDraft(slug, message.data.content, message.data.shared);
       setValid(next !== null);
       if (next) {
@@ -98,6 +166,8 @@ export const LivePreview = ({
       }
     };
     window.addEventListener("message", onMessage);
+    // No splash plays in the preview frame, so the home page's entrances can start at once.
+    markIntroReady();
     reply({ source: "content-forge-preview", type: "ready" });
     return () => window.removeEventListener("message", onMessage);
   }, [slug]);
@@ -114,7 +184,11 @@ export const LivePreview = ({
   return (
     <PreviewModeContext value>
       <style>{`[${HIT}]{outline:2px solid #2563eb!important;outline-offset:6px;border-radius:3px;background-color:rgb(37 99 235 / 0.08)}`}</style>
-      {rendered.slug === "maintenance" ? (
+      {rendered.slug === "home" ? (
+        <HomeView home={rendered.content} visible={visible} />
+      ) : rendered.slug === "splash" ? (
+        <SplashLoop content={rendered.content} />
+      ) : rendered.slug === "maintenance" ? (
         <MaintenanceScreen
           content={rendered.content}
           shared={rendered.shared}

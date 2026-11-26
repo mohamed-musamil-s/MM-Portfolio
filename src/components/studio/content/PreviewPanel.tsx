@@ -42,6 +42,8 @@ const useIsPhone = () =>
   );
 
 const PAGE_ROUTES: Record<PreviewableScreen, string> = {
+  home: ROUTES.home,
+  splash: ROUTES.home,
   maintenance: ROUTES.maintenance,
   "not-found": ROUTES.notFound,
 };
@@ -89,13 +91,15 @@ type PreviewPanelProps = {
   /** Texts of the field being edited (empty when none). */
   focusTexts: string[];
   focusLabel: string | null;
+  /** On the home page: the section being edited, brought into view in the frame. */
+  section?: string | null;
 };
 
 /**
  * Right column of Content Forge: the real page in a scaled frame, updated as
  * you type, with the focused field outlined where it appears.
  */
-export const PreviewPanel = ({ copy, targets, drafts, focusTexts, focusLabel }: PreviewPanelProps) => {
+export const PreviewPanel = ({ copy, targets, drafts, focusTexts, focusLabel, section = null }: PreviewPanelProps) => {
   const panel = copy.previewPanel;
   const [device, setDevice] = useState<Device>("fit");
   const [chosen, setChosen] = useState<PreviewableScreen | null>(null);
@@ -146,6 +150,12 @@ export const PreviewPanel = ({ copy, targets, drafts, focusTexts, focusLabel }: 
       });
     }
   }, [focusKey, ready]);
+
+  useEffect(() => {
+    if (ready && target === "home") {
+      send(iframeRef.current, { source: "content-forge", type: "section", section });
+    }
+  }, [ready, section, target]);
 
   const impact = !focusLabel
     ? panel.idle

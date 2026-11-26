@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { LivePreview } from "@/components/public/LivePreview";
 import { requireSession } from "@/lib/server/auth/guard";
 import { getScreenContent } from "@/lib/server/content/screens";
+import { getSectionVisibility } from "@/lib/server/settings/section-visibility";
 import { isPreviewableScreen } from "@/lib/shared/content/preview-protocol";
 import { ROUTES } from "@/lib/shared/routes";
 
@@ -23,6 +24,17 @@ export default async function PreviewPage({ params }: PageProps<"/preview/[slug]
     notFound();
   }
   await requireSession(`${ROUTES.preview}/${slug}`);
-  const [content, shared] = await Promise.all([getScreenContent(slug), getScreenContent("shared")]);
-  return <LivePreview slug={slug} initialContent={toJson(content)} initialShared={toJson(shared)} />;
+  const [content, shared, sections] = await Promise.all([
+    getScreenContent(slug),
+    getScreenContent("shared"),
+    getSectionVisibility(),
+  ]);
+  return (
+    <LivePreview
+      slug={slug}
+      initialContent={toJson(content)}
+      initialShared={toJson(shared)}
+      visible={sections.visible}
+    />
+  );
 }

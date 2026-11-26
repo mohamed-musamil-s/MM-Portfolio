@@ -90,11 +90,10 @@ type Issue = { path: (string | number)[]; message: string; code?: string; minimu
 type SaveResponse =
   { ok: true; data: { version: number } } | { ok: false; error: { code: string; message: string; issues?: Issue[] } };
 
-/** Screens with more top-level sections than this are split: each section is its own entry in the screens list. */
-const SPLIT_FROM = 5;
+/** Screens listed section by section (each section its own entry): only the home page, which has many. */
+const SPLIT_SCREENS: readonly string[] = ["home"];
 
-/** True when a screen's sections are listed as separate entries (the home page). */
-const isSplit = (content: JsonObject | undefined) => Object.keys(content ?? {}).length > SPLIT_FROM;
+const isSplit = (slug: string) => SPLIT_SCREENS.includes(slug);
 
 const noopSubscribe = () => () => undefined;
 /** Local date-time, rendered only in the browser so server and client HTML match. */
@@ -230,7 +229,7 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
 
   const allSections = draft ? Object.entries(draft) : [];
   // A split screen (the home page) edits one section at a time; a search still finds matches in every section.
-  const split = isSplit(draft);
+  const split = isSplit(selected);
   const focusSection = split ? (section ?? allSections[0]?.[0] ?? null) : null;
   const sections = allSections.filter(
     ([key, value]) => matchesQuery(key, value, query) && (query || focusSection === null || key === focusSection),
@@ -238,7 +237,7 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
   /** Sections with unsaved edits, as "slug:section", for the dots in the screens list. */
   const dirtySections = new Set(
     screens.flatMap((item) =>
-      isSplit(drafts[item.slug])
+      isSplit(item.slug)
         ? Object.keys(drafts[item.slug] ?? {})
             .filter((key) => !same(drafts[item.slug]?.[key], item.content[key]))
             .map((key) => `${item.slug}:${key}`)
@@ -474,6 +473,7 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
               drafts={drafts}
               focusTexts={previewTexts(focusValue)}
               focusLabel={focusPath ? fieldLabel(focusPath) : null}
+              section={focusSection}
             />
           </aside>
         ) : null}
@@ -549,7 +549,7 @@ const ScreensList = ({
       </div>
       <ul className="flex [scrollbar-width:none] gap-1.5 overflow-x-auto lg:flex-col lg:gap-1 lg:overflow-visible">
         {screens.flatMap((item) => {
-          const parts = isSplit(drafts[item.slug]) ? Object.keys(drafts[item.slug] ?? {}) : [null];
+          const parts = isSplit(item.slug) ? Object.keys(drafts[item.slug] ?? {}) : [null];
           const group =
             parts[0] !== null && open ? (
               <li

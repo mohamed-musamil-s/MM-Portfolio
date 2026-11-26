@@ -19,13 +19,15 @@ import { Pill } from "./section-kit";
  * The home hero (docs/screens/HOME_BUSINESS.md §5), after the previous
  * portfolio: the name massive in the wide face (second line in outline), the
  * role, the intro and two pill buttons on the left; the ink portrait bleeding
- * off the right edge; a stats rail along the bottom. On large screens the
- * section is 180svh with a sticky stage: scrolling moves each layer at its own
- * speed. From the first scroll the stage shrinks into a rounded box over a
- * stone backdrop with its own design (grid, glow, the name huge sliding
- * apart); then the box tips back and lifts away while the stone deepens
- * gradually to ink, meeting the ink marquee band. Entrances wait for the
+ * off the right edge; a stats rail along the bottom. Entrances wait for the
  * splash.
+ *
+ * Large screens: a split curtain. The hero is drawn as two doors meeting in
+ * the middle (each a copy of the same face, clipped to its half). Scrolling
+ * draws a signal seam down the middle, then the doors swing open outwards,
+ * turning a little in 3D, while the paper marquee band and About rise into
+ * place behind them; the colour never changes. Phones and reduced motion: one
+ * plain hero.
  */
 
 type HeroContent = HomeContent["hero"];
@@ -36,92 +38,27 @@ const rise = (ready: boolean, delay: number, distance = 28) => ({
   transition: { delay, duration: 0.9, ease: EASE_PRINT },
 });
 
-/**
- * Resting styles when the scroll effect is off (phones, reduced motion). Explicit, because motion leaves the
- * last scroll-driven inline styles in place when the effect switches off (a window resized from wide to narrow).
- */
-const STAGE_REST = { scale: 1, y: "0svh", rotateX: 0, borderRadius: 0 } as const;
-const DETAILS_REST = { opacity: 1, y: "0svh" } as const;
+/** Scroll (in svh) spent opening the doors while the stage is pinned. */
+const DOOR_TRAVEL_SVH = 100;
+const DOOR_PERSPECTIVE = 1600;
+/** How far each door slides out, and how far it turns, when fully open. */
+const DOOR_SLIDE_VW = 56;
+const DOOR_SWING_DEG = 24;
 
-/** Perspective for the stage as it tips back on the way out. */
-const STAGE_PERSPECTIVE = 1400;
-
-const useHeroScroll = (progress: MotionValue<number>) => ({
+/** Layer drift inside the face while the doors open. */
+const useFaceScroll = (progress: MotionValue<number>) => ({
   lines: [
-    useTransform(progress, [0, 1], ["0vw", "-5vw"]),
-    useTransform(progress, [0, 1], ["0vw", "5vw"]),
-    useTransform(progress, [0, 1], ["0vw", "-3vw"]),
+    useTransform(progress, [0, 1], ["0vw", "-4vw"]),
+    useTransform(progress, [0, 1], ["0vw", "4vw"]),
+    useTransform(progress, [0, 1], ["0vw", "-2vw"]),
   ],
-  details: {
-    opacity: useTransform(progress, [0, 0.35], [1, 0]),
-    y: useTransform(progress, [0, 0.35], ["0svh", "-6svh"]),
-  },
   portrait: {
-    y: useTransform(progress, [0, 1], ["0svh", "-10svh"]),
-    scale: useTransform(progress, [0, 1], [1, 1.08]),
-  },
-  // From the first scroll the stage shrinks into a rounded box; in the second half it tips back and lifts away.
-  stage: {
-    scale: useTransform(progress, [0, 0.5, 1], [1, 0.8, 0.72]),
-    // By the end the box has left the screen entirely, so no strip of it hangs at the top.
-    y: useTransform(progress, [0, 0.5, 1], ["0svh", "-3svh", "-96svh"]),
-    rotateX: useTransform(progress, [0.5, 1], [0, 14]),
-    borderRadius: useTransform(progress, [0, 0.3], [0, 44]),
-    transformPerspective: STAGE_PERSPECTIVE,
-  },
-  // Around the box the backdrop's own design fades in; the stone deepens to ink only as the box lifts away.
-  backdrop: {
-    opacity: useTransform(progress, [0.04, 0.35], [0, 1]),
-    dusk: useTransform(progress, [0.45, 1], [0, 1]),
-    // The name's lines slide together and the block rises to the middle once the box has gone.
-    first: useTransform(progress, [0, 1], ["-22vw", "0vw"]),
-    second: useTransform(progress, [0, 1], ["22vw", "0vw"]),
-    name: useTransform(progress, [0.5, 1], ["0svh", "-30svh"]),
+    y: useTransform(progress, [0, 1], ["0svh", "-8svh"]),
+    scale: useTransform(progress, [0, 1], [1, 1.06]),
   },
 });
 
-/** Behind the box on ink: a fine grid, a signal glow, the name huge in outline sliding apart, role labels. */
-/**
- * Behind the box: a stone backdrop (a shade off the box, so nothing flashes) that deepens to ink as the box
- * lifts away, ready for the ink marquee band. On it: a fine grid, a signal glow, the role labels and the
- * name huge (outlined, then in signal) sliding apart.
- */
-const Backdrop = ({
-  hero,
-  motionStyle,
-}: {
-  hero: HeroContent;
-  motionStyle: ReturnType<typeof useHeroScroll>["backdrop"];
-}) => (
-  <div aria-hidden className="pointer-events-none absolute inset-0 hidden overflow-hidden bg-newsprint lg:block">
-    <motion.div style={{ opacity: motionStyle.dusk }} className="absolute inset-0 bg-ink" />
-    <motion.div style={{ opacity: motionStyle.opacity }} className="absolute inset-0">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,color-mix(in_srgb,var(--text-primary)_7%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_srgb,var(--text-primary)_7%,transparent)_1px,transparent_1px)] bg-size-[calc(100%/12)_calc(100%/8)]" />
-      <div className="absolute top-1/2 left-1/2 h-[45vh] w-[60vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-signal/15 blur-[140px]" />
-      {/* Labels and outline in a mid grey that reads on both the stone and the ink. */}
-      <div className="absolute inset-x-0 top-6 flex justify-between px-page font-technical text-micro text-[color-mix(in_srgb,var(--text-primary)_38%,var(--bg-primary))] uppercase">
-        <span>{hero.role}</span>
-        <span>{hero.roleMeta}</span>
-      </div>
-      <motion.div
-        style={{ y: motionStyle.name }}
-        className="absolute inset-x-0 bottom-[4svh] flex flex-col px-page font-wide text-[12.5vw] leading-[0.82] font-semibold whitespace-nowrap uppercase"
-      >
-        <motion.span
-          style={{ x: motionStyle.first }}
-          className="text-transparent [-webkit-text-stroke:1.5px_color-mix(in_srgb,var(--text-primary)_38%,var(--bg-primary))]"
-        >
-          {hero.lines[0]}
-        </motion.span>
-        {hero.lines[1] ? (
-          <motion.span style={{ x: motionStyle.second }} className="self-end text-signal">
-            {hero.lines[1]}
-          </motion.span>
-        ) : null}
-      </motion.div>
-    </motion.div>
-  </div>
-);
+type FaceScroll = ReturnType<typeof useFaceScroll>;
 
 /* ---------- Pieces ---------- */
 
@@ -276,74 +213,130 @@ const Frame = ({ children, className }: { children: ReactNode; className?: strin
   <div className={cn("relative mx-auto w-full max-w-[1440px]", className)}>{children}</div>
 );
 
+/* ---------- The face (drawn once, or twice as the doors) ---------- */
+
+const Face = ({ hero, ready, scroll }: { hero: HeroContent; ready: boolean; scroll: FaceScroll | null }) => (
+  <div className="relative overflow-hidden bg-paper lg:h-full">
+    {/* Depth field: a faint 12-column grid and a soft signal aura. */}
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,var(--border-ink)_1px,transparent_1px)] bg-size-[calc(100%/12)_100%] opacity-[0.045]"
+    />
+    <div
+      aria-hidden
+      className="pointer-events-none absolute top-[20%] right-[8%] size-[46vw] rounded-full bg-signal/[0.07] blur-[120px]"
+    />
+
+    {/* Portrait, bleeding off the right edge (large screens). */}
+    <div className="pointer-events-none absolute top-[9%] right-0 bottom-0 hidden w-[48%] lg:block">
+      <Portrait portrait={hero.portrait} ready={ready} style={scroll?.portrait} />
+    </div>
+
+    <Frame className="flex flex-col px-page pt-28 pb-6 sm:pt-32 lg:h-full lg:pb-6">
+      <div className="flex flex-1 flex-col justify-center gap-[clamp(1.25rem,3.2svh,2.25rem)] lg:max-w-[56%]">
+        <motion.span
+          {...rise(ready, 0.05, 10)}
+          className="flex w-fit items-center gap-2.5 rounded-full border border-ink/12 bg-paper/70 px-3.5 py-2 font-technical text-micro uppercase backdrop-blur-sm"
+        >
+          <StatusDot />
+          {hero.status}
+        </motion.span>
+        <Name lines={hero.lines} drift={scroll?.lines ?? []} ready={ready} />
+        <Details hero={hero} ready={ready} />
+      </div>
+
+      {/* Portrait in the flow on phones and tablets. */}
+      <div className="relative mt-8 aspect-[1000/1074] w-full max-w-md self-center lg:hidden">
+        <Portrait portrait={hero.portrait} ready={ready} />
+      </div>
+
+      <div className="relative mt-6 lg:mt-0 lg:max-w-[52%]">
+        <Stats stats={hero.stats} ready={ready} />
+      </div>
+    </Frame>
+  </div>
+);
+
+/** One door: the face clipped to its half, sliding out and swinging away about its outer edge. */
+const Door = ({ side, open, children }: { side: "left" | "right"; open: MotionValue<number>; children: ReactNode }) => {
+  const direction = side === "left" ? -1 : 1;
+  const x = useTransform(open, [0, 1], ["0vw", `${direction * DOOR_SLIDE_VW}vw`]);
+  const rotateY = useTransform(open, [0, 1], [0, -direction * DOOR_SWING_DEG]);
+  const shade = useTransform(open, [0, 1], [0, 0.35]);
+  return (
+    <motion.div
+      style={{ x, rotateY, transformPerspective: DOOR_PERSPECTIVE }}
+      className={cn(
+        "pointer-events-auto absolute inset-0",
+        side === "left" ? "origin-left [clip-path:inset(0_50%_0_0)]" : "origin-right [clip-path:inset(0_0_0_50%)]",
+      )}
+    >
+      {children}
+      {/* The inner edge darkens as the door turns away. */}
+      <motion.div
+        aria-hidden
+        style={{ opacity: shade }}
+        className={cn(
+          "pointer-events-none absolute inset-y-0 w-1/2",
+          side === "left"
+            ? "left-0 bg-[linear-gradient(to_left,var(--text-primary),transparent_60%)]"
+            : "right-0 bg-[linear-gradient(to_right,var(--text-primary),transparent_60%)]",
+        )}
+      />
+    </motion.div>
+  );
+};
+
 /* ---------- Hero ---------- */
 
 export const Hero = ({ hero }: { hero: HeroContent }) => {
   const ready = useIntroReady();
   const { reducedMotion } = useMotionTheme();
   const wide = useMediaQuery("(min-width: 1024px)");
-  const animated = wide && !reducedMotion;
+  const doors = wide && !reducedMotion;
   const section = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: section, offset: ["start start", "end end"] });
-  const scroll = useHeroScroll(scrollYProgress);
+  const scroll = useFaceScroll(scrollYProgress);
+  // First a seam draws down the middle, then the doors open.
+  const seam = useTransform(scrollYProgress, [0, 0.12], [0, 1]);
+  const seamFade = useTransform(scrollYProgress, [0.12, 0.4], [1, 0]);
+  const open = useTransform(scrollYProgress, [0.12, 0.96], [0, 1]);
 
   return (
     <>
-      <section ref={section} aria-label={hero.lines.join(" ")} className="relative bg-ink lg:h-[180svh]">
-        <div className="lg:sticky lg:top-0 lg:h-svh lg:overflow-hidden">
-          {animated ? <Backdrop hero={hero} motionStyle={scroll.backdrop} /> : null}
-          <motion.div
-            style={animated ? scroll.stage : STAGE_REST}
-            className="relative origin-[50%_20%] overflow-hidden bg-paper shadow-[0_50px_100px_-50px_rgb(0_0_0/0.45)] ring-1 ring-ink/8 lg:h-full"
-          >
-            {/* Depth field: a faint 12-column grid and a soft signal aura. */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,var(--border-ink)_1px,transparent_1px)] bg-size-[calc(100%/12)_100%] opacity-[0.045]"
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute top-[20%] right-[8%] size-[46vw] rounded-full bg-signal/[0.07] blur-[120px]"
-            />
-
-            {/* Portrait, bleeding off the right edge (large screens). */}
-            <div className="pointer-events-none absolute top-[9%] right-0 bottom-0 hidden w-[48%] lg:block">
-              <Portrait portrait={hero.portrait} ready={ready} style={animated ? scroll.portrait : undefined} />
-            </div>
-
-            <Frame className="flex flex-col px-page pt-28 pb-6 sm:pt-32 lg:h-full lg:pb-6">
-              <div className="flex flex-1 flex-col justify-center gap-[clamp(1.25rem,3.2svh,2.25rem)] lg:max-w-[56%]">
-                <motion.span
-                  {...rise(ready, 0.05, 10)}
-                  className="flex w-fit items-center gap-2.5 rounded-full border border-ink/12 bg-paper/70 px-3.5 py-2 font-technical text-micro uppercase backdrop-blur-sm"
-                >
-                  <StatusDot />
-                  {hero.status}
-                </motion.span>
-                <Name lines={hero.lines} drift={animated ? scroll.lines : []} ready={ready} />
-                <motion.div style={animated ? scroll.details : DETAILS_REST}>
-                  <Details hero={hero} ready={ready} />
-                </motion.div>
+      <section
+        ref={section}
+        aria-label={hero.lines.join(" ")}
+        className={cn("relative", doors && "pointer-events-none z-20")}
+        style={doors ? { height: `${100 + DOOR_TRAVEL_SVH}svh` } : undefined}
+      >
+        {doors ? (
+          <div className="sticky top-0 h-svh overflow-clip">
+            <Door side="left" open={open}>
+              <Face hero={hero} ready={ready} scroll={scroll} />
+            </Door>
+            {/* The second door is a visual copy: hidden from assistive tech and the keyboard. */}
+            <Door side="right" open={open}>
+              <div aria-hidden inert className="h-full">
+                <Face hero={hero} ready={ready} scroll={scroll} />
               </div>
-
-              {/* Portrait in the flow on phones and tablets. */}
-              <div className="relative mt-8 aspect-[1000/1074] w-full max-w-md self-center lg:hidden">
-                <Portrait portrait={hero.portrait} ready={ready} />
-              </div>
-
-              <motion.div
-                style={animated ? scroll.details : DETAILS_REST}
-                className="relative mt-6 lg:mt-0 lg:max-w-[52%]"
-              >
-                <Stats stats={hero.stats} ready={ready} />
-              </motion.div>
-            </Frame>
-          </motion.div>
-        </div>
+            </Door>
+            <motion.span
+              aria-hidden
+              style={{ scaleY: seam, opacity: seamFade }}
+              className="absolute inset-y-0 left-1/2 w-0.5 origin-top -translate-x-1/2 bg-signal"
+            />
+          </div>
+        ) : (
+          <Face hero={hero} ready={ready} scroll={null} />
+        )}
       </section>
 
-      {/* Velocity marquee band; below the words the ink fades into the paper of About, so the colour never jumps. */}
-      <div className="relative z-10 overflow-hidden bg-[linear-gradient(to_bottom,var(--text-primary)_0%,var(--text-primary)_42%,var(--bg-primary)_100%)] pt-6 pb-[16svh] text-paper sm:pt-8">
+      {/* Velocity marquee band, on paper. With the doors it starts one screen up, so it waits behind them. */}
+      <div
+        className="relative overflow-hidden border-y border-ink/10 bg-paper py-6 text-ink sm:py-8"
+        style={doors ? { marginTop: `-${DOOR_TRAVEL_SVH}svh` } : undefined}
+      >
         <VelocitySkew max={3}>
           <Marquee label={hero.marquee.join(", ")} baseSpeed={2.5}>
             {hero.marquee.map((word, index) => (
@@ -352,7 +345,7 @@ export const Hero = ({ hero }: { hero: HeroContent }) => {
                 className="flex items-center gap-[0.35em] pr-[0.35em] font-wide text-[clamp(2.2rem,6vw,5.5rem)] leading-none font-semibold tracking-[-0.02em] uppercase"
               >
                 {index % 2 === 1 ? (
-                  <span className="text-transparent [-webkit-text-stroke:max(1px,0.012em)_var(--bg-primary)]">
+                  <span className="text-transparent [-webkit-text-stroke:max(1px,0.012em)_var(--text-primary)]">
                     {word}
                   </span>
                 ) : (

@@ -43,6 +43,8 @@ export const splashContentSchema = z.object({
   /** Small note beside the button. */
   label: text(40),
   skip: text(24),
+  /** Key hint on the skip button (Esc does the same). */
+  skipKey: text(8),
   /** Accessible name of the intro. */
   srLabel: text(80),
 });

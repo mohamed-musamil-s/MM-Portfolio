@@ -46,6 +46,7 @@ const SCREENS = {
     cta: "Enter portfolio",
     label: "Est. 2026",
     skip: "Skip intro",
+    skipKey: "Esc",
     srLabel: "Intro animation",
   },
   // Portfolio home: navbar and hero (docs/screens/HOME_BUSINESS.md). Generic: set real details in Content Forge.

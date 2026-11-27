@@ -6,13 +6,13 @@ Version 4.0, 2026-11-25. **A 33-second showreel, cut to a 120 BPM beat, that pla
 
 ## 1. Business purpose
 
-| Goal               | How the splash delivers it                                                                                                 |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| First impression   | A designed, beat-cut sequence instead of a page that just loads.                                                           |
-| Say who and what   | The name twice (giant, then signed), three disciplines, the role, a call to action.                                        |
-| Brand recall       | The orange dot links every scene and ends as the monogram's period.                                                        |
-| Never in the way   | A **Skip intro** button (bottom right), Esc, and the clicked call to action all open the page; skipped for reduced motion. |
-| No content in code | Every word lives in MongoDB (`site_screens`, `_id: "splash"`), edited in Content Forge.                                    |
+| Goal               | How the splash delivers it                                                                                                                                                                                                                                 |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| First impression   | A designed, beat-cut sequence instead of a page that just loads.                                                                                                                                                                                           |
+| Say who and what   | The name twice (giant, then signed), three disciplines, the role, a call to action.                                                                                                                                                                        |
+| Brand recall       | The orange dot links every scene and ends as the monogram's period.                                                                                                                                                                                        |
+| Never in the way   | A **Skip intro** button (bottom right, with an `Esc` key hint) and the Esc key jump to the end card: the name plays out, then the page opens. On the end card, Skip, Esc and the clicked call to action open the page at once. Skipped for reduced motion. |
+| No content in code | Every word lives in MongoDB (`site_screens`, `_id: "splash"`), edited in Content Forge.                                                                                                                                                                    |
 
 ## 2. When it shows
 
@@ -47,7 +47,7 @@ The splash has no live preview in Content Forge; its words are edited there and 
 | `name.first`, `name.last`                         | Giant first name; full name on the end card            | `Your`, `Name` (set the real name in Content Forge)                  |
 | `tagline.lead`, `tagline.key`                     | Line under the name                                    | `Designer & developer crafting`, `interfaces that feel alive.`       |
 | `cta`, `label`                                    | The button the cursor clicks, the note beside it       | `Enter portfolio`, `Est. 2026`                                       |
-| `skip`, `srLabel`                                 | Skip button, accessible name                           | `Skip intro`, `Intro animation`                                      |
+| `skip`, `skipKey`, `srLabel`                      | Skip button, its key hint, accessible name             | `Skip intro`, `Esc`, `Intro animation`                               |
 
 Seeds stay generic: no personal details in code or seed files.
 

@@ -7,7 +7,7 @@ import { MONOGRAM_LETTERS, MONOGRAM_VIEWBOX } from "@/lib/shared/brand/monogram"
 import { createRegistry } from "./splash-kit";
 import { markOnScreen, measureIfMounted, navbarTarget, paint, type ExitState, type Stage } from "./splash-paint";
 import { FLOOD_COLORS, HIDDEN, Scenes } from "./splash-scenes";
-import { EXIT_AT, EXIT_SECONDS } from "./splash-timeline";
+import { END_CARD_AT, EXIT_AT, EXIT_SECONDS } from "./splash-timeline";
 
 /*
  * The name splash on `/` (docs/screens/SPLASH_BUSINESS.md): about 31 seconds
@@ -16,8 +16,9 @@ import { EXIT_AT, EXIT_SECONDS } from "./splash-timeline";
  * (splash-timeline.ts). A requestAnimationFrame loop only supplies `t`.
  *
  * It ends with the logo flying to the navbar logo of the page beneath while
- * the splash fades. Skip, Esc and the clicked call to action start that exit
- * straight away.
+ * the splash fades. Skip and Esc jump to the end card (the name), which then
+ * plays out into that exit; on the end card, Skip, Esc and the clicked call
+ * to action start the exit straight away.
  */
 
 type NameSplashProps = {
@@ -36,6 +37,8 @@ export const NameSplash = ({ content, onExitStart, onFinished }: NameSplashProps
   const exit = useRef<ExitState | null>(null);
   const paused = useRef(false);
   const lastT = useRef(0);
+  /** Seconds into the timeline to start from (set by a skip before the clock starts). */
+  const startAt = useRef(0);
   const finished = useRef(onFinished);
   const exitStarted = useRef(onExitStart);
   const chipCount = content.stack.skills.length;
@@ -123,7 +126,7 @@ export const NameSplash = ({ content, onExitStart, onFinished }: NameSplashProps
       if (root instanceof HTMLElement) {
         resize.observe(root);
       }
-      start.current = performance.now();
+      start.current = performance.now() - startAt.current * 1000;
       frame = requestAnimationFrame(tick);
     });
     return () => {
@@ -134,15 +137,31 @@ export const NameSplash = ({ content, onExitStart, onFinished }: NameSplashProps
     };
   }, [nodes, chipCount, statementCount]);
 
-  /** Skip, the clicked call to action and Esc all start the exit now (or keep the one already under way). */
+  /** The clicked call to action starts the exit now (or keeps the one already under way). */
   const enter = () => {
     exitStart.current = Math.min(lastT.current, exitStart.current);
   };
 
+  /** Skip and Esc: before the end card, jump to it (the name plays, then the exit); on it, exit now. */
+  const skip = () => {
+    if (lastT.current >= END_CARD_AT) {
+      enter();
+      return;
+    }
+    startAt.current = END_CARD_AT;
+    lastT.current = END_CARD_AT;
+    start.current = performance.now() - END_CARD_AT * 1000;
+  };
+  const skipRef = useRef(skip);
+  useEffect(() => {
+    skipRef.current = skip;
+  });
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        exitStart.current = Math.min(lastT.current, exitStart.current);
+      if (event.key === "Escape" && !event.repeat) {
+        event.preventDefault();
+        skipRef.current();
       }
     };
     window.addEventListener("keydown", onKey);
@@ -184,11 +203,17 @@ export const NameSplash = ({ content, onExitStart, onFinished }: NameSplashProps
 
         <button
           type="button"
-          onClick={enter}
+          onClick={skip}
+          aria-keyshortcuts="Escape"
           className="absolute right-4 bottom-4 inline-flex items-center gap-2 rounded-full border border-ink/15 bg-paper/90 px-4 py-2 font-technical text-xs tracking-[0.16em] text-ink uppercase shadow-sm backdrop-blur-sm transition-colors duration-200 ease-print hover:bg-ink hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal sm:right-8 sm:bottom-8"
         >
           {content.skip}
-          <span aria-hidden>→</span>
+          <kbd
+            aria-hidden
+            className="rounded-sm border border-current/25 px-1.5 py-0.5 font-technical text-[0.625rem] leading-none tracking-[0.08em] opacity-70"
+          >
+            {content.skipKey}
+          </kbd>
         </button>
       </div>
 

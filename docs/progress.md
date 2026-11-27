@@ -403,3 +403,4 @@ Verified with a production build (`next start`) connected to Atlas:
 - Launchpad: a launch console (status strip, page outline with switchable section blocks, version timeline).
 - Mission Control: command banner, 7-day traffic, health check, activity timeline, recent messages.
 - Dev DB: studio-shell has `inbox.bell`, `launchpad.status`, `launchpad.outline`, `launchpad.versions.changedLabel`, and the new `missionControl` fields.
+- [ ] Production: the splash content needs `skipKey` ("Esc"), or the splash fails validation. Same as the seed.

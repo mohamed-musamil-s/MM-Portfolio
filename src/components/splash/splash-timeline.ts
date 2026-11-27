@@ -88,6 +88,8 @@ export const T = {
 } as const;
 
 export const EXIT_AT = T.exit;
+/** Where Skip and Esc jump to: the paper flood that opens the end card (the name), which then plays out. */
+export const END_CARD_AT = T.floods[4];
 export const EXIT_SECONDS = 1.4;
 
 export const statementAt = (index: number): number => T.statementsIn + index * BEAT;

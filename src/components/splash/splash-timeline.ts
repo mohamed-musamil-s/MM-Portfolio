@@ -14,23 +14,21 @@ export const BEAT = 0.5;
 
 /** Every scene's cues, in seconds. Outgoing things leave before incoming ones arrive. */
 export const T = {
-  // Hook: "Hello.", then the full name shrinks letter by letter into "MM."
+  // Opening: "Let's talk craft.", a giant "Hello.", then the full name (the dot as its full stop) and the tagline.
+  // No logo yet: it stays a secret until the name splash at the end.
   introIn: 0.12,
   introOut: 0.38,
   helloIn: 0.5,
-  bracketIn: 1,
   helloOut: 1.25,
-  nameIn: 1.35,
-  shrink: 2.75,
-  bracketOut: 4.3,
-  morph: 4.6,
-  hookOut: 5.55,
+  nameRowIn: 1.5,
+  taglineIn: 2.1,
+  openOut: 5.2,
   // Loading
   loadIn: 6,
   countFrom: 6.15,
   countTo: 7.5,
   loadOut: 7.7,
-  // Floods: orange, ink, paper (moments), ink (statements), paper (end card)
+  // Floods: orange, ink, paper (moments), ink (statements), paper (the name splash)
   floods: [8, 8.5, 9, 24, 27.5],
   momentsIn: [8.18, 8.68, 9.18],
   momentsOut: [8.4, 8.9, 9.5],
@@ -73,22 +71,23 @@ export const T = {
   ruleIn: 24.3,
   statementsIn: 24.5,
   statementsOut: 27.1,
-  // End card
-  markIn: 27.7,
-  orbitCollapse: 28.7,
-  markSettle: 29,
-  nameRowIn: 29.1,
-  taglineIn: 29.6,
-  ctaIn: 30,
-  labelIn: 30.2,
-  cursorEnd: 30.1,
-  click: 30.9,
-  // Exit: the splash fades while the mark flies to the page's navbar.
-  exit: 31.5,
+  // Name splash: the full name rolls in, then shrinks letter by letter into "MM." (the dot as its period).
+  bracketIn: 27.85,
+  nameIn: 28.1,
+  shrink: 29.1,
+  bracketOut: 30.65,
+  morph: 30.95,
+  // The call to action under "MM.", clicked by the cursor.
+  ctaIn: 31.45,
+  cursorEnd: 31.55,
+  labelIn: 31.65,
+  click: 32.35,
+  // Exit: the splash fades while "MM." flies to the page's navbar.
+  exit: 32.95,
 } as const;
 
 export const EXIT_AT = T.exit;
-/** Where Skip and Esc jump to: the paper flood that opens the end card (the name), which then plays out. */
+/** Where Skip and Esc jump to: the paper flood that opens the name splash, which then plays out into the exit. */
 export const END_CARD_AT = T.floods[4];
 export const EXIT_SECONDS = 1.4;
 
@@ -139,8 +138,8 @@ export type SplashLayout = {
   chips: readonly Box[];
   statements: readonly WordLayout[];
   /** End card: the big mark with its orbit, then the mark beside the name. */
-  bigMark: Box;
-  endMark: Box;
+  /** The opening card's full name (its end is where the dot sits as the full stop). */
+  endName: WordLayout;
   pill: Box;
 };
 
@@ -225,9 +224,6 @@ export const hookLogoOf = (name: NameLayout): Box => {
 
 /** 0..1: the text "MM" giving way to the monogram. */
 export const morphAt = (t: number): number => expoInOut(progress(t, T.morph, 0.3));
-
-/** 0..1: the hook's logo leaving before the loading scene. */
-export const hookOutAt = (t: number): number => expoInOut(progress(t, T.hookOut, 0.35));
 
 /* ---------- Text motion ---------- */
 
@@ -349,7 +345,7 @@ export type MatrixDot = { x: number; y: number; r: number; tone: "ink" | "faint"
 
 /**
  * Ripples out of the dot, rides a wave, becomes a lit halftone sphere,
- * lights up as the monogram, then the letters' dots swell until they merge.
+ * lights up as a circle, then its dots swell until they merge (the logo stays secret).
  */
 export const matrixAt = (t: number, layout: SplashLayout): { dots: MatrixDot[]; clipToLetters: boolean } => {
   if (t < T.gridIn || t >= T.condense + 0.45) {
@@ -393,9 +389,19 @@ export const matrixAt = (t: number, layout: SplashLayout): { dots: MatrixDot[]; 
   return { dots: result, clipToLetters: condense > 0 };
 };
 
-/* ---------- The monogram (matrix, then the stack hub) ---------- */
+/* ---------- The secret circle (matrix, then the stack hub) ---------- */
 
-/** The solid monogram replaces the dot matrix the moment the dots have merged into letters. */
+/**
+ * The logo is kept for the end: the matrix lights up a circle instead, condensing into a solid
+ * ink disc (as tall as the box, centred) with the dot at its core. It then becomes the stack hub.
+ */
+export const coreOf = (box: Box): Point & { size: number } => ({
+  x: box.x + box.w / 2,
+  y: box.y + box.h / 2,
+  size: box.h * 0.26,
+});
+
+/** The solid circle replaces the dot matrix the moment the dots have merged into it. */
 export const logoAt = (t: number, layout: SplashLayout): { box: Box; shown: boolean } => ({
   box: mixBox(layout.logo, layout.hub, spring(progress(t, T.hubIn, 0.6))),
   shown: t >= T.condense + 0.42 && t < T.floods[3] + 0.3,
@@ -435,38 +441,6 @@ export const tagAt = (t: number, index: number, layout: SplashLayout): Point & {
 };
 
 /* ---------- End card ---------- */
-
-export const ORBIT_DOTS = 28;
-
-/** The ring of dots orbiting the big mark, spiralling into its period. */
-export const orbitAt = (t: number, layout: SplashLayout): { x: number; y: number; r: number; alpha: number }[] => {
-  if (t < T.markIn || t > T.markSettle + 0.2) {
-    return [];
-  }
-  const mark = layout.bigMark;
-  const middle = { x: mark.x + mark.w / 2, y: mark.y + mark.h / 2 };
-  const period = periodOf(mark);
-  const open = spring(progress(t, T.markIn + 0.1, 0.6));
-  const collapse = expoInOut(progress(t, T.orbitCollapse, 0.4));
-  return Array.from({ length: ORBIT_DOTS }, (_, index) => {
-    const angle = (index / ORBIT_DOTS) * Math.PI * 2 + (t - T.markIn) * 1.2 + collapse * 4;
-    const ring = {
-      x: middle.x + Math.cos(angle) * mark.w * 0.78 * open,
-      y: middle.y + Math.sin(angle) * mark.h * 1.45 * open,
-    };
-    return {
-      ...mixPoint(ring, period, collapse),
-      r: 1.4 + rand(index, 21) * 1.6,
-      alpha: open * (1 - collapse * collapse) * (0.4 + 0.6 * rand(index, 22)),
-    };
-  });
-};
-
-/** The end-card mark: grows big and centred, then settles beside the name. */
-export const markAt = (t: number, layout: SplashLayout): { box: Box; scale: number } => ({
-  box: mixBox(layout.bigMark, layout.endMark, spring(progress(t, T.markSettle, 0.6))),
-  scale: spring(progress(t, T.markIn, 0.55)),
-});
 
 export type PillState = { scale: number; lit: number };
 
@@ -511,7 +485,7 @@ export type Camera = { scale: number; focus: Point };
 
 /**
  * Pushes in a little every scene (never still), zooms onto the drag in the
- * design scene, kicks on the end card, and settles back to 1 for the exit so
+ * design scene, kicks as the opening name lands, and settles back to 1 for the exit so
  * the mark can land on the real navbar.
  */
 export const cameraAt = (t: number, layout: SplashLayout): Camera => {
@@ -524,7 +498,7 @@ export const cameraAt = (t: number, layout: SplashLayout): Camera => {
   let scale = 1 + PUSH_PER_SCENE * (scene + expoOut(p));
   const zoom = spring(progress(t, T.cursorDesign, 0.7)) * (1 - expoInOut(progress(t, T.drop + 0.2, 0.5)));
   scale *= 1 + 0.16 * zoom;
-  const since = t - T.markSettle;
+  const since = t - T.nameRowIn;
   scale += since <= 0 ? 0 : 0.04 * (1 - Math.exp(-since * 25)) * Math.exp(-since * 4);
   const settle = expoInOut(progress(t, T.exit, 0.4));
   const middle = { x: layout.width / 2, y: layout.height / 2 };
@@ -559,18 +533,19 @@ const hop = (
 };
 
 /**
- * The orange dot: a caption bullet, the full stop of "Hello." and the name,
- * the tip of the progress bar, the origin of every colour flood, a window
- * control, the live site's status light, the seed of the dot matrix, the
- * monogram's period, a list bullet, and the period of the end-card mark.
+ * The orange dot: a caption bullet, the full stop of "Hello." and of the full
+ * name, the tip of the progress bar, the origin of every colour flood, a
+ * window control, the live site's status light, the seed of the dot matrix,
+ * the core of the secret circle and stack hub, a list bullet, the full stop of
+ * the shrinking name and finally the period of "MM.".
  */
 export const dotAt = (t: number, layout: SplashLayout): DotState => {
   const { intro, hello, name, bar, moments, statements } = layout;
   const bullet = { x: intro.box.x - 0.8 * intro.fs, y: intro.end.y - 0.36 * intro.fs, size: 0.55 * intro.fs };
   let dot: DotState = { ...bullet, size: bullet.size * spring(progress(t, 0, 0.35)), ink: 0 };
   dot = hop(dot, fullStop(hello), t, T.helloIn, 0.45, 0.25 * hello.fs);
-  dot = hop(dot, nameStopAt(t, name), t, T.nameIn + 0.1, 0.42, 0.2 * name.fs);
-  dot = hop(dot, periodOf(hookLogoOf(name)), t, T.morph, 0.4);
+  // The opening card: the dot becomes the full stop of the full name.
+  dot = hop(dot, fullStop(layout.endName), t, T.nameRowIn + 0.1, 0.45, 0.2 * layout.endName.fs);
 
   const tip = { x: bar.x + bar.w * loadAt(t), y: bar.y + bar.h / 2, size: bar.h * 2.2 };
   dot = hop(dot, tip, t, T.loadIn, 0.4, 0.1 * layout.height);
@@ -592,18 +567,17 @@ export const dotAt = (t: number, layout: SplashLayout): DotState => {
   }
   dot = hop(dot, { ...layout.liveLight, size: light * 1.2 }, t, T.ride + 0.5, 0.2);
 
-  dot = hop(dot, periodOf(layout.logo), t, T.monogram, 0.5, 0.12 * layout.height);
-  dot = hop(dot, periodOf(logoAt(t, layout).box), t, T.hubIn, 0.6);
+  dot = hop(dot, coreOf(layout.logo), t, T.monogram, 0.5, 0.12 * layout.height);
+  dot = hop(dot, coreOf(logoAt(t, layout).box), t, T.hubIn, 0.6);
 
   statements.forEach((line, index) => {
     const marker = { x: line.box.x - 0.45 * line.fs, y: line.end.y - 0.34 * line.fs, size: 0.2 * line.fs };
     dot = hop(dot, marker, t, statementAt(index), 0.4, 0.1 * line.fs);
   });
 
-  dot = hop(dot, periodOf(markAt(t, layout).box), t, T.markIn, 0.5, 0.1 * layout.height);
-  if (t >= T.markSettle) {
-    dot = { ...dot, ...periodOf(markAt(t, layout).box) };
-  }
+  // The name splash: full stop of the shrinking name, then the period of "MM.".
+  dot = hop(dot, nameStopAt(t, name), t, T.nameIn + 0.1, 0.42, 0.2 * name.fs);
+  dot = hop(dot, periodOf(hookLogoOf(name)), t, T.morph, 0.4);
 
   // Ink while it sits on the orange flood, so it never vanishes into it.
   const ink = spring(progress(t, T.floods[0] + 0.1, 0.25)) * (1 - spring(progress(t, T.floods[1] + 0.1, 0.25)));

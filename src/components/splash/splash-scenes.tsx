@@ -125,7 +125,11 @@ const Cursor = ({ bind }: { bind: Bind }) => (
 
 /* ---------- Scenes ---------- */
 
-const HookScene = ({ content, bind }: SceneProps) => (
+/**
+ * The opening caption and "Hello.", and the name splash: the full name that shrinks into "MM.", with
+ * the call to action under it (its font size follows the opening card's, set when measuring).
+ */
+const HookScene = ({ content, bind, onEnter }: EndProps) => (
   <>
     <div className="absolute inset-0 flex items-center justify-center">
       <Caption id="intro" bind={bind}>
@@ -140,6 +144,28 @@ const HookScene = ({ content, bind }: SceneProps) => (
       <div ref={bind("stack")} className="relative grid leading-none font-extrabold tracking-tighter">
         <Rolling id="hello" word={content.hello} bind={bind} className="col-start-1 row-start-1 justify-self-center" />
         <ShrinkingName words={[content.name.first, content.name.last]} bind={bind} />
+      </div>
+      <div
+        ref={bind("cta-row")}
+        className="mt-[0.8em] flex flex-col items-center gap-[0.6em] sm:flex-row sm:gap-[1.2em]"
+      >
+        <button
+          ref={bind("pill")}
+          type="button"
+          tabIndex={-1}
+          onClick={onEnter}
+          style={HIDDEN}
+          className="rounded-full px-[1.3em] py-[0.65em] text-[length:max(14px,0.22em)] font-semibold tracking-tight text-paper"
+        >
+          {content.cta} →
+        </button>
+        <span
+          ref={bind("label")}
+          style={FADED}
+          className="font-technical text-[length:max(11px,0.17em)] tracking-[0.14em] text-graphite uppercase"
+        >
+          {content.label}
+        </span>
       </div>
     </div>
     <div ref={bind("hook-logo")} style={HIDDEN} className="absolute top-0 left-0">
@@ -382,14 +408,14 @@ const CodeScene = ({ content, bind }: SceneProps) => (
 
 const MatrixScene = ({ content, bind }: SceneProps) => (
   <>
-    {/* The stack scene's hub circle sits under the mark the matrix condenses into. */}
+    {/* The stack scene's hub ring sits under the solid circle the matrix condenses into (the logo stays secret). */}
     <div
       ref={bind("hub-ring")}
       style={HIDDEN}
       className="absolute top-0 left-0 rounded-full border border-ink/10 bg-paper"
     />
-    <div ref={bind("logo")} style={HIDDEN} className="absolute top-0 left-0">
-      <Monogram />
+    <div ref={bind("logo")} style={HIDDEN} className="absolute top-0 left-0 grid place-items-center">
+      <span className="block aspect-square h-full rounded-full bg-ink" />
     </div>
     <div ref={bind("detail")} className="absolute inset-x-0 flex justify-center">
       <Caption id="detail-text" bind={bind}>
@@ -479,17 +505,14 @@ const StatementsScene = ({ content, bind }: SceneProps) => (
   </>
 );
 
-const EndScene = ({ content, bind, onEnter }: EndProps) => (
+/** The opening card: the full name (the dot as its full stop) and the tagline. The logo stays a secret until the end. */
+const EndScene = ({ content, bind }: SceneProps) => (
   <>
-    <div ref={bind("mark")} style={HIDDEN} className="absolute top-0 left-0">
-      <Monogram />
-    </div>
     <div ref={bind("end")} className="absolute inset-0 flex flex-col items-center justify-center">
       <div
         ref={bind("end-row")}
         className="flex items-center gap-[0.35em] leading-none font-extrabold tracking-tighter"
       >
-        <span ref={bind("end-mark")} className="block h-[0.78em] w-[1.9em] shrink-0" />
         <Masked id="end-name" bind={bind}>
           {content.name.first} {content.name.last}
         </Masked>
@@ -501,25 +524,6 @@ const EndScene = ({ content, bind, onEnter }: EndProps) => (
       >
         {content.tagline.lead} <span className="text-signal">{content.tagline.key}</span>
       </p>
-      <div className="mt-[0.8em] flex flex-col items-center gap-[0.6em] sm:flex-row sm:gap-[1.2em]">
-        <button
-          ref={bind("pill")}
-          type="button"
-          tabIndex={-1}
-          onClick={onEnter}
-          style={HIDDEN}
-          className="rounded-full px-[1.3em] py-[0.65em] text-[length:max(14px,0.22em)] font-semibold tracking-tight text-paper"
-        >
-          {content.cta} →
-        </button>
-        <span
-          ref={bind("label")}
-          style={FADED}
-          className="font-technical text-[length:max(11px,0.17em)] tracking-[0.14em] text-graphite uppercase"
-        >
-          {content.label}
-        </span>
-      </div>
     </div>
   </>
 );
@@ -527,7 +531,7 @@ const EndScene = ({ content, bind, onEnter }: EndProps) => (
 /** Every scene, in paint order. `onEnter`: the call to action was clicked. */
 export const Scenes = ({ content, bind, onEnter }: EndProps) => (
   <>
-    <HookScene content={content} bind={bind} />
+    <HookScene content={content} bind={bind} onEnter={onEnter} />
     <LoadingScene content={content} bind={bind} />
     <MomentsScene content={content} bind={bind} />
     <DesignScene content={content} bind={bind} />
@@ -535,7 +539,7 @@ export const Scenes = ({ content, bind, onEnter }: EndProps) => (
     <MatrixScene content={content} bind={bind} />
     <StackScene content={content} bind={bind} />
     <StatementsScene content={content} bind={bind} />
-    <EndScene content={content} bind={bind} onEnter={onEnter} />
+    <EndScene content={content} bind={bind} />
     <Cursor bind={bind} />
   </>
 );

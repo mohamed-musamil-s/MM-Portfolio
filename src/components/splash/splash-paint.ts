@@ -1,5 +1,5 @@
 import { clamp01, expoInOut, progress, spring } from "@/lib/shared/motion/time-easing";
-import { MONOGRAM_LETTERS, MONOGRAM_VIEWBOX } from "@/lib/shared/brand/monogram";
+import { MONOGRAM_VIEWBOX } from "@/lib/shared/brand/monogram";
 import {
   boxIn,
   center,
@@ -38,19 +38,16 @@ import {
   exitFlightAt,
   growAt,
   hookLogoOf,
-  hookOutAt,
   letterAt,
   letterGoneAt,
   linkAt,
   linkCurve,
   loadAt,
   logoAt,
-  markAt,
+  coreOf,
   matrixAt,
   mixBox,
   morphAt,
-  orbitAt,
-  periodOf,
   pillAt,
   pulsesAt,
   rand,
@@ -94,11 +91,11 @@ const centred = (width: number, height: number, w: number, cy = 0.5): Box => ({
   h: w / MONO_RATIO,
 });
 
-/** Grid of dots over the whole frame, tagged with whether each one falls inside the monogram. */
+/** Grid of dots over the whole frame, tagged with whether each one falls inside the secret circle. */
 const buildGrid = (width: number, height: number, logo: Box, origin: Point, letters: Path2D) => {
   const spacing = Math.min(44, Math.max(12, Math.min(width, height) / 18));
   const probe = document.createElement("canvas").getContext("2d");
-  const period = periodOf(logo);
+  const period = coreOf(logo);
   const diagonal = Math.hypot(width, height);
   const columns = Math.ceil(width / spacing) + 1;
   const rows = Math.ceil(height / spacing) + 1;
@@ -168,6 +165,9 @@ export const measure = (nodes: Nodes, chipCount: number, statementCount: number,
       node.style.maxWidth = "";
     }
   });
+  // The call to action under the name splash is sized like the opening card (both set before the name is measured).
+  fitFont(html(nodes, "end"), [html(nodes, "end-row")], Math.min(0.075 * width, 0.11 * height), 0.9 * width);
+  html(nodes, "cta-row").style.fontSize = html(nodes, "end").style.fontSize;
   const bigFs = fitFont(
     html(nodes, "stack"),
     [html(nodes, "hello"), html(nodes, "name-row")],
@@ -191,7 +191,6 @@ export const measure = (nodes: Nodes, chipCount: number, statementCount: number,
     Math.min(0.1 * width, 0.11 * height),
     0.78 * width,
   );
-  fitFont(html(nodes, "end"), [html(nodes, "end-row")], Math.min(0.075 * width, 0.11 * height), 0.9 * width);
 
   const designWindow = boxIn(html(nodes, "window"), root);
   const windowLight = lightOf(nodes, root, "window-light");
@@ -229,7 +228,9 @@ export const measure = (nodes: Nodes, chipCount: number, statementCount: number,
 
   html(nodes, "detail").style.top = `${logo.y + logo.h + Math.max(24, 0.05 * height)}px`;
 
-  const letters = new Path2D(MONOGRAM_LETTERS);
+  // The matrix lights up a circle, not the logo (kept secret until the end): a disc as tall as the box.
+  const letters = new Path2D();
+  letters.arc(MONOGRAM_VIEWBOX.width / 2, MONOGRAM_VIEWBOX.height / 2, MONOGRAM_VIEWBOX.height / 2, 0, Math.PI * 2);
   const canvas = nodes.get("canvas");
   if (canvas instanceof HTMLCanvasElement) {
     const ratio = Math.min(2, globalThis.devicePixelRatio || 1);
@@ -260,8 +261,7 @@ export const measure = (nodes: Nodes, chipCount: number, statementCount: number,
     statements: Array.from({ length: statementCount }, (_, index) =>
       wordIn(nodes, root, `statement-${index}`, statementFs),
     ),
-    bigMark: centred(width, height, Math.min(0.46 * width, 0.24 * height * MONO_RATIO), 0.46),
-    endMark: boxIn(html(nodes, "end-mark"), root),
+    endName: wordIn(nodes, root, "end-name", Number.parseFloat(html(nodes, "end").style.fontSize)),
     pill: boxIn(html(nodes, "pill"), root),
   };
 
@@ -307,7 +307,7 @@ const drawCanvas = (canvas: HTMLCanvasElement, stage: Stage, t: number) => {
   if (dots.length > 0) {
     context.save();
     if (clipToLetters) {
-      // Swelling dots merge into the letters exactly, so the solid mark can take over unnoticed.
+      // Swelling dots merge into the circle exactly, so the solid disc can take over unnoticed.
       const { logo } = layout;
       context.setTransform(
         (ratio * logo.w) / MONOGRAM_VIEWBOX.width,
@@ -333,10 +333,6 @@ const drawCanvas = (canvas: HTMLCanvasElement, stage: Stage, t: number) => {
       dot(point.x, point.y, 3.2, rgba(stage.signal, Math.sin(Math.PI * along)));
     }
   });
-
-  for (const point of orbitAt(t, layout)) {
-    dot(point.x, point.y, point.r, rgba(stage.ink, point.alpha));
-  }
 };
 
 /* ---------- Painting ---------- */
@@ -359,7 +355,8 @@ const setDrawn = (nodes: Nodes, key: string, length: number, drawn: number) => {
 
 export type ExitState = { start: number; from: Box; target: Box };
 
-const paintHook = (nodes: Nodes, stage: Stage, t: number) => {
+/** The name splash: the full name shrinks letter by letter into "MM.", which stays until the exit flight takes over. */
+const paintHook = (nodes: Nodes, stage: Stage, t: number, exiting: boolean) => {
   const { name } = stage.layout;
   setRise(nodes, "intro", riseAt(t, T.introIn, T.introOut));
   setRise(nodes, "bracket", riseAt(t, T.bracketIn, T.bracketOut));
@@ -395,18 +392,16 @@ const paintHook = (nodes: Nodes, stage: Stage, t: number) => {
     }
   });
 
-  // "MM" becomes the monogram; the dot lands as its period. It holds a moment, then leaves.
-  const out = hookOutAt(t);
+  // "MM" becomes the monogram; the dot lands as its period. It stays; on the way out the exit mark takes its place.
   const logo = styleOf(nodes, "hook-logo");
   if (logo) {
     const box = hookLogoOf(name);
-    logo.visibility = morph > 0.001 && out < 0.999 ? "visible" : "hidden";
-    logo.opacity = (morph * (1 - out)).toFixed(3);
-    logo.filter = out > 0.01 ? `blur(${(out * 10).toFixed(1)}px)` : "none";
+    logo.visibility = morph > 0.001 && !exiting ? "visible" : "hidden";
+    logo.opacity = morph.toFixed(3);
     logo.width = px(box.w);
     logo.height = px(box.h);
     logo.transformOrigin = "50% 100%";
-    logo.transform = `translate(${box.x}px, ${box.y - out * box.h * 0.4}px) scale(${(1.08 - 0.08 * morph).toFixed(4)})`;
+    logo.transform = `translate(${box.x}px, ${box.y}px) scale(${(1.08 - 0.08 * morph).toFixed(4)})`;
   }
 };
 
@@ -510,7 +505,7 @@ const paintMatrix = (nodes: Nodes, stage: Stage, t: number) => {
 const paintStack = (nodes: Nodes, stage: Stage, t: number) => {
   const { layout } = stage;
   const ring = growAt(t, T.hubIn + 0.1, T.stackOut, 0.55);
-  const size = layout.hub.w * 1.45;
+  const size = layout.hub.h * 1.7;
   const hub = center(layout.hub);
   setBox(
     nodes,
@@ -546,20 +541,13 @@ const paintStatements = (nodes: Nodes, stage: Stage, t: number, statementCount: 
   }
 };
 
-const paintEnd = (nodes: Nodes, stage: Stage, t: number, exiting: boolean) => {
-  const { layout } = stage;
-  const mark = markAt(t, layout);
-  const style = styleOf(nodes, "mark");
-  if (style) {
-    const shown = t >= T.markIn && !exiting;
-    style.visibility = shown ? "visible" : "hidden";
-    style.width = px(mark.box.w);
-    style.height = px(mark.box.h);
-    style.transformOrigin = "50% 50%";
-    style.transform = `translate(${mark.box.x}px, ${mark.box.y}px) scale(${mark.scale.toFixed(4)})`;
-  }
-  setRise(nodes, "end-name", riseAt(t, T.nameRowIn));
-  setReveal(nodes, "tagline", revealAt(t, T.taglineIn));
+/**
+ * The opening card (the full name and the tagline, no logo), which leaves before the loading
+ * scene; and the call to action that shows under "MM." at the end.
+ */
+const paintEnd = (nodes: Nodes, t: number) => {
+  setRise(nodes, "end-name", riseAt(t, T.nameRowIn, T.openOut));
+  setReveal(nodes, "tagline", revealAt(t, T.taglineIn, T.openOut));
   setReveal(nodes, "label", revealAt(t, T.labelIn));
   const pill = pillAt(t);
   const pillStyle = styleOf(nodes, "pill");
@@ -610,10 +598,18 @@ const paintExit = (nodes: Nodes, t: number, exit: ExitState | null) => {
     stage.filter = "none";
     stage.transform = "none";
     mark.visibility = "hidden";
+    const skip = styleOf(nodes, "skip");
+    if (skip) {
+      skip.opacity = "1";
+    }
     return;
   }
   const fade = exitFadeAt(t, exit.start);
   stage.opacity = (1 - fade).toFixed(3);
+  const skip = styleOf(nodes, "skip");
+  if (skip) {
+    skip.opacity = (1 - fade).toFixed(3);
+  }
   stage.filter = fade > 0.01 ? `blur(${(fade * 8).toFixed(1)}px)` : "none";
   stage.transform = `scale(${(1 - 0.03 * fade).toFixed(4)})`;
   const box = mixBox(exit.from, exit.target, exitFlightAt(t, exit.start));
@@ -640,14 +636,14 @@ export const paint = (
     cameraStyle.transform = `translate(${layout.width / 2 - camera.focus.x * camera.scale}px, ${layout.height / 2 - camera.focus.y * camera.scale}px) scale(${camera.scale.toFixed(4)})`;
   }
   paintFloods(nodes, stage, t, camera);
-  paintHook(nodes, stage, t);
+  paintHook(nodes, stage, t, exiting);
   paintLoading(nodes, t);
   paintDesign(nodes, stage, t);
   paintCode(nodes, stage, t, content.lines);
   paintMatrix(nodes, stage, t);
   paintStack(nodes, stage, t);
   paintStatements(nodes, stage, t, content.statements, content.tags);
-  paintEnd(nodes, stage, t, exiting);
+  paintEnd(nodes, t);
   paintCursor(nodes, stage, t);
   paintDot(nodes, stage, t, exiting);
   const canvas = nodes.get("canvas");
@@ -657,18 +653,17 @@ export const paint = (
   paintExit(nodes, t, exit);
 };
 
-/** Where the end-card mark is on screen now (the exit flight starts there). */
+/** Where "MM." (the name splash's monogram) is on screen now: the exit flight starts there. */
 export const markOnScreen = (stage: Stage, t: number): Box => {
   const { layout } = stage;
   const camera = cameraAt(t, layout);
-  const mark = markAt(t, layout);
-  const scale = Math.max(0.05, t >= T.markIn ? mark.scale : 0) * camera.scale;
-  const middle = toScreen(center(mark.box), camera, layout);
+  const box = hookLogoOf(layout.name);
+  const middle = toScreen(center(box), camera, layout);
   return {
-    x: middle.x - (mark.box.w * scale) / 2,
-    y: middle.y - (mark.box.h * scale) / 2,
-    w: mark.box.w * scale,
-    h: mark.box.h * scale,
+    x: middle.x - (box.w * camera.scale) / 2,
+    y: middle.y - (box.h * camera.scale) / 2,
+    w: box.w * camera.scale,
+    h: box.h * camera.scale,
   };
 };
 

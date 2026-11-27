@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { HomeView } from "@/components/home/HomeView";
+import { PREVIEW_SECTION_EVENT } from "@/components/home/SiteNav";
 import { MaintenanceScreen } from "@/components/maintenance/MaintenanceScreen";
 import { NameSplash } from "@/components/splash/NameSplash";
 import { markIntroReady } from "@/components/splash/splash-state";
@@ -284,6 +285,8 @@ const highlight = (texts: string[], scope: string | null | undefined, context: s
 
 /** Scrolls the home preview to a section: its anchor, the footer, or the top for the navbar, hero and page details. */
 const showSection = (section: string | null) => {
+  // Lets screens react to the section being edited (the navbar opens its index for "nav").
+  window.dispatchEvent(new CustomEvent(PREVIEW_SECTION_EVENT, { detail: section }));
   const target =
     section === "footer"
       ? document.querySelector("footer")

@@ -10,15 +10,16 @@ import { FLOOD_COLORS, HIDDEN, Scenes } from "./splash-scenes";
 import { END_CARD_AT, EXIT_AT, EXIT_SECONDS } from "./splash-timeline";
 
 /*
- * The name splash on `/` (docs/screens/SPLASH_BUSINESS.md): about 31 seconds
+ * The name splash on `/` (docs/screens/SPLASH_BUSINESS.md): about 34 seconds
  * at 120 BPM. The markup is static (splash-scenes.tsx); `paint(t)`
  * (splash-paint.ts) writes every moving style from the timeline functions
  * (splash-timeline.ts). A requestAnimationFrame loop only supplies `t`.
  *
- * It ends with the logo flying to the navbar logo of the page beneath while
- * the splash fades. Skip and Esc jump to the end card (the name), which then
- * plays out into that exit; on the end card, Skip, Esc and the clicked call
- * to action start the exit straight away.
+ * It opens on the mark beside the full name and ends on the name splash: the
+ * full name shrinks letter by letter into "MM.", which flies to the navbar
+ * logo of the page beneath while the splash fades. Skip and Esc jump to the
+ * name splash, which then plays out into that exit; once it plays, Skip, Esc
+ * and the clicked call to action start the exit straight away.
  */
 
 type NameSplashProps = {
@@ -200,12 +201,21 @@ export const NameSplash = ({ content, onExitStart, onFinished }: NameSplashProps
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[url(/textures/grain.svg)] bg-size-[256px] opacity-4 mix-blend-multiply"
         />
+      </div>
 
+      {/*
+        Skip sits on the visible viewport (dvh), above the phone's home indicator, outside the animated
+        stage so the camera never moves it: on phones a full-height overlay can reach under the browser bar.
+      */}
+      <div
+        ref={bind("skip")}
+        className="pointer-events-none fixed inset-x-0 top-0 flex h-dvh items-end justify-end p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-8"
+      >
         <button
           type="button"
           onClick={skip}
           aria-keyshortcuts="Escape"
-          className="absolute right-4 bottom-4 inline-flex items-center gap-2 rounded-full border border-ink/15 bg-paper/90 px-4 py-2 font-technical text-xs tracking-[0.16em] text-ink uppercase shadow-sm backdrop-blur-sm transition-colors duration-200 ease-print hover:bg-ink hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal sm:right-8 sm:bottom-8"
+          className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full border border-ink/15 bg-paper/90 px-4 py-2 font-technical text-xs tracking-[0.16em] text-ink uppercase shadow-sm backdrop-blur-sm transition-colors duration-200 ease-print hover:bg-ink hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal"
         >
           {content.skip}
           <kbd

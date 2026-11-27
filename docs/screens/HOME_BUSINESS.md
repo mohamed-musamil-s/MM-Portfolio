@@ -43,11 +43,16 @@ Seeds stay generic: no personal details in code or seed files.
 
 ## 4. Navbar
 
-- **Top of the page:** an open, transparent row. On the left, the monogram (smaller: 24px, 28px from `sm`) and the name on two lines; the splash lands its logo on the monogram. In the middle, numbered links (`01 About` …) whose letters roll up on hover. On the right, the live status (from `xl`) and the magnetic "Let's talk" pill.
-- **Active section:** the section under the middle of the viewport is marked by an ink pill that slides from link to link (`aria-current="location"`).
-- **Scrolling:** scrolling down hides the bar. Scrolling back up brings it back as a floating island (max 1120px, rounded, blurred paper), with the reading progress drawn in signal along its lower edge. The status moves out of the island to keep it compact.
-- **Phones:** monogram and a "Menu" pill with two lines open a full-screen sheet. Its links rise in turn; it holds focus inside and Escape closes it.
-- **Reduced motion:** the bar never hides.
+Redesigned 2026-11-27 as a **corner index**: two small pieces in the top corners, so the page stays the subject while reading.
+
+- **Top left:** the monogram (24px, 28px from `sm`) and the name on two lines; the splash lands its logo on the monogram. At the very top it sits on the page; once the page moves it gets a paper pill (blurred, hairline, soft shadow) so it reads over any section.
+- **Top right, "Let's talk" (from `sm`):** the magnetic ink pill with the orange arrow circle, left of the index button. It steps aside while the index is open (the sheet has its own).
+- **Top right, the index button:** a paper pill with the section being read, its number in signal (`02 Experience`), or `Menu` above the first section; the label rolls when the section changes. Beside it an ink disc with two lines, ringed by the reading progress in signal.
+- **The index:** the button opens a full-screen ink sheet that grows out of the button (a circle wipe). The sections are giant numbered rows (Archivo wide, uppercase, hairlines between); the current one carries a signal dot (`aria-current="location"`); hovering a row slides it and shows an arrow while the others dim. At the bottom: the live status and the "Let's talk" pill. The button turns into `Close` (the lines become a cross) and the logo turns paper. Picking a row closes the sheet and jumps to the section.
+- **Keyboard and focus:** the sheet is a modal dialog; it takes focus when it opens, Tab stays inside the navbar (rows, logo, Close), Escape closes it and returns focus to the button. The page doesn't scroll while it's open.
+- **Phones:** the same two corners; the index rows use the next size down so long names fit.
+- **Reduced motion:** the sheet fades instead of wiping.
+- **Content Forge:** while the Navbar section is open in the preview, the index stays open so every navbar field can be outlined.
 
 ## 5. Hero
 

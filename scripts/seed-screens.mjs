@@ -628,7 +628,7 @@ const SCREENS = {
       errors: {
         auth: "Vercel rejected the access token. Check VERCEL_ANALYTICS_TOKEN.",
         forbidden: "The token can't read this project's analytics. Check the project and team.",
-        plan: "Web Analytics data isn't available on the current Vercel plan.",
+        plan: "Your Vercel plan keeps the last 31 days of analytics. Pick 7 or 30 days.",
         disabled: "Web Analytics is turned off for this Vercel project. Enable it under the project's Analytics tab, then redeploy.",
         failed: "Couldn't load analytics from Vercel. Try again in a moment.",
       },

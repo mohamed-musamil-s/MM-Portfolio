@@ -44,7 +44,7 @@ All of it without leaving the studio.
 - **States:**
   - **No data yet:** "No visits recorded for this range yet."
   - **Missing configuration:** the setup card.
-  - **API error:** a message that matches the cause: bad token, no permission, plan, Web Analytics turned off for the project (Vercel's `web_analytics_not_enabled`), or other.
+  - **API error:** a message that matches the cause: bad token, no permission, plan, Web Analytics turned off for the project (Vercel's `web_analytics_not_enabled`), or other. The plan's data window (Hobby keeps the latest 31 days) shows as the plan message for a range past it (90 days); when only the comparison range is past it (30 days), the change reads "No earlier data to compare".
 
 ## 4. Content (`site_screens/studio-shell`, `pulse`)
 

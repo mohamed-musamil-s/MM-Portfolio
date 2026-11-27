@@ -17,6 +17,8 @@ const API = "https://api.vercel.com/v1/query/web-analytics/visits/aggregate";
 const CACHE_SECONDS = 60;
 const TOP = 8;
 const DAY_MS = 86_400_000;
+/** Vercel's answer when a query reaches past the plan's data window. */
+const RETENTION = /only grants access to the latest/i;
 
 export const PULSE_RANGES = [7, 30, 90] as const;
 export type PulseRange = (typeof PULSE_RANGES)[number];
@@ -84,11 +86,14 @@ const query = async (
     next: { revalidate: CACHE_SECONDS },
   });
   if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as { error?: { code?: string } } | null;
+    const body = (await response.json().catch(() => null)) as { error?: { code?: string; message?: string } } | null;
     const code = body?.error?.code;
     log.warn({ status: response.status, code, by: params.by }, "vercel analytics query failed");
     // Web Analytics switched off for the project: say so, it's a setting, not an outage.
-    throw new AnalyticsError(code === "web_analytics_not_enabled" ? "disabled" : reasonFor(response.status));
+    if (code === "web_analytics_not_enabled") throw new AnalyticsError("disabled");
+    // The plan keeps a limited window (Hobby: the latest 31 days); older days are refused.
+    if (RETENTION.test(body?.error?.message ?? "")) throw new AnalyticsError("plan");
+    throw new AnalyticsError(reasonFor(response.status));
   }
   const body = (await response.json()) as { data?: Row[] };
   return Array.isArray(body.data) ? body.data : [];
@@ -128,7 +133,10 @@ export const getPulse = async (range: PulseRange): Promise<PulseResult> => {
   try {
     const [totals, previous, daily, ...lists] = await Promise.all([
       query(config, environment, { by: "environment", ...window }),
-      query(config, environment, { by: "environment", ...before }),
+      // The range before may be past the plan's window (30 days on Hobby): then there is nothing to compare.
+      query(config, environment, { by: "environment", ...before }).catch((error: unknown) =>
+        error instanceof AnalyticsError && error.reason === "plan" ? [] : Promise.reject(error),
+      ),
       query(config, environment, { by: "day", ...window }),
       ...BREAKDOWNS.map((dimension) => query(config, environment, { by: dimension, limit: TOP, ...window })),
     ]);

@@ -185,7 +185,7 @@ export const studioShellContentSchema = z.object({
       productionHint: text(120),
       previewHint: text(160),
     }),
-    ranges: z.object({ week: text(16), month: text(16), quarter: text(16) }),
+    ranges: z.object({ week: text(16), month: text(16) }),
     rangeLabel: text(24),
     stats: z.object({
       visitors: text(24),

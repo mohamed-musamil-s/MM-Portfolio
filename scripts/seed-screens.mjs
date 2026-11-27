@@ -598,7 +598,6 @@ const SCREENS = {
       ranges: {
         week: "7 days",
         month: "30 days",
-        quarter: "90 days",
       },
       rangeLabel: "Date range",
       stats: {

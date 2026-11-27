@@ -20,7 +20,8 @@ const DAY_MS = 86_400_000;
 /** Vercel's answer when a query reaches past the plan's data window. */
 const RETENTION = /only grants access to the latest/i;
 
-export const PULSE_RANGES = [7, 30, 90] as const;
+/** Ranges the studio offers: both fit Vercel Hobby's 31-day data window. */
+export const PULSE_RANGES = [7, 30] as const;
 export type PulseRange = (typeof PULSE_RANGES)[number];
 
 export const BREAKDOWNS = ["requestPath", "referrerHostname", "country", "deviceType"] as const;

@@ -31,7 +31,7 @@ const ENTER =
 const delay = (ms: number) => ({ animationDelay: `${ms}ms` });
 const NUMBER = new Intl.NumberFormat("en");
 const REGIONS = new Intl.DisplayNames(["en"], { type: "region" });
-const RANGE_KEYS: Record<PulseRange, keyof Copy["ranges"]> = { 7: "week", 30: "month", 90: "quarter" };
+const RANGE_KEYS: Record<PulseRange, keyof Copy["ranges"]> = { 7: "week", 30: "month" };
 const SETUP_VARIABLES = ["VERCEL_ANALYTICS_TOKEN", "VERCEL_ANALYTICS_PROJECT", "VERCEL_ANALYTICS_TEAM"] as const;
 
 const fill = (text: string, values: Record<string, string | number>) =>

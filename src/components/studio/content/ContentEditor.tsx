@@ -451,6 +451,8 @@ export const ContentEditor = ({ shell, screens: initial, maintenance }: ContentE
               drafts={drafts}
               focusTexts={previewTexts(focusValue)}
               focusLabel={focusPath ? fieldLabel(focusPath) : null}
+              focusScope={split && focusPath ? String(focusPath[0]) : null}
+              focusContext={focusPath ? itemContext(draft, focusPath) : []}
               section={focusSection}
             />
           </aside>
@@ -469,6 +471,25 @@ const previewTexts = (value: JsonValue | undefined): string[] => {
     return [];
   }
   return isIsoDate(value) ? [formatDateUtc(new Date(value))] : [value];
+};
+
+/**
+ * For each list item the field sits in (nearest first), the texts of that item's other plain
+ * fields: "roles › 1 › location" gives the role's company, title, period and so on.
+ */
+const itemContext = (draft: JsonValue, path: Path): string[][] => {
+  const own = new Set(previewTexts(getAt(draft, path)));
+  const groups: string[][] = [];
+  path.forEach((segment, index) => {
+    if (typeof segment !== "number") return;
+    const item = getAt(draft, path.slice(0, index + 1));
+    if (!item || typeof item !== "object" || Array.isArray(item)) return;
+    const texts = Object.values(item)
+      .flatMap((value) => previewTexts(value))
+      .filter((text) => text.trim() !== "" && !own.has(text));
+    if (texts.length > 0) groups.unshift(texts);
+  });
+  return groups;
 };
 
 /** "Status › Kicker", "Lines 2". */

@@ -21,7 +21,18 @@ export const toPreviewSchema = z.discriminatedUnion("type", [
   /** Current drafts (unsaved edits included) for the screen and the shared record. */
   z.object({ source: z.literal("content-forge"), type: z.literal("draft"), content: z.unknown(), shared: z.unknown() }),
   /** Texts of the field being edited, to outline where they appear. Empty clears. */
-  z.object({ source: z.literal("content-forge"), type: z.literal("focus"), texts: z.array(z.string()) }),
+  z.object({
+    source: z.literal("content-forge"),
+    type: z.literal("focus"),
+    texts: z.array(z.string()),
+    /** The section the field belongs to (`data-cf-section` on the page); null searches the whole page. */
+    scope: z.string().nullable().optional(),
+    /**
+     * The other values of each list item the field sits in, nearest item first: they tell
+     * repeated values apart and stand in when the field itself isn't shown (a collapsed role).
+     */
+    context: z.array(z.array(z.string())).optional(),
+  }),
   /** The home section being edited, to bring it into view (null: the top). */
   z.object({ source: z.literal("content-forge"), type: z.literal("section"), section: z.string().nullable() }),
 ]);

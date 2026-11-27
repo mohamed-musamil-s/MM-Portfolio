@@ -61,6 +61,7 @@ const FooterLink = ({ href, label, arrow }: { href: string; label: string; arrow
       </span>
       <span
         aria-hidden
+        data-cf-copy
         className="absolute inset-0 block translate-y-full text-signal transition-transform duration-500 ease-print group-hover:translate-y-0 group-focus-visible:translate-y-0"
       >
         {label}
@@ -191,6 +192,7 @@ export const SiteFooter = ({ footer }: { footer: Footer }) => {
       {curtain ? <div ref={spacer} aria-hidden style={{ height }} /> : null}
       <footer
         ref={panel}
+        data-cf-section="footer"
         className={cn(
           "overflow-hidden bg-ink px-page pt-[clamp(1.75rem,5svh,3.5rem)] pb-5 text-paper",
           curtain ? "fixed inset-x-0 bottom-0 z-0" : "relative",

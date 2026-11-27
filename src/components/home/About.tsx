@@ -356,7 +356,7 @@ const PinnedAbout = ({ about }: { about: About }) => {
   const track = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: track, offset: ["start start", "end end"] });
   return (
-    <section id="about" className="relative scroll-mt-20 bg-paper">
+    <section id="about" data-cf-section="about" className="relative scroll-mt-20 bg-paper">
       <div ref={track} className="relative" style={{ height: `${100 + STORY_TRAVEL_SVH}svh` }}>
         <div className="sticky top-0 flex h-svh flex-col overflow-clip px-page pt-[clamp(1.25rem,3svh,2rem)] pb-[clamp(1.5rem,5svh,3rem)]">
           <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col">

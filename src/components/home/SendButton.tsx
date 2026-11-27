@@ -75,6 +75,7 @@ export const SendButton = ({ state, children }: { state: SendState; children: st
           </span>
           <span
             aria-hidden
+            data-cf-copy
             className="absolute inset-0 block translate-y-full transition-transform duration-500 ease-print group-enabled:group-hover:translate-y-0"
           >
             {children}

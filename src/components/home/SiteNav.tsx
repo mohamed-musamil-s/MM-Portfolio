@@ -54,6 +54,7 @@ const RollingLabel = ({ text, active }: { text: string; active: boolean }) => (
             {letter}
           </motion.span>
           <motion.span
+            data-cf-copy
             className="absolute inset-0 block"
             initial={{ y: "110%" }}
             animate={{ y: active ? "0%" : "110%" }}
@@ -326,6 +327,7 @@ export const SiteNav = ({ nav }: { nav: Nav }) => {
   return (
     <>
       <motion.header
+        data-cf-section="nav"
         animate={{ y: hidden && !open && !reducedMotion ? "-130%" : "0%" }}
         transition={{ duration: 0.55, ease: EASE_PRINT }}
         className="fixed inset-x-0 top-0 z-40 px-page"

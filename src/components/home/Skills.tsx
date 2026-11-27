@@ -196,6 +196,7 @@ const Stage = ({ skills }: { skills: Skills }) => {
     <section
       ref={section}
       id="skills"
+      data-cf-section="skills"
       className="relative scroll-mt-20 bg-paper"
       style={{ height: `${100 + INTRO_SVH + (total - 1) * SVH_PER_GROUP}svh` }}
     >

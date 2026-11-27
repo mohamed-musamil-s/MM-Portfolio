@@ -91,6 +91,10 @@ type PreviewPanelProps = {
   /** Texts of the field being edited (empty when none). */
   focusTexts: string[];
   focusLabel: string | null;
+  /** The focused field's section on a split screen (home), so matches stay inside it. */
+  focusScope?: string | null;
+  /** Other values of the list items the field sits in, nearest first (see the preview protocol). */
+  focusContext?: string[][];
   /** On the home page: the section being edited, brought into view in the frame. */
   section?: string | null;
 };
@@ -99,7 +103,16 @@ type PreviewPanelProps = {
  * Right column of Content Forge: the real page in a scaled frame, updated as
  * you type, with the focused field outlined where it appears.
  */
-export const PreviewPanel = ({ copy, targets, drafts, focusTexts, focusLabel, section = null }: PreviewPanelProps) => {
+export const PreviewPanel = ({
+  copy,
+  targets,
+  drafts,
+  focusTexts,
+  focusLabel,
+  focusScope = null,
+  focusContext = [],
+  section = null,
+}: PreviewPanelProps) => {
   const panel = copy.previewPanel;
   const [device, setDevice] = useState<Device>("fit");
   const [chosen, setChosen] = useState<PreviewableScreen | null>(null);
@@ -141,15 +154,18 @@ export const PreviewPanel = ({ copy, targets, drafts, focusTexts, focusLabel, se
   }, [content, ready, shared]);
 
   const focusKey = focusTexts.join("\u0000");
+  const contextKey = JSON.stringify(focusContext);
   useEffect(() => {
     if (ready) {
       send(iframeRef.current, {
         source: "content-forge",
         type: "focus",
         texts: focusKey ? focusKey.split("\u0000") : [],
+        scope: focusScope,
+        context: JSON.parse(contextKey) as string[][],
       });
     }
-  }, [focusKey, ready]);
+  }, [contextKey, focusKey, focusScope, ready]);
 
   useEffect(() => {
     if (ready && target === "home") {

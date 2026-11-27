@@ -306,6 +306,7 @@ export const Hero = ({ hero }: { hero: HeroContent }) => {
     <>
       <section
         ref={section}
+        data-cf-section="hero"
         aria-label={hero.lines.join(" ")}
         className={cn("relative", doors && "pointer-events-none z-20")}
         style={doors ? { height: `${100 + DOOR_TRAVEL_SVH}svh` } : undefined}

@@ -141,6 +141,7 @@ export const Section = ({
 }) => (
   <section
     id={id}
+    data-cf-section={id}
     className={cn(
       // Clip sideways only: cards that slide in from the side never widen the page; sticky still works.
       "relative scroll-mt-20 overflow-x-clip px-page py-[clamp(4.5rem,12svh,8rem)]",
@@ -311,6 +312,7 @@ export const Pill = ({
       </span>
       <span
         aria-hidden
+        data-cf-copy
         className="absolute inset-0 block translate-y-full transition-transform duration-500 ease-print group-hover:translate-y-0"
       >
         {children}

@@ -207,7 +207,13 @@ export const studioShellContentSchema = z.object({
     direct: text(32),
     empty: text(120),
     setup: z.object({ title: text(48), body: text(240), note: text(120) }),
-    errors: z.object({ auth: text(120), forbidden: text(120), plan: text(120), failed: text(120) }),
+    errors: z.object({
+      auth: text(120),
+      forbidden: text(120),
+      plan: text(120),
+      disabled: text(160),
+      failed: text(120),
+    }),
   }),
   /** Mission Control, the dashboard (docs/screens/STUDIO_MISSION_CONTROL_BUSINESS.md). Placeholders: {name} {n} {total} {time} {who}. */
   missionControl: z.object({

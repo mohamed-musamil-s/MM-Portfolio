@@ -36,7 +36,7 @@ export type PulseData = {
   breakdowns: Record<Breakdown, BreakdownRow[]>;
 };
 
-export type PulseErrorReason = "auth" | "forbidden" | "plan" | "failed";
+export type PulseErrorReason = "auth" | "forbidden" | "plan" | "disabled" | "failed";
 
 export type PulseResult =
   | { status: "ok"; environment: AnalyticsEnvironment; range: PulseRange; data: PulseData }
@@ -84,8 +84,11 @@ const query = async (
     next: { revalidate: CACHE_SECONDS },
   });
   if (!response.ok) {
-    log.warn({ status: response.status, by: params.by }, "vercel analytics query failed");
-    throw new AnalyticsError(reasonFor(response.status));
+    const body = (await response.json().catch(() => null)) as { error?: { code?: string } } | null;
+    const code = body?.error?.code;
+    log.warn({ status: response.status, code, by: params.by }, "vercel analytics query failed");
+    // Web Analytics switched off for the project: say so, it's a setting, not an outage.
+    throw new AnalyticsError(code === "web_analytics_not_enabled" ? "disabled" : reasonFor(response.status));
   }
   const body = (await response.json()) as { data?: Row[] };
   return Array.isArray(body.data) ? body.data : [];

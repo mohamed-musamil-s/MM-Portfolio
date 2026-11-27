@@ -44,7 +44,7 @@ All of it without leaving the studio.
 - **States:**
   - **No data yet:** "No visits recorded for this range yet."
   - **Missing configuration:** the setup card.
-  - **API error:** a message that matches the status (bad token, no permission, plan, other).
+  - **API error:** a message that matches the cause: bad token, no permission, plan, Web Analytics turned off for the project (Vercel's `web_analytics_not_enabled`), or other.
 
 ## 4. Content (`site_screens/studio-shell`, `pulse`)
 
